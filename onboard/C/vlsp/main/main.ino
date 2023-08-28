@@ -1,20 +1,38 @@
-#include "esp_camera.h"
+// wifi related
 #include <WiFi.h>
-//#include <ArduinoWebsockets.h>
+
+// camera related
+#include "esp_camera.h"
 #define CAMERA_MODEL_ESP32S3_EYE
 #include "camera_pins.h"
 
+//sensor related
+#include <Wire.h>
+#include "Adafruit_Sensor.h"
+#include "Adafruit_BMP3XX.h"
+#include "Adafruit_SHT31.h"
+
+#define SEALEVELPRESSURE_HPA (1013.25)
+#define BMP_SCL 47
+#define BMP_SDA 21
+#define SHT_SCL 19
+#define SHT_SDA 20
+
+TwoWire BMPSensors = TwoWire(0);
+// TwoWire SHTSensors = TwoWire(0);
 
 /*  ===========================
-    Enter your WiFi credentials
+          WiFi credentials
     =========================== */
-const char* ssid     = "Asimov-2.4GHZ";
-const char* password = "Asimov42";
-const char* host = "192.168.0.104";
+const char* ssid = "iPhone 13 mini";
+const char* password = "cccccccc";
+const char* host = "172.20.10.2";
 const uint16_t port = 880;
 
-
+Adafruit_BMP3XX bmp;
+Adafruit_SHT31 sht = Adafruit_SHT31();
 WiFiClient client;
+
 void setup() {
   // Init serial
   Serial.begin(115200);
@@ -23,11 +41,19 @@ void setup() {
 
   // return if camera init error
   if (cameraSetup() == 0) {
-    return ;
+    return;
   }
 
   // return if wifi init error
   if (wifiSetup() == 0) {
+    return;
+  }
+
+  if (bmpSetup() == 0) {
+    return;
+  }
+
+  if (shtSetup() == 0) {
     return;
   }
 
@@ -39,14 +65,17 @@ void setup() {
   
 }
 
+/**
+ * The first packet sent is 
+*/
 void loop () {
-  char data[] = "X[first]|[second]|[third]XXXXX";
-  char* padded_data = leftpad(data, 50, 'X');
+  char data[] = "[first]#[second]#[third]XX\r\n";
+  char* padded_data = leftpad(data, 40, 'X');
 
   Serial.print("Sending: ");
   Serial.println(padded_data);
 
-  client.write((const uint8_t*)padded_data, 50);
+  client.write((const uint8_t*)padded_data, 40);
   client.stop();
   while(true){}
   return ;
@@ -116,7 +145,6 @@ int cameraSetup(void) {
 }
 
 
-
 /**
  * Attempt to connect to WiFi times.
  * Return 1 if success, return 0 if not. 
@@ -132,7 +160,7 @@ int wifiSetup(void) {
         delay(500);
         Serial.print(".");
         connect_count+=1;
-        if (connect_count >= 5) {
+        if (connect_count >= 20) {
             Serial.println("Could not connect to WIfi.");
             return 0;
         }
@@ -142,6 +170,44 @@ int wifiSetup(void) {
     Serial.println(WiFi.localIP());
     return 1;
 }
+
+/**
+ * 
+*/
+int bmpSetup(void) {
+  while (!Serial);
+  Serial.println("BMP390 test");
+  BMPSensors.begin(BMP_SDA, BMP_SCL, 100000);
+  if (!bmp.begin_I2C(0x77, &BMPSensors)) {   // hardware I2C mode, can pass in address & alt Wire
+    Serial.println("Could not find a valid BMP3X sensor, check wiring!");
+    while (1);
+    return 0; 
+  } else {
+    Serial.println("BMP390 Sensor Found!");
+  }
+  return 1;
+}
+
+/**
+ * 
+*/
+int shtSetup(void) {
+  while (!Serial);
+  Serial.println("SHT31D test");
+  //SHTSensors.begin(SHT_SDA, SHT_SCL, 100000);
+  if(!sht.begin(0x44)){
+    Serial.println("Could not find a valid SHT sensor, check wiring!");
+    uint16_t stat = sht.readStatus();
+    Serial.print("SHT31D Status: ");
+    Serial.println(stat);
+    while (1);
+    return 0;
+  }else {
+    Serial.println("SHT31D Sensor Found!");
+  }
+  return 1;
+}
+
 
 /**
  * right-pad the existing string with 'X'
