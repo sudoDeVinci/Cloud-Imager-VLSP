@@ -1,354 +1,318 @@
-# Cloud Detection via Visual Colour Space: Concept Exploration using the OV2640
-- By: Tadj Cazauon (tc222gf)
+# Mesh Network for Cloud Detection, Tracking and Categorization
+- By: Tadj Cazaubon (tc222gf)
 
 ## Proposal
 
 Quick yet accurate Weather prediction is imperative for certain industries to now only survive,
 but simply exist. An important factor of these is the ability to track, categorize and predict
-movements of clouds within a given area. Ceilometers use a laser/light source to determine a
-cloud's base or ceiling height. A Ceilometer usually can also measure aerosol concentration in
-air [1]. The downside is that ceilometers have a relatively small area of measurement directly
-above the unit which would not be an issue, however, as of 2020 they can cost around USD
-$30 000 per unit [3].
-There exists however, high quality satellite data made available by NASA. The new MISR Level
-2 Cloud product contains height-resolved, cloud motion vectors at 17.6 km resolution; cloud top
-heights at 1.1 km resolution; and cross-track cloud motion components at 1.1 km resolution [2].
-Now this data is made available to be used by software engineers to visualize as needed. The
-issue? This data is not meant for real-time application on a local area level. These products are
-made for global application, collecting data only on the sunlit side of earth over the course of 9
-days [4].
-A better solution for the local-area level must be thought of then, to better predict cloud
-movement and category.
+movements of clouds within a given area.
 
+The main tool in determining cloud characteristics is a ceiolmeter, which uses a laser/light source to determine a cloud's base or ceiling height. A Ceilometer usually can also measure aerosol concentration in air [1]. The downside is that ceilometers have a relatively small area of measurement directly
+above the unit (~8km2) which would not be an issue, however, as of 2020 they can cost around USD $30 000 per unit [3].
+There exists however, high quality satellite data made available by NASA. The new MISR Level 2 Cloud product contains height-resolved, cloud motion vectors at 17.6 km resolution; cloud top heights at 1.1 km resolution; and cross-track cloud motion components at 1.1 km resolution [2]. Now this data is made available to be used by software engineers to visualize as needed. The issue? This data is not meant for real-time application on a local area level. These products are made for global application, collecting data only on the sunlit side of earth over the course of 9 days [4]. A better solution for the local-area level must be thought of then, to better predict cloud movement and category.
+<br>
 The formal proposal made to VLSP can be viewed in the [Proposal](proposal.pdf)
+<br>
+Due to the amorphous and feature-sparse nature of Clouds, tracking them via conventional image processing techniques such as via contours, frame-to-frame motion tracking and identifiable features allowing for conventional NN training is surprisingly difficult.
+However, I believe:
+
+1. Accurately tracking/identifying clouds may be as simple as identifying them via a statistical analysis of their colour values across multiple colour spaces.
+
+2. Cloud categorization may be done via a combination of atmospheric readings, as well as the colour analysis. 
+
+3. With the cloud base height, location and frame to frame motion of a cloud available to us, we can assign velocity vectors to cloud structures, along with the area of   effect for their shadows on the ground.
 
 <br>
 
-Due to the amorphous and feature-sparse nature of Clouds, tracking them via conventional image processing techniques such as via contours, frame-to-frame motion tracking and identifiable features allowing for conventional NN training, they are surprisingly difficult to autonomously track frame-to-frame.
-However, accurately tracking clouds may be as simple as identifying them via a statistical analysis of their colour values across multiple colour spaces. While object detection and identification is done via feature detection, usually on highly downscaled greyscale images,
-I believe identification of clouds could come down to BGR and HSV values.
-With the cloud base height, location and frame to frame motion of a cloud available to us, we can more accurately assign velocity vectors to cloud structures, along with the area of effect for their shadows on the ground.
+My proposal is the construction of a number of 'weather stations' which take atmospheric readings and images of the sky above them. The data is sent back to a central server and analysed. 
 
-<br>
-
-The following is an exploration of this concept with a focus on the camera module. 
-
-## Main Issues
-
-The main issues with the implementation of this concept are:
-1. Camera fidelity
-2. Weather sensor Accuracy
+The following is an attempt to put into practice the most current research to create a mesh network of these weather staions which can detect, track, and categorize clouds.
 
 
 ## Setup
 
-An Esp32 with an OV2460 DVP camera module is pointed at the sky at a location and predetermined angle (prefereably perpendicular). A pycom board connects to a web server started on the esp32 and retrieves the image. The pycom board takes a number of measurements of the surroundings including the humidity, temperature, dew point and estimated cloud height. This information, along with the image is then sent back to a server listening for the pycom device.
+An Esp32 (base model or S3) with an OV5640 DVP camera module is pointed at the sky at a location and predetermined angle (prefereably perpendicular).
+
+1. An SHT31-D takes Relative Humidity readings.
+2. A BMP390 takes Air Pressure and Temperature readings.
+3. The dewpoint is calculated according using the Magnus-Tetens formula [8].
+4. An image of the sky is taken.
+5. The image and readings are sent to a collections server for analysis.
 
 ## How to
 
-All components are programmed using either python or micropython.
+Microcontrollers are programmed using Arduino Studio.
+I mostly use VScode for programming. 
 
-I mostly use VScode for programming, however I use Thonny to update and interface with the boards.
-Sometimes however, I use [adafruit ampy](https://learn.adafruit.com/micropython-basics-load-files-and-run-code/install-ampy) for interfacing with the boards due to needing more complex operations, such as the [utility](/utility/) scripts.
+* Earlier within the project I used either  micropython and python for all components. I languages switched due to speed, memory and compatibility concerns.
+
+[Server components](src/server_components/) are made in Java, and [microcontrollers](src/onboard/) are programmed in C. Graphing components for now are stil made in python for simplicity, but I plan to write these in JavaCV to integrate them within [Server components](src/server_components/).
+
+Sometimes however, I use [adafruit ampy](https://learn.adafruit.com/micropython-basics-load-files-and-run-code/install-ampy) for interfacing with the boards due to needing more complex operations, such as the [utility](/utility/) scripts. This was mainly used before the switch, but readers may find use in these.
+Many of the utility board functions are alternatively available through esp-IDF, but setup and use of it are memory intensive and complex. My development machine (2C4t Celeron J4125 w/ 8GB DDR4) simply cant take it.
 
 ### ESP32 WROVER
 
-The ESP32 WROVER by Freenove was chosen simply because of availability and driver support for the DVP camera.
-The manufacturer repository for the board can be found [here](https://github.com/Freenove/Freenove_ESP32_WROVER_Board). Flashing the board can be done within minutes using [esptool](https://github.com/espressif/esptool) and the firmware can be found [here](https://github.com/Freenove/Freenove_ESP32_WROVER_Board/tree/main/Python/Python_Firmware).
-<br>
+The ESP32 WROVER Dev board by Freenove was chosen simply because of availability and driver support for the DVP camera.
+The manufacturer repository for the board can be found [here](https://github.com/Freenove/Freenove_ESP32_WROVER_Board).
 
-Firmware flashing instructions via esptool can be found [here](https://micropython.org/download/esp32/), but the gist is:
-1. Install esptool using pip:
-```bash
-pip install esptool
+#### Reading from sensors
+To read from the SHT31-D, we use the Adafruit_SHT31 library. 
+To read from the BMP390, we use the Adafruit_BMP3XX libray.
+We will be connecting these on the same serial bus to the esp, as they occupy different addresses (0x44 and 0x77 respectively). We use pins not occupied by the cameras on internal serial operations (32 and 33). We use the Wire library to make an instance with these as our SDA and SCL for Serial Bus 0.
+
+```C
+...
+
+TwoWire wire = TwoWire(0);
+
+void setup() {
+  Serial.begin(115200);
+  wire.begin(32,33);
+
+  ...
+
+}
+
+...
 ```
 
-2. Erase the existing flash memory on the chip:
+I've created an initialization function for each sensor. We pass the reference to the TwoWire instance we create, then attempt to initialize and calibrate them. We then get each of the readings as well as the dewpoint.
+
+```C
+...
+Adafruit_BMP3XX bmpGlob = bmpSetup(&wire);
+Adafruit_SHT31 shtGlob = shtSetup(&wire);
+
+while (true) {
+  if (! bmpGlob.performReading()) {
+    Serial.println("Failed to perform reading :(");
+    return;
+  }
+
+  float humidity = shtGlob.readHumidity();
+  float pressure = bmpGlob.readPressure();
+  float temperature = bmpGlob.readTemperature();
+  float dewpoint = calcDewpoint(temperature, humidity);
+  ...
+}
+...
 ```
-esptool.py --chip esp32 --port <PORT> erase_flash
+
+When sending the readings, they're made into a string with a psecified format:
+```C
+
+...
+
+String constructPacket(size_t size, float T, float RH, float Pa, float DP) {
+  String packet = "";
+  packet.concat("[" + String(size) + "]#");
+  packet.concat("[" + String(CANON_NAME) + "]#");
+  packet.concat("[" + String(T) + "]#");
+  packet.concat("[" + String(RH) + "]#");
+  packet.concat("[" + String(Pa) + "]#");
+  packet.concat("[" + String(DP) + "]XX");
+  return leftpad_str(packet, 64, 'X');
+}
 ```
 
-3. From then on program the firmware starting at address 0x1000:
+leftpad_str() is a leftpad function I made to ensure the packet is always a fixed-size.
+
+#### Taking a picture
+Taking a picture with the OV5640 is the same as the OV2640, however the sensor frequency must be changed from 20MHZ to 12MHZ, and the OV5640 allows for up 1080p images comfortably. The ESP32 WROVER has PSRAM, meaning we can use FHD resolutions and a slightly higher jpeg compression quality. Here is the camera setup I used for initializing the OV5640:
+
+```C
+int cameraSetup(void) {
+  camera_config_t config;
+  config.ledc_channel = LEDC_CHANNEL_0;
+  config.ledc_timer = LEDC_TIMER_0;
+  config.pin_d0 = Y2_GPIO_NUM;
+  config.pin_d1 = Y3_GPIO_NUM;
+  config.pin_d2 = Y4_GPIO_NUM;
+  config.pin_d3 = Y5_GPIO_NUM;
+  config.pin_d4 = Y6_GPIO_NUM;
+  config.pin_d5 = Y7_GPIO_NUM;
+  config.pin_d6 = Y8_GPIO_NUM;
+  config.pin_d7 = Y9_GPIO_NUM;
+  config.pin_xclk = XCLK_GPIO_NUM;
+  config.pin_pclk = PCLK_GPIO_NUM;
+  config.pin_vsync = VSYNC_GPIO_NUM;
+  config.pin_href = HREF_GPIO_NUM;
+  config.pin_sscb_sda = SIOD_GPIO_NUM;
+  config.pin_sscb_scl = SIOC_GPIO_NUM;
+  config.pin_pwdn = PWDN_GPIO_NUM;
+  config.pin_reset = RESET_GPIO_NUM;
+  config.xclk_freq_hz = 12000000;
+  config.frame_size = FRAMESIZE_FHD;
+  config.pixel_format = PIXFORMAT_JPEG;
+  config.grab_mode = CAMERA_GRAB_LATEST;
+  config.fb_location = CAMERA_FB_IN_PSRAM;
+  config.jpeg_quality = 15;
+  config.fb_count = 1;
+
+  esp_err_t err = esp_camera_init(&config);
+  if (err != ESP_OK) {
+    Serial.printf("Camera init failed with error 0x%x", err);
+    return 0;
+  }
+
+  sensor_t * s = esp_camera_sensor_get();
+  s->set_vflip(s, 1); // flip it back
+  s->set_brightness(s, 1);
+  s->set_saturation(s, 0);
+  
+  Serial.println("Camera configuration complete!");
+  return 1;
+}
 ```
-esptool.py --chip esp32 --port <PORT> --baud 460800 write_flash -z 0x1000 <FIRMWARE .BIN>
+If your controller does not have PSRAM, you may want to do another optional check, and lower your settings accordingly.
+Simply, to take a picture, and get teh image size in bytes once the camera is initialized:
+
+```C
+    #include "esp_camera.h"
+
+    ...
+
+    camera_fb_t *fb = esp_camera_fb_get();
+    esp_camera_fb_return(fb);
+    fb = esp_camera_fb_get();
+    esp_camera_fb_return(fb);
+    fb = esp_camera_fb_get();
+
+    size_t imageSize;
+    if (!fb) {
+        imageSize = 0;
+    } else {
+        imageSize = fb->len;
+    }
+    Serial.print("Image Buffer Size (bytes): ");
+    Serial.println(imageSize);
 ```
 
-### Pycom FiPy and PySense
+We need the image size in bytes for sending the data over tcp, and writing it to the jpeg on the server. We flush the buffer mutliple times to ensure the new picture taken is in fact new.
 
-These should work out of the box, but may require additional drivers for the expansion board.
+```C
+ esp_camera_fb_return(fb)
+```
+Returns and empties the image buffer.
 
-A helpful guide for their installation can be found [here](https://docs.pycom.io/gettingstarted/software/drivers/).
 
-## Usage
+#### Wi-Fi Connection
+Wi-Fi connection is simple so I'll gloss over it. Firstly specify the connection credentials.
+```C
+const char* ssid = "**************";
+const char* password = "*********";
+const char* host = "255.255.255.247";
+const uint16_t port = 69;
+```
+Now we attempt to connecto the the Access point a set number of times, each time checking the conection state. very simple but effective way in most cases.
+```C
+#include <WiFi.h>
 
-Usage can be broken down into the three components of the project, the:
-- FiPy board (with pysense expansion board)
-- ESP32 camera board
-- Home Windows server.
+... 
 
-### ESP32 Camera Board
+int wifiSetup(void) {
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+    WiFi.setSleep(false);
 
-All files meant to be on the esp32 board are within the [esp32 folder](esp32/). [clear_lib](esp32/clear_lib.py) and [update_lib](esp32/update_lib.py) are simple scripts meant to clear and update the on-board lib folder respectively. The [main](esp32/main.py) simply calls [serve_image](esp32/serve_image.py). [serve_image](esp32/serve_image.py):
+    int connect_count = 0; 
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+        connect_count+=1;
+        if (connect_count >= 10) {
+            Serial.println("Could not connect to WIfi.");
+            return 0;
+        }
+    }
+    Serial.println("");
+    Serial.print("WiFi connected with IP: ");
+    Serial.println(WiFi.localIP());
+    return 1;
+}
+```
 
-1. Activates the on-board wifi 
-```python
-def server_start():
-    SSID = "ImageServer"
-    PASSWORD = "12345678"
-    from network import WLAN, AP_IF
+Within our main loop() now, we must:
+
+1. Instantiate a connection with the server:
+```C
+#include <WiFi.h>
+
+...
+
+WiFiClient client;
+
+...
+
+void loop() {
+    ...
     
-    wlan = WLAN(AP_IF)
-    wlan.active(True)
-    wlan.config(essid = SSID, password = PASSWORD)
+    if (!client.connect(host, port)) {
+        Serial.println("Couldn't connect to host.");
+        return;
+    }
+    Serial.println("Successfully connected!");
     
-    conf = wlan.ifconfig()
-    print('Connected, IP address:', conf)
-    return wlan
-```
-2. Listens on port 80 for a request to connect.
-```python
-s = socket()
-
-try:
-    s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-    try:
-        s.bind(('',88))
-        s.listen(100)
-        send(s)
-        # sleep for 1 minute after sending
-        sleep(60000)
-    except Exception as e:
-        print(e, "err")
-        if s:
-            s.close()
-        raise OSError
-except Exception as e:
-    print(e)
-    if s:
-        s.close()
-    if wlan:
-        wlan.disconnect()
+    ...
+}
 ```
 
-3. Send the image buffer contents over the socket connection. I have used a helper [Client class](client.py) to simplify the data transfer. The image buffer is rewritten twice to ensure it's flushed.
-```python
-from socket import socket
-def send(s:socket):
-    from struct import pack
-    from camera import deinit, capture
-    
-    while True: 
-        camera_init()
-        c,a = s.accept()
-        print('Connection from {0}'.format(a))
-        
-        buf = capture()
-        buf = capture()
-        buf = capture()
+2. Construct and send the packet as a padded string.
+```C
+    ...
 
-        length = len(buf)
-        data = bytes(buf)
-        print("Sending Image data..")
-        
-        c.send(pack('<I',length))
-        c.sendall(data)
-        
-        print("Image sent.")
-        sleep(2)
-        del c,a, buf, length
-        deinit()
-        collect()
+    String packet = constructPacket(imageSize, temperature, humidity, pressure, dewpoint);
+    Serial.println("Packet: " + packet);
+
+    client.println(packet);
+    delay(1000);
+
+    ...
+
 ```
 
-### FiPy w/ Pysense Board
+3. If the image buffer is not 0, write it to the server socket.
+```C
+...
 
-All files meant to be on the FiPy board are within the [pycom folder](pycom/). [clear_lib](pycom/clear_lib.py) and [update_lib](pycom/update_lib.py) are simple scripts meant to clear and update the on-board lib folder respectively.The [main](pycom/main.py) simply calls the cycle function within [image_transfer](pycom/image_transfer.py). This:
+if (imageSize == 0) {
+    Serial.println("Image buffer empty. Only readings sent as-is.");
+    delay(500000);
+    return;
+  }
 
-1. Runs a cycle of attempting to connect to the esp32 board
-```python
-def connect(SSID, PASSWORD, wlan):
-    if PASSWORD is None:
-        wlan.connect(ssid=SSID)
-    else:
-        wlan.connect(SSID, auth=(WLAN.WPA2, PASSWORD))
-    print('connecting..',end='')
-    while not wlan.isconnected():
-        sleep(1)
-        print('.',end='')
-    print('Connected on:', wlan.ifconfig()[0])
-    return wlan.ifconfig()[3]
+  client.write(fb->buf, imageSize);
+
+  esp_camera_fb_return(fb); 
+
+  ...
+
 ```
 
-2. Receive an image.
-```python
-def get_image():
-    SSID = "ImageServer"
-    PASSWORD = None
-    wlan = WLAN(mode=WLAN.STA)
-    
-    ip = connect(SSID,PASSWORD,wlan)
-    sleep(1)
-    print("Requesting..")
-    from client import Listener
-    try:
-        with Listener(ip, 88) as c:
-            print("Receiving..")
-            data = c.get()
-            if not data:
-                print("No Image received")
-        wlan.disconnect()
-        del wlan, SSID, PASSWORD, c, ip
-        print("Received.")
-        collect()
-        return data
-```
-3. Take readings
-```python
-def readings():
-    from pysense import pysense
-    py = pysense()
+4. CLose the socket connection.
+```C
+...
 
-    temp = py.temperature()
-    humidity = py.humidity()
-    altitude = py.altitude()
-    dew_point = py.dew_point()
-    
-    readings = "{0}|{1}|{2}|{3}".format(altitude, temp, humidity, dew_point)
+client.stop();
 
-    return bytes(readings.encode('utf-8'))
-```
-4. Send the image data to the desktop server on a different WiFi network. Images and readings are sent separately.
+...
 
-```python
-def send_image(data):
-    SSID = "********"         
-    PASSWORD = "********"
-    wlan = WLAN(mode=WLAN.STA)
-
-    connect(SSID,PASSWORD,wlan)
-    
-    from socket import socket
-    import struct
-    sleep(1)
-    addr = "********"
-    port = 88
-    s = socket()
-    
-    try:
-        s.connect((addr,port))
-        sleep(1)
-
-        length = len(data)
-        print("Sending image data ...")
-        s.send(struct.pack('<I',length))
-        s.sendall(data)
-        print("Sent")
-        sleep(2)
-        
-        r = readings()
-        length = len(r)
-        print("Sending readings data...")
-        s.send(struct.pack('<I',length))
-        s.sendall(r)
-        sleep(2)
-        s.close()
-        print("Sent")
-        wlan.disconnect()
-        del wlan, length, r, s
-        collect()
-
-    except Exception as e:
-        if wlan:
-            wlan.disconnect()
-            del wlan
-        if s:
-            s.close()
-        print(e)
-        return None
 ```
 
-### Listener Server
-
-The [Listener.py](listener.py) script contains a simple web socket, listening for connections on port 88. The server in this case is given a static IP for simplicity. 
-
-```python
-def main():
-    counter = find_count()
-    s = socket()
-    try:
-        # Try to let the socket address be reusable
-        s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        try:
-            # Try to bind the socket to an address and port
-            s.bind(('',88))
-            s.listen(100)
-            # Listen, looping repeatedly
-            listen(s, counter)
-        except Exception as e:
-            print(e, "err")
-    except Exception as e:
-        print(e)
-        if s:
-            s.close()
-```
-
-Once a connection is made, the image data is received and saved with a timestamp
-
-```python
-c,a = s.accept()
-with Listener(c) as l:
-    print('Connection from {0}'.format(str(a)))
-    
-    datestamp = str(datetime.now().strftime("%Y%m%d"))
-    filename = f"img{counter}.png"
-    folder = datestamp
-    if not os.path.exists("espimages/"+folder):
-        os.mkdir("espimages/"+folder)
-
-    print("Receiving Image..")
-
-    try:
-        data = l.get()
-        if not data:
-            print("No Image received")
-        else:
-            print("Received")
-            with open("espimages/"+folder+"/"+filename, "wb") as f:
-                f.write(data)
-    except Exception as e:
-        print(e)
-```
-After this, the readings are received and saved with the same timestamp in .csv format.
-
-```python
- filename = f"readings{datestamp}{counter}.csv"
-headers = ["altitude", "temp", "humidity", "dew_point"]
-
-try:
-    print("Receiving sensor data..")
-    data = l.get()
-    if not data:
-        print("No Sensor data received")
-    else:
-        print("Got Readings")
-        bytestring = data.decode('utf-8')
-        readings = bytestring.split("|")
-        print("Received", readings)
-        with open("espimages/"+folder+"/"+filename,  'w', encoding='UTF8', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(headers)
-            writer.writerow(readings)
-except Exception as e:
-    print(e, "err")
-    if s:
-        s.close()
-    raise e
-```
+### Server
+TODO: SHOW SERVER IMPLEMENTATION.
 
 
 ## Analysis
 
 ### Image Quality Requirements
+
+#### OV5640
+Not Yet Available.
+<br>
+
+#### OV2460
 While colour space based operations are fairly easy on high quality images, the OV2460 is not high quality. Contrast is low, over/under-exposure are almost ensured and ISO changes are not only drastic but cause unwanted light filtering and other strange behaviour:
 
 ![Example Image](espimages/20220704/img2022070443.png)
@@ -382,7 +346,7 @@ It is also apparent that the Red and Green colour space would be more useful in 
 Above we see that for the most part, only the 
 Value channel would be useful for separation/classification, but that the separation between them is more prominent than in other colour channels.
 
-#### Frequency Chart for ESP Images
+#### Frequency Chart for OV2640
 <br>
 
 These show the frequency graphs for the colour channels of the 20 images of the sky taken with the OV2640, separated into regions of sky and cloud. 
@@ -413,7 +377,7 @@ Above we see that the red channel accounts for ~80% of the variance in the cloud
 
 Above we see that the Value channel as expected leads in variance, though the next two channels are closer than one might think when looking at the distribution graphs. Still, the variance of the Value channel alone is almost as much as the other two channels combined (~50%). 
 
-#### ScreePlots for ESPImages
+#### ScreePlots for OV2640
 <br>
 
 These show the screeplots for the colour channels of the 20 images of the sky taken with the OV2640, colour channels separated as principle components to check the variance percentage in differentiating sky versus cloud pixels.
@@ -437,7 +401,7 @@ Once a matrix of principle components (colour channels) and their per variance v
 ![BGR PCA ScatterPlot for High Res Images](/Graphs/BGRPcaGraph.png "BGR PCA ScatterPlot for High Res Images")
 ![HSV PCA ScatterPlot for High Res Images](/Graphs/HSVPcaGraph.png "HSV PCA ScatterPlot for High Res Images")
 
-#### PCA ScatterPlot for ESP Images
+#### PCA ScatterPlot for OV2640
 <br>
 
 ![BGR PCA ScatterPlot for ESPImages](/Graphs/BGRPcaGraph-esp.png "BGR PCA ScatterPlot for ESP Images")
@@ -447,14 +411,6 @@ Once a matrix of principle components (colour channels) and their per variance v
 
 - It can be seen that sky and cloud regions can be separated somewhat via visible colour space, and this separation simplified via singular value decomposition. The OV2640 however, can be seen to not be suitable for this application however; though following the statistical trends of the higher resolution images, it lacks the image quality/colour fidelity needed for this application.
 
-    - In the near future, the OV5640 must be tested, as this seems to be a large step in image quality, with quality of life features lacking in the OB2640, such as dynamically adjustable focus and ISO.
-
-- The communication between the Esp32 and FiPy is unneedingly convoluted. This is mainly because the FiPy requires the Pysense expansion bored for USB UART communication for programming. The pysense extension board lacks any headers for communication over something such as UART.
-
-    - Using the pysense expansion board was due to it having all the necessary sensors for the needed design, being cheaper than buying them separately. However, I have decided to instead use separate, more accurate sensors such as the SHT31-D and BMP390, connecting them over I2C to a single board.
-
-Over the course of the undertaking, the guiding philosophy was to create as close to a final implementation as possible within the time limit, creating many parts simultaneously, including transmission of weather values and camera distortion matrix calibration (available in [Extras](extras.md)). This unfocused approach made it difficult to fully test the capability of the camera to distinguish in cases of darker clouds, or during inconvenient weather conditions such as rain or the sun being in frame.
-
 ## References
 
 [1] The National Oceanic and Atmospheric Administration. 16 November 2012. p. 60.
@@ -463,21 +419,16 @@ Over the course of the undertaking, the guiding philosophy was to create as clos
 MOTION VECTORS: OVERVIEW AND ASSESSMENT, Jet Propulsion Laboratory, 4800 Oak
 Grove, Pasadena, California.
 
-[3] F .Rocadenbosch, R. Barragán , S.J. Frasier ,J. Waldinger, D.D. Turner , R.L. Tanamachi,
-D.T. Dawson (2020) Ceilometer-Based Rain-Rate Estimation: A Case-Study Comparison With
-S-Band Radar and Disdrometer Retrievals in the Context of VORTEX-SE
+[3] F .Rocadenbosch, R. Barragán , S.J. Frasier ,J. Waldinger, D.D. Turner , R.L. Tanamachi, D.T. Dawson (2020) Ceilometer-Based Rain-Rate Estimation: A Case-Study Comparison With S-Band Radar and Disdrometer Retrievals in the Context of VORTEX-SE
 
-[4] “Misr: Spatial resolution,” NASA, https://misr.jpl.nasa.gov/mission/misr-instrument/spatial-
-resolution/ (accessed May 19, 2023).
+[4] “Misr: Spatial resolution,” NASA, https://misr.jpl.nasa.gov/mission/misr-instrument/spatial-resolution/ (accessed May 19, 2023).
 
 [5] “tlcl_rh_bolton,” Tlcl_rh_bolton,
-https://www.ncl.ucar.edu/Document/Functions/Contributed/tlcl_rh_bolton.shtml (accessed May
-21, 2023) (Extras)
+https://www.ncl.ucar.edu/Document/Functions/Contributed/tlcl_rh_bolton.shtml (accessed May 21, 2023) (Extras)
 
-[6] Muñoz, Erith & Mundaray, Rafael & Falcon, Nelson. (2015). A Simplified Analytical Method
-to Calculate the Lifting Condensation Level from a Skew-T Log-P Chart. Avances en Ciencias e
+[6] Muñoz, Erith & Mundaray, Rafael & Falcon, Nelson. (2015). A Simplified Analytical Method to Calculate the Lifting Condensation Level from a Skew-T Log-P Chart. Avances en Ciencias e
 Ingenieria. 7. C124-C129 (Extras)
 
-[7] Wmo, “Cumulonimbus,” International Cloud Atlas, https://cloudatlas.wmo.int/en/observation-
-of-clouds-from-aircraft-descriptions-cumulonimbus.html (accessed May 21, 2023)
-    
+[7] Wmo, “Cumulonimbus,” International Cloud Atlas, https://cloudatlas.wmo.int/en/observation-of-clouds-from-aircraft-descriptions-cumulonimbus.html (accessed May 21, 2023)
+
+[8] Lawrence, M. (2005). The Relationship between Relative Humidity and the Dewpoint Temperature in Moist Air: A Simple Conversion and Applications. Bulletin of the American Meteorological Society 86(2) pp. 225-234. Available at: https://journals.ametsoc.org/view/journals/bams/86/2/bams-86-2-225.xml [Accessed 5 Sep 2023]

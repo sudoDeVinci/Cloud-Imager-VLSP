@@ -196,9 +196,10 @@ float alpha(float T, float RH) {
   return log(RH / 100.0) + (MAGNUS_A * T) / (MAGNUS_B + T);
 }
 
-/*
+/*Dewpoint from relative humidity using the Magnus-Tetens formula
  * https://iridl.ldeo.columbia.edu/dochelp/QA/Basic/dewpoint.html
  * https://journals.ametsoc.org/view/journals/apme/35/4/1520-0450_1996_035_0601_imfaos_2_0_co_2.xml
+ * https://www.omnicalculator.com/physics/dew-point
  */
 float calcDewpoint(float T, float RH) {
   float dew = (MAGNUS_B * alpha(T, RH)) / (MAGNUS_A - alpha(T, RH));
@@ -206,7 +207,7 @@ float calcDewpoint(float T, float RH) {
 }
 
 /**
- * Attempt to connect to WiFi times.
+ * Attempt to connect to WiFi 10 times.
  * Return 1 if success, return 0 if not. 
  * 
 */
