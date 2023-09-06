@@ -324,9 +324,9 @@ In all, while the camera is not exactly suited for this application, it is what 
 First is graphing the frequencies of the BGR and HSV values for clouds versus the sky surrounding them. This is done in [colour_graphs](colour_graphs.py).
 Each reference image in [Reference-Images](Reference-Images/) has a corresponding image in [Blocked-Images](Blocked-Images/).
 
-
-<img src = 'Reference-Images\Image17.png' alt="MarineGEO circle logo" style="height: 200px; width:300px;"/>
-<img src = 'Blocked-Images\Image17.png' alt="MarineGEO circle logo" style="height: 200px; width:300px;"/>
+Reference Image            |  Blocked Image
+:-------------------------:|:-------------------------:
+![Reference Image](Reference-Images\Image17.png)  |  ![Blocked Image](Blocked-Images\Image17.png)
 
 The Blocked out images are coloured such that clouds are coloured red and the sky is coloured black. Small borders around clouds are left as to not capture the noise of whispy cloud edges.
 This is used to create two binary images and subsequent masked images of the reference image, one for the clouds and one for the sky in the scene. These are split, iterated over and their colour values recorded. These values are then graphed and can viewed below.
@@ -337,9 +337,9 @@ NOTE: The divisons in the bar graphs is an artifact from saving the graphs as pn
 
 These show the frequency graphs for the colour channels of the 60 images of the sky, separated into regions of sky and cloud.
 
-
-<img src = 'Graphs/BGRBarGraph.png' alt="BGR Frequency Chart for High Res Images" style="height: 200px; width:300px;"/>
-<img src = 'Graphs/HSVBarGraph.png' alt="HSV Frequency Chart for High Res Images" style="height: 200px; width:300px;"/>
+DSLR BGR Bar Graph            |  DSLR HSV Bar Graph
+:-------------------------:|:-------------------------:
+![Reference Image](Graphs/BGRBarGraph.png)  |  ![Blocked Image](Graphs/HSVBarGraph.png)
 
 <br>
 
@@ -354,8 +354,9 @@ Value channel would be useful for separation/classification, but that the separa
 
 These show the frequency graphs for the colour channels of the 20 images of the sky taken with the OV2640, separated into regions of sky and cloud. 
 
-<img src = 'Graphs/BGRBarGraph-esp.png' alt="BGR Frequency Chart for High Res Images" style="height: 200px; width:300px;"/>
-<img src = 'Graphs/HSVBarGraph-esp.png' alt="HSV Frequency Chart for High Res Images" style="height: 200px; width:300px;"/>
+OV2640 BGR Bar Graph            |  OV2640 HSV Bar Graph
+:-------------------------:|:-------------------------:
+![Reference Image](Graphs/BGRBarGraph-esp.png)  |  ![Blocked Image](Graphs/HSVBarGraph-esp.png)
 
 <br>
 
@@ -373,8 +374,9 @@ Once the percentage variance of each colour channel in differentiating cloud and
 
 These show the screeplots for the colour channels of the 60 higher resolution images of the sky, colour channels separated as principle components to check the variance percentage in differentiating sky versus cloud pixels.
 
-<img src = 'Graphs/BGRScree.png' alt="BGR Screeplot for High Res Images" style="height: 200px; width:300px;"/>
-<img src = 'Graphs/HSVScree.png' alt="HSV Screeplot for High Res Images" style="height: 200px; width:300px;"/>
+DSLR BGR Scree Plot            |  DSLR HSV Scree Plot
+:-------------------------:|:-------------------------:
+![Reference Image](Graphs/BGRScree.png)  |  ![Blocked Image](Graphs/HSVScree.png)
 
 <br>
 
@@ -387,8 +389,9 @@ Above we see that the Value channel as expected leads in variance, though the ne
 
 These show the screeplots for the colour channels of the 20 images of the sky taken with the OV2640, colour channels separated as principle components to check the variance percentage in differentiating sky versus cloud pixels.
 
-<img src = 'Graphs/BGRScree-esp.png' alt="BGR Screeplot for High Res Images" style="height: 200px; width:300px;"/>
-<img src = 'Graphs/HSVScree-esp.png' alt="HSV Screeplot for High Res Images" style="height: 200px; width:300px;"/>
+OV2640 BGR Scree Plot            |  OV2640 HSV Scree Plot
+:-------------------------:|:-------------------------:
+![Reference Image](Graphs/BGRScree-esp.png)  |  ![Blocked Image](Graphs/HSVScree-esp.png)
 
 <br>
 
@@ -404,14 +407,16 @@ Once a matrix of principle components (colour channels) and their per variance v
 #### PCA ScatterPlot for High Res Images
 <br>
 
-![BGR PCA ScatterPlot for High Res Images](/Graphs/BGRPcaGraph.png "BGR PCA ScatterPlot for High Res Images")
-![HSV PCA ScatterPlot for High Res Images](/Graphs/HSVPcaGraph.png "HSV PCA ScatterPlot for High Res Images")
+DSLR PCA BGR ScatterPLot            |  DSLR PCA HSV Scatterplot
+:-------------------------:|:-------------------------:
+![BGR PCA ScatterPlot for High Res Images](/Graphs/BGRPcaGraph.png "BGR PCA ScatterPlot for High Res Images")  |  ![HSV PCA ScatterPlot for High Res Images](/Graphs/HSVPcaGraph.png "HSV PCA ScatterPlot for High Res Images")
 
 #### PCA ScatterPlot for OV2640
 <br>
 
-![BGR PCA ScatterPlot for ESPImages](/Graphs/BGRPcaGraph-esp.png "BGR PCA ScatterPlot for ESP Images")
-![HSV PCA ScatterPlot for ESP Images](/Graphs/HSVPcaGraph-esp.png "HSV PCA ScatterPlot for ESP Images")
+OV2640 PCA BGR ScatterPLot            |  OV2640 PCA HSV Scatterplot
+:-------------------------:|:-------------------------:
+![BGR PCA ScatterPlot for ov2640](/Graphs/BGRPcaGraph-esp.png "BGR PCA ScatterPlot for ov2640")  |  ![HSV PCA ScatterPlot for ov2640](/Graphs/HSVPcaGraph-esp.png "HSV PCA ScatterPlot for ov2640")
 
 ### Final Comments
 
