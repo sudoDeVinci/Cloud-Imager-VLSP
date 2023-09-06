@@ -315,7 +315,7 @@ Not Yet Available.
 #### OV2460
 While colour space based operations are fairly easy on high quality images, the OV2460 is not high quality. Contrast is low, over/under-exposure are almost ensured and ISO changes are not only drastic but cause unwanted light filtering and other strange behaviour:
 
-![Example Image](espimages/20220704/img2022070443.png)
+<img src = 'Reference-Images-esp\Image77.png' alt="MarineGEO circle logo" style="height: 300px; width:400px;"/>
 
 In all, while the camera is not exactly suited for this application, it is what is available and what I was able to test with. The shortcomings become apparent below.
 
@@ -324,8 +324,9 @@ In all, while the camera is not exactly suited for this application, it is what 
 First is graphing the frequencies of the BGR and HSV values for clouds versus the sky surrounding them. This is done in [colour_graphs](colour_graphs.py).
 Each reference image in [Reference-Images](Reference-Images/) has a corresponding image in [Blocked-Images](Blocked-Images/).
 
-![reference image](Reference-Images/Image17.png)
-![blocked image](Blocked-Images/Image17.png)
+
+<img src = 'Reference-Images\Image17.png' alt="MarineGEO circle logo" style="height: 300px; width:400px;"/>
+<img src = 'Blocked-Images\Image17.png' alt="MarineGEO circle logo" style="height: 300px; width:400px;"/>
 
 The Blocked out images are coloured such that clouds are coloured red and the sky is coloured black. Small borders around clouds are left as to not capture the noise of whispy cloud edges.
 This is used to create two binary images and subsequent masked images of the reference image, one for the clouds and one for the sky in the scene. These are split, iterated over and their colour values recorded. These values are then graphed and can viewed below.
@@ -336,12 +337,14 @@ NOTE: The divisons in the bar graphs is an artifact from saving the graphs as pn
 
 These show the frequency graphs for the colour channels of the 60 images of the sky, separated into regions of sky and cloud.
 
-![BGR Frequency Chart for High Res Images](/Graphs/BGRBarGraph.png "BGR Frequency Chart for High Res Images")
+
+<img src = 'Graphs/BGRBarGraph.png' alt="BGR Frequency Chart for High Res Images" style="height: 500px; width:600px;"/>
+<img src = 'Graphs/HSVBarGraph.png' alt="HSV Frequency Chart for High Res Images" style="height: 500px; width:600px;"/>
+
+<br>
 
 Above we that viusally, the distributions for these images could be approximated to normal distributions if properly cleaned, especially that of the clouds.
 It is also apparent that the Red and Green colour space would be more useful in the pursuit to classify data.
-
-![HSV Frequency Chart for High Res Images](/Graphs/HSVBarGraph.png "BGR Frequency Chart for High Res Images")
 
 Above we see that for the most part, only the 
 Value channel would be useful for separation/classification, but that the separation between them is more prominent than in other colour channels.
@@ -351,13 +354,14 @@ Value channel would be useful for separation/classification, but that the separa
 
 These show the frequency graphs for the colour channels of the 20 images of the sky taken with the OV2640, separated into regions of sky and cloud. 
 
-![BGR Frequency Chart for ESP Images](/Graphs/BGRBarGraph-esp.png "BGR Frequency Chart for ESP Images")
+<img src = 'Graphs/BGRBarGraph-esp.png' alt="BGR Frequency Chart for High Res Images" style="height: 500px; width:600px;"/>
+<img src = 'Graphs/HSVBarGraph-esp.png' alt="HSV Frequency Chart for High Res Images" style="height: 500px; width:600px;"/>
+
+<br>
 
 Above we see that while the pattern of separation in the channels in followed, the lack of colour fidelity causes the sky regions to a more bimodal distribution. This can be seen in images where the sky looks more purple than blue, or regions of it are under/overexposed, or subject to strange tinting.
 
-![HSV Frequency Chart for ESP Images](/Graphs/HSVBarGraph-esp.png "HSV Frequency Chart for ESP Images")
-
-Above we see that the hue looks somewhat similar, the saturation and value are nothing like the higher resolution images. I attribute this to the camera querks mentioned before. The value distribution for both clouds and sky regions is completely different now, with the sky region peaking at 100, rather than closer to 150 and skewing right.
+We see that the hue looks somewhat similar, the saturation and value are nothing like the higher resolution images. I attribute this to the camera querks mentioned before. The value distribution for both clouds and sky regions is completely different now, with the sky region peaking at 100, rather than closer to 150 and skewing right.
 
 ### ScreePlot
 <br>
@@ -369,11 +373,12 @@ Once the percentage variance of each colour channel in differentiating cloud and
 
 These show the screeplots for the colour channels of the 60 higher resolution images of the sky, colour channels separated as principle components to check the variance percentage in differentiating sky versus cloud pixels.
 
-![BGR ScreePlot for High Res Images](/Graphs/BGRScree.png "BGR ScreePlot for High Res Images")
+<img src = 'Graphs/BGRScree.png' alt="BGR Screeplot for High Res Images" style="height: 500px; width:600px;"/>
+<img src = 'Graphs/HSVScree.png' alt="HSV Screeplot for High Res Images" style="height: 500px; width:600px;"/>
+
+<br>
 
 Above we see that the red channel accounts for ~80% of the variance in the cloud vs sky regions, with the green channel accounting for just under 20%. This means that in classification, the red and green channels are the main factors. We could then discard  
-
-![HSV ScreePlot for High Res Images](/Graphs/HSVScree.png "HSV ScreePlot for High Res Images")
 
 Above we see that the Value channel as expected leads in variance, though the next two channels are closer than one might think when looking at the distribution graphs. Still, the variance of the Value channel alone is almost as much as the other two channels combined (~50%). 
 
@@ -382,11 +387,12 @@ Above we see that the Value channel as expected leads in variance, though the ne
 
 These show the screeplots for the colour channels of the 20 images of the sky taken with the OV2640, colour channels separated as principle components to check the variance percentage in differentiating sky versus cloud pixels.
 
-![BGR ScreePlot for ESP Images](/Graphs/BGRScree-esp.png "BGR ScreePlot for ESP Images")
+<img src = 'Graphs/BGRScree-esp.png' alt="BGR Screeplot for High Res Images" style="height: 500px; width:600px;"/>
+<img src = 'Graphs/HSVScree-esp.png' alt="HSV Screeplot for High Res Images" style="height: 500px; width:600px;"/>
+
+<br>
 
 Above we see that the screeplot for the BGR channels is similar to that of that higher resolution images, despite the lack of image fidelity.
-
-![HSV ScreePlot for ESP Images](/Graphs/HSVScree-esp.png "HSV ScreePlot for ESP Images")
 
 Above we see that there is an even smaller difference between the respective channels, meaning that using them to differentiate the two data sets is more difficult. The channel variance percents do however follow the expected scale.
 
