@@ -326,7 +326,7 @@ Each reference image in [Reference-Images](Reference-Images/) has a correspondin
 
 Reference Image            |  Blocked Image
 :-------------------------:|:-------------------------:
-![Reference Image](Reference-Images\Image17.png)  |  ![Blocked Image](Blocked-Images\Image17.png)
+![Reference Image](Reference-Images/Image17.png)  |  ![Blocked Image](Blocked-Images/Image17.png)
 
 The Blocked out images are coloured such that clouds are coloured red and the sky is coloured black. Small borders around clouds are left as to not capture the noise of whispy cloud edges.
 This is used to create two binary images and subsequent masked images of the reference image, one for the clouds and one for the sky in the scene. These are split, iterated over and their colour values recorded. These values are then graphed and can viewed below.
