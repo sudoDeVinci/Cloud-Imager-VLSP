@@ -40,8 +40,9 @@ While colour space based operations are fairly easy on high quality images, the 
 
 Each reference image in [Reference-Images](Reference-Images/) has a corresponding image in [Blocked-Images](Blocked-Images/).
 
-![reference image](Reference-Images/Image17.png)
-![blocked image](Blocked-Images/Image17.png)
+Reference Image            |  Blocked Image
+:-------------------------:|:-------------------------:
+![Reference Image](Reference-Images/Image17.png)  |  ![Blocked Image](Blocked-Images/Image17.png)
 
 The Blocked out images are coloured such that clouds are coloured red and the sky is coloured black. Small borders around clouds are left as to not capture the noise of whispy cloud edges.
 
@@ -87,8 +88,9 @@ In simple terms, all cameras have internal and external characteristics that dis
 
 An example below shows an example image and its undistorted form.
 
-<img src = 'src/calibration_images/hand.jpg' alt="MarineGEO circle logo" style="height: 500px; width:300px;"/>
-<img src = 'src/calibration_images/undistorted_hand.png' alt="MarineGEO circle logo" style="height: 500px; width:300px;"/>
+Reference Image           |  Blocked Calibration Image
+:-------------------------:|:-------------------------:
+![Reference Image](src/calibration_images/hand.jpg)  |  ![Blocked Image](src/calibration_images/undistorted_hand.png)
 
 <br>
 

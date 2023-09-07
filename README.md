@@ -61,6 +61,8 @@ To read from the SHT31-D, we use the Adafruit_SHT31 library.
 To read from the BMP390, we use the Adafruit_BMP3XX libray.
 We will be connecting these on the same serial bus to the esp, as they occupy different addresses (0x44 and 0x77 respectively). We use pins not occupied by the cameras on internal serial operations (32 and 33). We use the Wire library to make an instance with these as our SDA and SCL for Serial Bus 0.
 
+* Remember to have 3.3kΩ pull-up resistors  
+
 ```C
 ...
 
