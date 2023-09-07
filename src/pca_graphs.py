@@ -95,10 +95,7 @@ def read(Blocked:str, Reference:str, bgr_dict:dict, hsv_dict:dict, cloud_bgr_num
     Delete so my celeron laptop doesnt explode
     Hurts speed slightly but helps to be able to run on lower end devices.
     """
-    del u_b_red1HSV 
-    del l_b_red1HSV 
-    del u_b_red2HSV 
-    del l_b_red2HSV 
+    del u_b_red1HSV, l_b_red1HSV, u_b_red2HSV, l_b_red2HSV 
     del maskOneRedHSV 
     del maskTwoRedHSV 
     del redMaskHSV 
@@ -351,7 +348,7 @@ def main(Blocked:str, Reference:str, Graphs:str) -> None:
 
     print("> Creating BGR PCA Scatterplot ...")
     _,ax = plt.subplots(figsize=(10,6))
-    ax.scatter(bgr_cloud_df.red,bgr_cloud_df.green, c = 'lightblue',alpha = 0.4,marker = 'X',label = 'Cloud BGR Value')
+    ax.scatter(bgr_cloud_df.red,bgr_cloud_df.green, c = 'lightblue',alpha = 0.3,marker = 'X',label = 'Cloud BGR Value')
     ax.scatter(bgr_sky_df.red,bgr_sky_df.green,c = 'red',alpha = 0.1,marker = 'o',label = 'Sky BGR Value')
     plt.legend(loc="upper left")
     plt.title('BGR PCA')
@@ -369,9 +366,9 @@ def main(Blocked:str, Reference:str, Graphs:str) -> None:
 
     print("> Creating HSV PCA ScatterPlot ...")
     _,ax = plt.subplots(figsize=(10,6))
-    ax.scatter(hsv_cloud_df.value,hsv_cloud_df.saturation, c = 'lightblue',alpha = 0.4,marker = 'X',label = 'Cloud HSV Value')
+    ax.scatter(hsv_cloud_df.value,hsv_cloud_df.saturation, c = 'lightblue',alpha = 0.3,marker = 'X',label = 'Cloud HSV Value')
     ax.scatter(hsv_sky_df.value,hsv_sky_df.saturation,c = 'red',alpha = 0.1,marker = 'o',label = 'Sky HSV Value')
-    plt.legend(loc="upper left")
+    plt.legend(["my legend"],loc="upper left")
     plt.title('HSV PCA')
     plt.xlabel('Value - {0}%'.format(hsv_per_var[0]))
     plt.ylabel('Saturation- {0}%'.format(hsv_per_var[1]))
@@ -391,12 +388,16 @@ if __name__ == '__main__':
 
     start = datetime.now()
 
-    Blocked = r'Blocked-Images'
-    Reference = r'Reference-Images'
-    Graphs = r"Graphs"
+    root_image_folder = 'CloudMeshVLSP/images'
+    blocked_images_folder = f"{root_image_folder}/blocked_dslr"
+    reference_images_folder = f"{root_image_folder}/reference_dslr"
+    cloud_images_folder = f"{root_image_folder}/cloud_dslr"
+    sky_images_folder = f"{root_image_folder}/sky_dslr"
 
-    if filesync(Blocked, Reference):
-        main(Blocked, Reference, Graphs)
+    root_graph_folder = 'CloudMeshVLSP/Graphs'
+
+    if filesync(blocked_images_folder, reference_images_folder):
+        main(blocked_images_folder, reference_images_folder, root_graph_folder)
 
     end = datetime.now()
     runtime = end-start

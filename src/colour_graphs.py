@@ -158,8 +158,8 @@ Generate BGR and HSV Bar Graphs
 
 def distributionBarGraphGenerator(cloudBGR, skyBGR, cloudHSV, skyHSV , graphFolder, bins):
 
-    bgrGraphsavePath = os.path.join(graphFolder,'BGRBarGraph.png')
-    hsvGraphsavePath = os.path.join(graphFolder,'HSVBarGraph.png')
+    bgrGraphsavePath = os.path.join(graphFolder,'BGRBarGraph-esp.png')
+    hsvGraphsavePath = os.path.join(graphFolder,'HSVBarGraph-esp.png')
 
     cloudBlues,cloudGreens,cloudReds = cloudBGR
     skyBlues,skyGreens,skyReds = skyBGR
@@ -218,19 +218,19 @@ def distributionBarGraphGenerator(cloudBGR, skyBGR, cloudHSV, skyHSV , graphFold
     axes2[0].legend(loc="upper left")
     del skyHues,cloudHues
 
-    axes2[1].bar(bins, cloudValues, color = 'green',alpha= 0.3,label = 'Cloud Saturation')
-    axes2[1].bar(bins, skyValues, color = 'yellow',alpha = 0.3,label = 'Sky Saturation')
+    axes2[1].bar(bins, cloudSats, color = 'green',alpha= 0.3,label = 'Cloud Saturation')
+    axes2[1].bar(bins, skySats, color = 'yellow',alpha = 0.3,label = 'Sky Saturation')
     axes2[1].set_xlabel('HSV Saturation (0 - 255)')
     axes2[1].set_ylabel('frequency')
     axes2[1].legend(loc="upper left")
-    del skyValues,cloudValues
+    del skySats,cloudSats
 
-    axes2[2].bar(bins, cloudSats, color = 'red',alpha= 0.3,label = 'Cloud Value')
-    axes2[2].bar(bins, skySats, color = 'purple',alpha = 0.3,label = 'Sky Value')
+    axes2[2].bar(bins, cloudValues, color = 'red',alpha= 0.3,label = 'Cloud Value')
+    axes2[2].bar(bins, skyValues, color = 'purple',alpha = 0.3,label = 'Sky Value')
     axes2[2].set_xlabel('HSV Value (0 - 255)')
     axes2[2].set_ylabel('frequency')
     axes2[2].legend(loc="upper left")
-    del skySats,cloudSats
+    del skyValues,cloudValues
 
     fig2.tight_layout()
     plt.title("HSV Colour Frequency")
@@ -297,8 +297,8 @@ def main(Blocked, Reference, Graphs):
 if __name__ == '__main__':
 
     start = datetime.now()
-    Blocked = r'Blocked-Images'
-    Reference = r'Reference-Images'
+    Blocked = r'Blocked-Images-esp'
+    Reference = r'Reference-Images-esp'
     Graphs = r"Graphs"
 
     if filesync(Blocked, Reference):
