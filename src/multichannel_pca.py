@@ -11,7 +11,7 @@ from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
 
 # Camera model
-camera = "ov2640"
+camera = "dslr"
 
 # Global paths
 root_image_folder = 'CloudMeshVLSP/images'
@@ -176,8 +176,8 @@ def pca(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     data_cloud_standardized = scaler.fit_transform(data_cloud)
     
     # Perform PCA
-    pca_sky = PCA(n_components = 2)
-    pca_cloud = PCA(n_components = 2)
+    pca_sky = PCA(n_components = 3)
+    pca_cloud = PCA(n_components = 3)
 
     pca_result_sky = pca_sky.fit_transform(data_sky_standardized)
     pca_result_cloud = pca_cloud.fit_transform(data_cloud_standardized)
@@ -186,25 +186,39 @@ def pca(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     eigenvectors_sky = pca_sky.components_
     eigenvectors_cloud = pca_cloud.components_
 
+    # Get the explained variance ratios
+    explained_variance_sky = pca_sky.explained_variance_ratio_
+    explained_variance_cloud = pca_cloud.explained_variance_ratio_
+
     # Delete unneeded ararys
     del data_cloud, data_sky, pca_cloud, pca_sky, data_sky_standardized, data_cloud_standardized
     collect()
 
-    # Print the coefficients for the first principal component
-    print("\nPrincipal Component 1 - Sky:")
+    # Print the Eigenvectors
+    print(f"\nEigenvectors {colour_index} : {colour_tag} - Sky:")
     for i in range(len(components)):
-        print(f"{components[i]}: {eigenvectors_sky[0, i]}")
+        print(f"{components[i]}: {eigenvectors_sky[0, i]:.4f}")
 
 
-    print("\nPrincipal Component 1 - Cloud:")
+    print(f"\nPrincipal Component {colour_index} : {colour_tag} - Cloud:")
     for i in range(len(components)):
-        print(f"{components[i]}: {eigenvectors_cloud[0, i]}")
+        print(f"{components[i]}: {eigenvectors_cloud[0, i]:.4f}")
+    
+    # Print the Variance ratios
+    print(f"\nVariance ratios {colour_index} : {colour_tag} - Sky:")
+    for i, ratio in enumerate(explained_variance_sky):
+        print(f"Component {i+1}: {ratio:.4f}")
 
-    del eigenvectors_cloud, eigenvectors_sky
+
+    print(f"\nVariance ratios {colour_index} : {colour_tag} - Cloud:")
+    for i, ratio in enumerate(explained_variance_cloud):
+        print(f"Component {i+1}: {ratio:.4f}")
+
+    del eigenvectors_cloud, eigenvectors_sky, explained_variance_cloud, explained_variance_sky
     collect()
 
     # Create Scatterplot
-    print(f"\n> Creating {colour_tag} PCA ScatterPlot ...")
+    print(f"\nCreating {colour_index} : {colour_tag} PCA ScatterPlot ...")
     _,ax = plt.subplots(figsize=(10,6))
     ax.scatter(pca_result_sky[:, 0], pca_result_sky[:, 1], c='b', alpha = 0.1, marker = 'X', label = 'sky value')
     ax.scatter(pca_result_cloud[:, 0], pca_result_cloud[:, 1], c='r', alpha = 0.1, marker = 'X', label = 'cloud value')
