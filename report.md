@@ -6,7 +6,6 @@ Name: Tadj Cazaubon
 Email: tc222gf@student.lnu.se
 Mobile: (+46) 707213048
 
-
 ## 1. Company details
 
 Company: Växjö Linnæus Science Park AB
@@ -26,6 +25,8 @@ Historical: Since 1986, Växjö municipality has had a company that worked with 
 Växjö Linnæus Science Park has a number of key focus areas. The focus areas are selected based on the needs of business, the academy's strengths and Växjö Municipality's areas of interest.
 
 ### 2.1. Circular Economy
+
+According to VLSP, a circular economyis one in which no or minimal waste is produced [3]. This means that what would normally be considered waste in manufacturing processes, is then used in other manufacturing or development. An example of this 
 
 ### 2.2. Smart City
 
@@ -50,3 +51,4 @@ Växjö Linnæus Science Park has a number of key focus areas. The focus areas a
 
 - [1] 'Mer om science parks', https://vaxjolinnaeussciencepark.se/om-oss
 - [2] 'Historic', https://www.sisp.se/om-sisp
+- [3] https://vaxjolinnaeussciencepark.se/fokusomraden/cirkular-ekonomi
