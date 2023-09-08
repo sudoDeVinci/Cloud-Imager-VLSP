@@ -8,9 +8,10 @@ from gc import collect
 import os
 import cv2
 from datetime import datetime
+from concurrent.futures import ProcessPoolExecutor
 
 # Camera model
-camera = "dslr"
+camera = "ov2640"
 
 # Global paths
 root_image_folder = 'CloudMeshVLSP/images'
@@ -93,17 +94,45 @@ def separate_datasets(blocked_image_folder: str, reference_image_folder: str) ->
 
 
 
-def __process_images(folder_path:str, hsv:bool = False) -> np.ndarray:
+def __process_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
+    """
+    Iterate through the binary images of either cloud or sky. Filter through them after converting them to specified colour format via colour_index.
+    default or 0: RGB, 1: HSV, 2: YCbCr
+    """
     data = []
     for filename in os.listdir(folder_path):
-        if filename.endswith(".png"):  # Assuming images are in PNG format
+        if filename.endswith(".png"):
             image = Image.open(os.path.join(folder_path, filename))
-            if (hsv):
-                image = image.convert('HSV')
-            image = np.array(image)
-            red, green, blue = image[:,:,0], image[:,:,1], image[:,:,2]
-            non_black_indices = np.where((red != 0) | (green != 0) | (blue != 0))
-            non_black_data = np.column_stack((red[non_black_indices], green[non_black_indices], blue[non_black_indices]))
+
+            # Differences in colour channel format require diffrent ways of filtering for black pixels in binary images.
+            match colour_index:
+                case 0:
+                    image = np.array(image)
+                    red, green, blue = image[:,:,0], image[:,:,1], image[:,:,2]
+                    non_black_indices = np.where((red != 0) | (green != 0) | (blue != 0))
+                    non_black_data = np.column_stack((red[non_black_indices], green[non_black_indices], blue[non_black_indices]))
+                    
+                case 1:
+                    image = image.convert('HSV')
+                    image = np.array(image)
+                    h, s, v = image[:,:,0], image[:,:,1], image[:,:,2]
+                    non_black_indices = np.where((v != 0))
+                    non_black_data = np.column_stack((h[non_black_indices], s[non_black_indices], v[non_black_indices]))
+
+                case 2:
+                    image = image.convert('YCbCr')
+                    image = np.array(image)
+                    Y, b, r = image[:,:,0], image[:,:,1], image[:,:,2]
+                    non_black_indices = np.where((Y != 0))
+                    non_black_data = np.column_stack((Y[non_black_indices], b[non_black_indices], r[non_black_indices]))
+                
+                case _:
+                    image = np.array(image)
+                    red, green, blue = image[:,:,0], image[:,:,1], image[:,:,2]
+                    non_black_indices = np.where((red != 0) | (green != 0) | (blue != 0))
+                    non_black_data = np.column_stack((red[non_black_indices], green[non_black_indices], blue[non_black_indices]))
+                    
+
             
             # Mean-centering
             non_black_data = non_black_data - np.mean(non_black_data, axis=0)
@@ -115,50 +144,67 @@ def __process_images(folder_path:str, hsv:bool = False) -> np.ndarray:
     return np.vstack(data)
 
 
-def pca(sky_folder:str, cloud_folder:str, hsv:bool = False) -> None:
+def pca(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
+    # The principle coponents deåpend on the color channels used.
+    components:list[3]
+    # The colour tag is a tag used to show the corresponding graphs whihc channels were used.
+    colour_tag:str
+
+    match colour_index:
+        case 0:
+            components = ['red', 'green', 'blue']
+            colour_tag = 'rgb'
+        case 1:
+            components = ['hue','saturation','value']
+            colour_tag = 'hsv'
+        case 2:
+            components = ['brightness','Chroma Blue','Chroma Red']
+            colour_tag = 'YCbCr'
+        case _:
+            components = ['red', 'green', 'blue']
+            colour_tag = 'rgb'
+
+    # n_components = len(components)
 
     # Process images
-    data_sky = __process_images(sky_folder, hsv)
-    data_cloud = __process_images(cloud_folder, hsv)
+    data_sky = __process_images(sky_folder, colour_index)
+    data_cloud = __process_images(cloud_folder, colour_index)
 
     # Standardize the data
     scaler = StandardScaler()
     data_sky_standardized = scaler.fit_transform(data_sky)
     data_cloud_standardized = scaler.fit_transform(data_cloud)
     
-
     # Perform PCA
-    pca_sky = PCA(n_components=2)
-    pca_cloud = PCA(n_components=2)
+    pca_sky = PCA(n_components = 2)
+    pca_cloud = PCA(n_components = 2)
 
     pca_result_sky = pca_sky.fit_transform(data_sky_standardized)
     pca_result_cloud = pca_cloud.fit_transform(data_cloud_standardized)
-
 
     # Get the eigenvectors (principal components)
     eigenvectors_sky = pca_sky.components_
     eigenvectors_cloud = pca_cloud.components_
 
     # Delete unneeded ararys
-    del data_cloud, data_sky, pca_cloud, pca_sky
+    del data_cloud, data_sky, pca_cloud, pca_sky, data_sky_standardized, data_cloud_standardized
     collect()
 
     # Print the coefficients for the first principal component
-    print("Principal Component 1 - Sky:")
-    print("Red:", eigenvectors_sky[0, 0])
-    print("Green:", eigenvectors_sky[0, 1])
-    print("Blue:", eigenvectors_sky[0, 2])
+    print("\nPrincipal Component 1 - Sky:")
+    for i in range(len(components)):
+        print(f"{components[i]}: {eigenvectors_sky[0, i]}")
+
 
     print("\nPrincipal Component 1 - Cloud:")
-    print("Red:", eigenvectors_cloud[0, 0])
-    print("Green:", eigenvectors_cloud[0, 1])
-    print("Blue:", eigenvectors_cloud[0, 2])
+    for i in range(len(components)):
+        print(f"{components[i]}: {eigenvectors_cloud[0, i]}")
 
     del eigenvectors_cloud, eigenvectors_sky
     collect()
 
     # Create Scatterplot
-    print("> Creating PCA ScatterPlot ...")
+    print(f"\n> Creating {colour_tag} PCA ScatterPlot ...")
     _,ax = plt.subplots(figsize=(10,6))
     ax.scatter(pca_result_sky[:, 0], pca_result_sky[:, 1], c='b', alpha = 0.1, marker = 'X', label = 'sky value')
     ax.scatter(pca_result_cloud[:, 0], pca_result_cloud[:, 1], c='r', alpha = 0.1, marker = 'X', label = 'cloud value')
@@ -166,8 +212,10 @@ def pca(sky_folder:str, cloud_folder:str, hsv:bool = False) -> None:
     plt.title('PCA')
     plt.xlabel('PC1')
     plt.ylabel('PC2')
-    plt.savefig(f"{root_graph_folder}/test_pca_{camera}.png")
+    plt.savefig(f"{root_graph_folder}/new_pca_{camera}_{colour_tag}.png")
     plt.clf
+
+    collect()
 
 
 def filesync(blc:str, ref:str, cld:str, sky:str) -> bool:
@@ -177,14 +225,23 @@ def filesync(blc:str, ref:str, cld:str, sky:str) -> bool:
     for (_, _, b_imgs), (_, _, r_imgs),(_, _, c_imgs),(_, _, s_imgs) in zip (os.walk(blc),os.walk(ref),os.walk(cld),os.walk(sky)):
         for b_img, r_img, c_img, s_img in zip(b_imgs, r_imgs, c_imgs, s_imgs):
             if not (b_img == r_img == c_img == s_img):
-                print("Image Desync!\nRef: {r_img}\nBlocked: {b_img}\nCloud: {c_img}\nSky: {s_img}")
+                print(f"Image Desync!\nRef: {r_img}\nBlocked: {b_img}\nCloud: {c_img}\nSky: {s_img}")
                 return False 
     print("Files Synced")
     return True        
 
-def main() -> None:
-    empty = False
+def main(colour_index: int) -> None:
+    
+    # PCA performed for RGB, HSV or YCbCr.
+    pca(sky_images_folder, cloud_images_folder, colour_index)
+
+    print(f"Process {colour_index} done.")
+
+
+if __name__ == '__main__':
     start = datetime.now()
+    empty = False
+    
     if ( not os.path.exists(blocked_images_folder) or not os.path.exists(reference_images_folder)):
         print("bad path")
         os._exit(1)
@@ -205,11 +262,10 @@ def main() -> None:
         if (not synced):
             os._exit(1)
 
-    pca(sky_images_folder, cloud_images_folder)
 
-    print("done")
+    # create a process pool
+    with ProcessPoolExecutor(max_workers=4) as executor:
+        _ = executor.map(main, range(3))
     end = datetime.now()
     runtime = end-start
     print(f'\n> Runtime : {runtime} \n')
-
-main()

@@ -317,9 +317,7 @@ Not Yet Available.
 #### OV2460
 While colour space based operations are fairly easy on high quality images, the OV2460 is not high quality. Contrast is low, over/under-exposure are almost ensured and ISO changes are not only drastic but cause unwanted light filtering and other strange behaviour:
 
-<img src = 'Reference-Images-esp\Image77.png' alt="MarineGEO circle logo" style="height: 300px; width:400px;"/>
-
-In all, while the camera is not exactly suited for this application, it is what is available and what I was able to test with. The shortcomings become apparent below.
+<img src = 'images/reference_ov2640/Image77.png' alt="MarineGEO circle logo" style="height: 300px; width:400px;"/>
 
 ### Colourspace Frequency Histogram
 
@@ -328,7 +326,7 @@ Each reference image in [Reference-Images](Reference-Images/) has a correspondin
 
 Reference Image            |  Blocked Image
 :-------------------------:|:-------------------------:
-![Reference Image](Reference-Images/Image17.png)  |  ![Blocked Image](Blocked-Images/Image17.png)
+![Reference Image](images/reference_dslr/Image17.png)  |  ![Blocked Image](images/blocked_dslr/Image17.png)
 
 The Blocked out images are coloured such that clouds are coloured red and the sky is coloured black. Small borders around clouds are left as to not capture the noise of whispy cloud edges.
 This is used to create two binary images and subsequent masked images of the reference image, one for the clouds and one for the sky in the scene. These are split, iterated over and their colour values recorded. These values are then graphed and can viewed below.
@@ -341,15 +339,14 @@ These show the frequency graphs for the colour channels of the 60 images of the 
 
 DSLR BGR Bar Graph            |  DSLR HSV Bar Graph
 :-------------------------:|:-------------------------:
-![Reference Image](Graphs/BGRBarGraph.png)  |  ![Blocked Image](Graphs/HSVBarGraph.png)
+![Reference Image](Graphs/old/BGRBarGraph.png)  |  ![Blocked Image](Graphs/old/HSVBarGraph.png)
 
 <br>
 
-Above we that viusally, the distributions for these images could be approximated to normal distributions if properly cleaned, especially that of the clouds.
+Above we that viusally, the distributions for these images could be approximated to either normal or beta distributions if properly cleaned, especially that of the clouds.
 It is also apparent that the Red and Green colour space would be more useful in the pursuit to classify data.
 
-Above we see that for the most part, only the 
-Value channel would be useful for separation/classification, but that the separation between them is more prominent than in other colour channels.
+Above we see that for the most part, only the Saturation channel would be useful for separation/classification, but that the separation between them is more prominent than in other colour channels.
 
 #### Frequency Chart for OV2640
 <br>
@@ -358,7 +355,7 @@ These show the frequency graphs for the colour channels of the 20 images of the 
 
 OV2640 BGR Bar Graph            |  OV2640 HSV Bar Graph
 :-------------------------:|:-------------------------:
-![Reference Image](Graphs/BGRBarGraph-esp.png)  |  ![Blocked Image](Graphs/HSVBarGraph-esp.png)
+![Reference Image](Graphs/old/BGRBarGraph-esp.png)  |  ![Blocked Image](Graphs/old/HSVBarGraph-esp.png)
 
 <br>
 
@@ -378,7 +375,7 @@ These show the screeplots for the colour channels of the 60 higher resolution im
 
 DSLR BGR Scree Plot            |  DSLR HSV Scree Plot
 :-------------------------:|:-------------------------:
-![Reference Image](Graphs/BGRScree.png)  |  ![Blocked Image](Graphs/HSVScree.png)
+![Reference Image](Graphs/old/BGRScree.png)  |  ![Blocked Image](Graphs/old/HSVScree.png)
 
 <br>
 
@@ -393,7 +390,7 @@ These show the screeplots for the colour channels of the 20 images of the sky ta
 
 OV2640 BGR Scree Plot            |  OV2640 HSV Scree Plot
 :-------------------------:|:-------------------------:
-![Reference Image](Graphs/BGRScree-esp.png)  |  ![Blocked Image](Graphs/HSVScree-esp.png)
+![Reference Image](Graphs/old/BGRScree-esp.png)  |  ![Blocked Image](Graphs/old/HSVScree-esp.png)
 
 <br>
 
@@ -411,14 +408,14 @@ Once a matrix of principle components (colour channels) and their per variance v
 
 DSLR PCA BGR ScatterPLot            |  DSLR PCA HSV Scatterplot
 :-------------------------:|:-------------------------:
-![BGR PCA ScatterPlot for High Res Images](/Graphs/BGRPcaGraph.png "BGR PCA ScatterPlot for High Res Images")  |  ![HSV PCA ScatterPlot for High Res Images](/Graphs/HSVPcaGraph.png "HSV PCA ScatterPlot for High Res Images")
+![BGR PCA ScatterPlot for High Res Images](Graphs/old/BGRPcaGraph.png "BGR PCA ScatterPlot for High Res Images")  |  ![HSV PCA ScatterPlot for High Res Images](Graphs/old/HSVPcaGraph.png "HSV PCA ScatterPlot for High Res Images")
 
 #### PCA ScatterPlot for OV2640
 <br>
 
 OV2640 PCA BGR ScatterPLot            |  OV2640 PCA HSV Scatterplot
 :-------------------------:|:-------------------------:
-![BGR PCA ScatterPlot for ov2640](/Graphs/BGRPcaGraph-esp.png "BGR PCA ScatterPlot for ov2640")  |  ![HSV PCA ScatterPlot for ov2640](/Graphs/HSVPcaGraph-esp.png "HSV PCA ScatterPlot for ov2640")
+![BGR PCA ScatterPlot for ov2640](Graphs/old/BGRPcaGraph-esp.png "BGR PCA ScatterPlot for ov2640")  |  ![HSV PCA ScatterPlot for ov2640](Graphs/old/HSVPcaGraph-esp.png "HSV PCA ScatterPlot for ov2640")
 
 ### Final Comments
 
