@@ -66,8 +66,9 @@ Digitization for VLSP involves working with businesses to update, automate and t
 ## 3. Task
 
 My task was to to implment the IOT  Weather Station Mesh Network Monitoring System proof of concept laid out in my initial proposal document. 
+This entails not only building the core mesh network, but also accompanying systems for statistical analysis and eventually classification. 
 
-The network consists of 4 ESP32 microcontrollers with DVP ports, equipped with a BMP390 altimeter, and SHT31-D hygrometer. These weather stations send periodic images and readings to a central server housed in the Science park. This data is then used to obtain the size, type, height and approximate velocity of the cloud, as well as host generally useful temperature readings.
+The network consists of 4 ESP32 microcontrollers with DVP OV5640 cameras (previously OV2640), equipped with a BMP390 altimeter, and SHT31-D hygrometer. These weather stations send periodic images and readings to a central server housed in the Science park. This data is then used to obtain the size, type, height and approximate velocity of the cloud, as well as host generally useful temperature readings.
 
 Initially I was tasked to complete this between June 5th and August 11th, 2023, but since then my internship has been extended by a further 2 months.
 
@@ -79,13 +80,32 @@ My next problem admittedly was my own fault. In ordering the ESP32 boards, I opt
 
 Developement in the ArduinoIDE is also a much slower process. Whereas Micropython allows a user to upload and run pytohn files onto a board, Arduino files must be compiled first and upoloaded to the board, taking much longer during the development cycle.
 
+The level of mathematics I needed to fully understand the systems I was attempting to analyze was above my level by miles. It took weeks of revision to have enough of a grasp just to read the requisite research papers for the topics I needed.
+
 ### 3.2. Result
 
-As of September 8th, 2023, 
+The goal for this large of a project was for rapid development of small but scalable components. The stations would send the data to a server running in the Science Park, with the data being saved to a simple MYSQL database. This database would be open to a separate computer to access to train a simple classififcation model.
+As of September 8th, 2023, I have built the system by which these boards can take their pictures and environmental readings, and send them to a central server to be logged. I have also made the tools for undistorting the images received as to map them onto a 3D space. I'm currently constructing the database manager and capturing image data from the OV5640 cameras to analyze in comparison with the old OV2640s.  Any further in that pipeline however, I have not reached. I have, however, created the tools for analyzing the image data for classification, such as simple histograms, Principle Component Analysis and Quadratic Discriminant Analysis.
 
 ### 3.3. Development process
 
-#### 3.4.1 Tools
+Within the Innovation Lab, I am the only developer assigned to my project. I am able to ask developers of other comoanies within the Science Park for assistance, including my superviser, David Avery. However, I ultimately choose the timeline, style and speed of development. While this does allow me to weave my schedule around my current University studies, I find the lack of structure leaves me feeling demotivated at times.
+
+Deliverables however, are the main goal. Every monday, there is a staff meeting, at which there is a presentation of the previous week's results and a discussion on the plan for the week ahead.
+
+
+#### 3.3.1 Tools
+
+Nearly the entirety of my tech stack has changed over the course of devlopment. In the beginnning, I used the Python and MicroPython programming langugages for everything, developing in my free time and maintaining a Github repository. Now, mostly for compatibility and scalability sake:
+1. To program the Esp32 boards, I use C++.
+2. For server and database programming, I use Java and MYSQL.
+3. For data analysis I currently use Python, but am moving to Mojo.
+
+When programming, I mostly use Visual Studio Code on either Windows 10 or EndeavourOS (An Arch based Linux distribution), but due to my want to move to the Mojo programming language , I now use an Ubuntu Subsystem for windows as it's not yet avilable elsewhere.
+I am able to use the much more powerful windows desktops in the InnovationLab, but I've chosen to use my personal computer by connecting to it remotely over Wi-Fi.
+For version control, I simply have a personal GIthub repository.
+
+This available here for viewing: [CLoudMeshVLSP](https://github.com/sudoDeVinci/CloudMeshVLSP)
 
 ## 4. Lessons learned
 
