@@ -1,15 +1,3 @@
-<style>
-.diagram {
-    width = auto;
-    height = 25%;
-    border: 2px solid #000;
-    border-radius: 10px;
-    margin: 10px;
-}
-</style>
-
-
-
 # Work Placement Report
 
 ## Student Details
@@ -45,8 +33,10 @@ VLSP puts an enormous emphasis on their goal for facilitating a circular economy
 VLSP believes that in order for to acheive Sweden's emisison reduction target of zero net emissions by 2045, a move from a linear to a circular economy is crucial. To illustrate this, they split the circulation of materials in the economy into two distinct 'flows'; *biological*, whereby materials are returned to the biospere and *technical*, whereby materials circulate in industrial processes.
 
 An example of this is illustrated on the VLSP website in a diagram taken from the Ellen Macarthur Foundation [3][4]:
+<br>
 
-<img src = "images/circular_economy.png" alt = "Circular Economy Diagram" class = "diagram">
+<img src = "circular_economy.png" alt = "Circular Economy Diagram"  style="height: 25em; width = auto; display: block; border: 2px solid #000; border-radius: 10px; margin-left: auto; margin-right: auto;">
+<br>
 
 To accomplish this, the Science park has laid out a few key points:
 
@@ -71,13 +61,27 @@ This therefore reflects in the projects it chooses to sponsor and carry out, or 
 
 ### 2.4. Digitization
 
-
+Digitization for VLSP involves working with businesses to update, automate and therefore digitize their existing processes and information. THis may be as simple as moving from a system to physical file-keeping, to hosting files on some electronic platform, all the way to making sweeping changes to processes to automate large parts in bid for efficiency.
 
 ## 3. Task
 
+My task was to to implment the IOT  Weather Station Mesh Network Monitoring System proof of concept laid out in my initial proposal document. 
+
+The network consists of 4 ESP32 microcontrollers with DVP ports, equipped with a BMP390 altimeter, and SHT31-D hygrometer. These weather stations send periodic images and readings to a central server housed in the Science park. This data is then used to obtain the size, type, height and approximate velocity of the cloud, as well as host generally useful temperature readings.
+
+Initially I was tasked to complete this between June 5th and August 11th, 2023, but since then my internship has been extended by a further 2 months.
+
 ### 3.1. Problems
 
+The most prevelant issue was my schedule at the time. Though I was able to work remotely, I was travelling at the time and unable to access my main computer at home. This meant things like compiling code, or creating graphs of my data so far would take much longer each time as my laptop is very under-powered. In some cases, I simply couldn't run the needed tests because my laptop didn't have enough RAM. This easily set my my development schedule back over a month.
+
+My next problem admittedly was my own fault. In ordering the ESP32 boards, I opted for newer ESP32-S3 models due to their increased flash storage, more robust vector instruction set and lower power usage. Documentation and software support for these is limited due to them being so new however, especially in my chosen language of MicroPython. The existing firmware and libraries I was using would not be compatible with the new boards. This meant I would not only have to rewrite my existing code for the Esp, but I would have to do it in the Arduino programming language, of which I was not familiar. Support within the Arduino ecosystem was of course also lacking for these boards, which set me back further.
+
+Developement in the ArduinoIDE is also a much slower process. Whereas Micropython allows a user to upload and run pytohn files onto a board, Arduino files must be compiled first and upoloaded to the board, taking much longer during the development cycle.
+
 ### 3.2. Result
+
+As of September 8th, 2023, 
 
 ### 3.3. Development process
 
