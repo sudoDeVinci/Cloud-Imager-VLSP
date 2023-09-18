@@ -22,8 +22,30 @@ root_graph_folder = 'CloudMeshVLSP/Graphs'
 # TODO: Better histogram generation
 
 
-def analyze() -> None:
-    pass
+def analyze(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
+    components:list[3]
+    # The colour tag is a tag used to show the corresponding graphs which channels were used.
+    colour_tag:str
+
+    match colour_index:
+        case 0:
+            components = ['red', 'green', 'blue']
+            colour_tag = 'rgb'
+        case 1:
+            components = ['hue','saturation','value']
+            colour_tag = 'hsv'
+        case 2:
+            components = ['brightness','Chroma Blue','Chroma Red']
+            colour_tag = 'YCbCr'
+        case _:
+            components = ['red', 'green', 'blue']
+            colour_tag = 'rgb'
+
+    # Process images
+    data_sky = __process_images(sky_folder, colour_index)
+    data_cloud = __process_images(cloud_folder, colour_index)
+
+    print(data_sky[0])
 
 
 def __process_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
@@ -151,3 +173,37 @@ def separate_datasets(blocked_image_folder: str, reference_image_folder: str) ->
             blockPath = os.path.join(blc_root, blc)
             __separate(blockPath, refPath, count)
             count+=1
+
+
+
+if __name__ == '__main__':
+    start = datetime.now()
+    empty = False
+    
+    if ( not os.path.exists(blocked_images_folder) or not os.path.exists(reference_images_folder)):
+        print("bad path")
+        os._exit(1)
+    
+    if (not os.path.exists(cloud_images_folder)):
+        os.mkdir(cloud_images_folder)
+        empty = True
+    
+    if (not os.path.exists(sky_images_folder)):
+        os.mkdir(sky_images_folder)
+        empty = True
+    
+    if empty:
+        separate_datasets(blocked_images_folder, reference_images_folder)
+
+    else:
+        synced = filesync(blocked_images_folder, reference_images_folder, cloud_images_folder, sky_images_folder)
+        if (not synced):
+            os._exit(1)
+
+
+    # create a process pool
+    with ProcessPoolExecutor(max_workers=4) as executor:
+        _ = executor.map(main, range(3))
+    end = datetime.now()
+    runtime = end-start
+    print(f'\n> Runtime : {runtime} \n')

@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import normalize
@@ -7,27 +8,28 @@ from PIL import Image
 from gc import collect
 import os
 import cv2
+import numba as nb
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
+
+# For typing
+Mat = numpy.typing.NDArray[np.uint8]
 
 # Camera model
 camera = "dslr"
 
 # Global paths
-root_image_folder = 'CloudMeshVLSP/images'
+root_image_folder = 'images'
 blocked_images_folder = f"{root_image_folder}/blocked_{camera}"
 reference_images_folder = f"{root_image_folder}/reference_{camera}"
 cloud_images_folder = f"{root_image_folder}/cloud_{camera}"
 sky_images_folder = f"{root_image_folder}/sky_{camera}"
 
-root_graph_folder = 'CloudMeshVLSP/Graphs'
+root_graph_folder = 'Graphs'
 
 
-def __separate(blocked_image_path: str, reference_image_path: str, count:int) -> None:
-    num = str(count).zfill(2)
-    b_img = cv2.imread(blocked_image_path)
-    r_img = cv2.imread(reference_image_path)
-    
+def __separate(b_img: Mat, r_img: Mat, count:str) -> None:
+
     b_img = cv2.resize(b_img,(400, 300))
     r_img = cv2.resize(r_img,(400, 300))
 
@@ -72,8 +74,7 @@ def __separate(blocked_image_path: str, reference_image_path: str, count:int) ->
     c_img = cv2.cvtColor(cloud_img, cv2.COLOR_HSV2BGR)
     s_img = cv2.cvtColor(sky_img, cv2.COLOR_HSV2BGR)
 
-    cv2.imwrite(f"{cloud_images_folder}/Image{num}.png",c_img)
-    cv2.imwrite(f"{sky_images_folder}/Image{num}.png",s_img)
+    return c_img, s_img
 
 
 
@@ -89,9 +90,15 @@ def separate_datasets(blocked_image_folder: str, reference_image_folder: str) ->
         for ref, blc in zip(referenceImages, blockedImages):
             refPath = os.path.join(ref_root, ref)
             blockPath = os.path.join(blc_root, blc)
-            __separate(blockPath, refPath, count)
-            count+=1
 
+            b_img = cv2.imread(blockPath)
+            r_img = cv2.imread(refPath)
+            c_img, s_img = __separate(b_img, r_img, count)
+
+            num = str(count).zfill(2)
+            cv2.imwrite(f"{cloud_images_folder}/Image{num}.png",c_img)
+            cv2.imwrite(f"{sky_images_folder}/Image{num}.png",s_img)
+            count+=1
 
 
 def __process_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
@@ -104,44 +111,53 @@ def __process_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
         if filename.endswith(".png"):
             image = Image.open(os.path.join(folder_path, filename))
 
-            # Differences in colour channel format require diffrent ways of filtering for black pixels in binary images.
             match colour_index:
                 case 0:
                     image = np.array(image)
-                    red, green, blue = image[:,:,0], image[:,:,1], image[:,:,2]
-                    non_black_indices = np.where((red != 0) | (green != 0) | (blue != 0))
-                    non_black_data = np.column_stack((red[non_black_indices], green[non_black_indices], blue[non_black_indices]))
+                    non_black_data = __process_RGB
                     
                 case 1:
                     image = image.convert('HSV')
                     image = np.array(image)
-                    h, s, v = image[:,:,0], image[:,:,1], image[:,:,2]
-                    non_black_indices = np.where((v != 0))
-                    non_black_data = np.column_stack((h[non_black_indices], s[non_black_indices], v[non_black_indices]))
+                    non_black_data = __process_HSV
 
                 case 2:
                     image = image.convert('YCbCr')
                     image = np.array(image)
-                    Y, b, r = image[:,:,0], image[:,:,1], image[:,:,2]
-                    non_black_indices = np.where((Y != 0))
-                    non_black_data = np.column_stack((Y[non_black_indices], b[non_black_indices], r[non_black_indices]))
+                    non_black_data = __process_YBR
                 
                 case _:
                     image = np.array(image)
-                    red, green, blue = image[:,:,0], image[:,:,1], image[:,:,2]
-                    non_black_indices = np.where((red != 0) | (green != 0) | (blue != 0))
-                    non_black_data = np.column_stack((red[non_black_indices], green[non_black_indices], blue[non_black_indices]))
-                    
-
+                    non_black_data = __process_RGB
             
             # Mean-centering
             non_black_data = non_black_data - np.mean(non_black_data, axis=0)
             
-            # Normalization
-            #non_black_data = normalize(non_black_data, axis=0)
-            
             data.append(non_black_data)
     return np.vstack(data)
+
+
+@nb.njit
+def __process_RGB(image: np.array) -> np.array:
+    red, green, blue = image[:,:,0], image[:,:,1], image[:,:,2]
+    non_black_indices = np.where((red != 0) | (green != 0) | (blue != 0))
+    non_black_data = np.column_stack((red[non_black_indices], green[non_black_indices], blue[non_black_indices]))
+    return non_black_data
+
+@nb.njit
+def __process_HSV(image: np.array) -> np.array:
+    h, s, v = image[:,:,0], image[:,:,1], image[:,:,2]
+    non_black_indices = np.where((v != 0))
+    non_black_data = np.column_stack((h[non_black_indices], s[non_black_indices], v[non_black_indices]))
+    return non_black_data
+
+@nb.njit
+def __process_YBR(image: np.array) -> np.array:
+    Y, b, r = image[:,:,0], image[:,:,1], image[:,:,2]
+    non_black_indices = np.where((Y != 0))
+    non_black_data = np.column_stack((Y[non_black_indices], b[non_black_indices], r[non_black_indices]))
+    return non_black_data
+
 
 
 def pca(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
