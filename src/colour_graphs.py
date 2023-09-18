@@ -104,10 +104,6 @@ def read(Blocked, Reference, cloudBGR, skyBGR, cloudHSV, skyHSV):
     #----------------------------------------------------------------------------------------------------#
     #----------------------------------------------------------------------------------------------------#
 
-    """
-    We iterate through our two masked images using zip() and take note of the values
-    of pixels that aren't true black (0,0,0) and adding them to binary search trees
-    """
 
     cbgrch = cv2.split(cloudImageBGR)
 
@@ -262,9 +258,6 @@ def filesync(Blocked, Reference):
 #---------------------------------------------------------------------------------------------------------#
 
 def main(Blocked, Reference, Graphs):
-    """
-    Space for important variables
-    """
 
     bins = [*range(0,256,1)]
 
