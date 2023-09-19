@@ -1,6 +1,12 @@
-pyvenv.cfg
 Scripts/*
 Lib/*
+bin/*
+lib/*
+lib64/*
+
+*.cfg
 *.nbc
 *.nbi
 *.pyc
+
+lib64
