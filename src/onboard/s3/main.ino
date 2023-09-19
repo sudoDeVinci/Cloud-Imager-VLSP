@@ -8,9 +8,9 @@
 /*  ===========================
     Enter your WiFi credentials
     =========================== */
-const char* ssid = "iPhone 13 mini";
-const char* password = "cccccccc";
-const char* host = "172.20.10.2";
+const char* ssid = "********";
+const char* password = "********";
+const char* host = "********";
 const uint16_t port = 880;
 
 

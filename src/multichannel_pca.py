@@ -8,7 +8,7 @@ from PIL import Image
 from gc import collect
 import os
 import cv2
-import numba as nb
+from numba import cuda, jit
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
 
@@ -114,21 +114,22 @@ def __process_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
             match colour_index:
                 case 0:
                     image = np.array(image)
-                    non_black_data = __process_RGB
+                    non_black_data = __process_RGB(image)
+                    
                     
                 case 1:
                     image = image.convert('HSV')
                     image = np.array(image)
-                    non_black_data = __process_HSV
+                    non_black_data = __process_HSV(image)
 
                 case 2:
                     image = image.convert('YCbCr')
                     image = np.array(image)
-                    non_black_data = __process_YBR
+                    non_black_data = __process_YBR(image)
                 
                 case _:
                     image = np.array(image)
-                    non_black_data = __process_RGB
+                    non_black_data = __process_RGB(image)
             
             # Mean-centering
             non_black_data = non_black_data - np.mean(non_black_data, axis=0)
@@ -137,21 +138,18 @@ def __process_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
     return np.vstack(data)
 
 
-@nb.njit
 def __process_RGB(image: np.array) -> np.array:
     red, green, blue = image[:,:,0], image[:,:,1], image[:,:,2]
     non_black_indices = np.where((red != 0) | (green != 0) | (blue != 0))
     non_black_data = np.column_stack((red[non_black_indices], green[non_black_indices], blue[non_black_indices]))
     return non_black_data
 
-@nb.njit
 def __process_HSV(image: np.array) -> np.array:
     h, s, v = image[:,:,0], image[:,:,1], image[:,:,2]
     non_black_indices = np.where((v != 0))
     non_black_data = np.column_stack((h[non_black_indices], s[non_black_indices], v[non_black_indices]))
     return non_black_data
 
-@nb.njit
 def __process_YBR(image: np.array) -> np.array:
     Y, b, r = image[:,:,0], image[:,:,1], image[:,:,2]
     non_black_indices = np.where((Y != 0))
