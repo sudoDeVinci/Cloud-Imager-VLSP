@@ -24,6 +24,7 @@ import server_components.exceptions.*;
 public class Server {
     IO io;
     int port;
+    final int MAX_CONNECTIONS = 4;
 
     public Server(IO io, int port) {
         this.io = io;
@@ -55,7 +56,7 @@ public class Server {
      * to the  threadpool.
      */
     public void start() {
-        ExecutorService threads = Executors.newFixedThreadPool(4);
+        ExecutorService threads = Executors.newFixedThreadPool(MAX_CONNECTIONS);
 
         String ip = getLocalIP();
         
@@ -223,7 +224,6 @@ public class Server {
             }
         }
     }
-
 
 
     public static void main(String[] args) {

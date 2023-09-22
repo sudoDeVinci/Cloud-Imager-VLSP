@@ -1,11 +1,16 @@
 import numpy as np
+import numpy.typing
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import normalize
 import matplotlib.pyplot as plt
 from PIL import Image
 from gc import collect
 import os
 import cv2
+from numba import cuda, jit
 from datetime import datetime
-from colour_graphs import filesync
+from concurrent.futures import ProcessPoolExecutor
 
 # Camera model
 camera = "dslr"
@@ -175,6 +180,10 @@ def separate_datasets(blocked_image_folder: str, reference_image_folder: str) ->
             count+=1
 
 
+def main(colour_index: int) -> None:
+    pass
+
+
 
 if __name__ == '__main__':
     start = datetime.now()
@@ -199,11 +208,3 @@ if __name__ == '__main__':
         synced = filesync(blocked_images_folder, reference_images_folder, cloud_images_folder, sky_images_folder)
         if (not synced):
             os._exit(1)
-
-
-    # create a process pool
-    with ProcessPoolExecutor(max_workers=4) as executor:
-        _ = executor.map(main, range(3))
-    end = datetime.now()
-    runtime = end-start
-    print(f'\n> Runtime : {runtime} \n')

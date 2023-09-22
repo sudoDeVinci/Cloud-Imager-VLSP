@@ -1,16 +1,31 @@
-__author__ = 'Tadj Cazaubon'
-__credits__ = ["Tadj Cazaubon"]
-
-
-# TODO: Multiprocessing in read() function. 
-# from multiprocessing.context import Process
-import os
-import gc
-import cv2
 import numpy as np
-from numba import jit
-from matplotlib import pyplot as plt
+import numpy.typing
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import normalize
+import matplotlib.pyplot as plt
+from PIL import Image
+from gc import collect
+import os
+import cv2
+from numba import cuda, jit
 from datetime import datetime
+from concurrent.futures import ProcessPoolExecutor
+
+# For typing
+Mat = numpy.typing.NDArray[np.uint8]
+
+# Camera model
+camera = "dslr"
+
+# Global paths
+root_image_folder = 'images'
+blocked_images_folder = f"{root_image_folder}/blocked_{camera}"
+reference_images_folder = f"{root_image_folder}/reference_{camera}"
+cloud_images_folder = f"{root_image_folder}/cloud_{camera}"
+sky_images_folder = f"{root_image_folder}/sky_{camera}"
+
+root_graph_folder = 'Graphs'
 
 
 def read(Blocked, Reference, cloudBGR, skyBGR, cloudHSV, skyHSV):
@@ -23,13 +38,13 @@ def read(Blocked, Reference, cloudBGR, skyBGR, cloudHSV, skyHSV):
 
 
     blockedImage = cv2.imread(Blocked)
-    blockedImage = cv2.resize(blockedImage,(100, 100))
+    blockedImage = cv2.resize(blockedImage,(400, 300))
     blockedImageHSV = cv2.cvtColor(blockedImage,cv2.COLOR_BGR2HSV)
 
     
 
     referenceImage = cv2.imread(Reference)
-    referenceImage = cv2.resize(referenceImage,(100, 100))
+    referenceImage = cv2.resize(referenceImage,(400, 300))
     referenceImageHSV = cv2.cvtColor(referenceImage,cv2.COLOR_BGR2HSV)
 
     #----------------------------------------------------------------------------------------------------#
@@ -260,12 +275,13 @@ def filesync(Blocked, Reference):
 def main(Blocked, Reference, Graphs):
 
     bins = [*range(0,256,1)]
-
     
     cloudBGR = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
     skyBGR = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
     cloudHSV = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
     skyHSV = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
+    cloudYBR = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
+    skyHSYBR = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
    
 
     for (refroot, _, referenceImages), (blockroot, _, blockedImages) in zip(os.walk(Reference), os.walk(Blocked)):
@@ -290,8 +306,8 @@ def main(Blocked, Reference, Graphs):
 if __name__ == '__main__':
 
     start = datetime.now()
-    Blocked = r'Blocked-Images-esp'
-    Reference = r'Reference-Images-esp'
+    Blocked = r'images/blocked_dslr'
+    Reference = r'images/reference_dslr'
     Graphs = r"Graphs"
 
     if filesync(Blocked, Reference):
