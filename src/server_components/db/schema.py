@@ -19,30 +19,40 @@ except:
 myCursor = mydb.cursor()
 
 # Create the cook book database 
-myCursor.execute("CREATE DATABASE IF NOT EXISTS mesh")
+myCursor.execute("CREATE DATABASE IF NOT EXISTS weather")
 
+# Select the database
+myCursor.execute("USE weather")
 
 # Create the named device table
 myCursor.execute("""
-    CREATE TABLE IF NOT EXISTS devices(
+    CREATE TABLE IF NOT EXISTS Devices(
         MAC VARCHAR(8) PRIMARY KEY,
         name VARCHAR(20),
         device_model VARCHAR(10),
         camera_model VARCHAR(10),
-        is_up BOOLEAN NOT NULL,
         altitude FLOAT(10) NOT NULL
     );
 """)
 
 # Create Readings table
 myCursor.execute("""
-    CREATE TABLE IF NOT EXISTS readings(
+    CREATE TABLE IF NOT EXISTS Readings(
         MAC VARCHAR(8) PRIMARY KEY,
         temperature FLOAT(10) NOT NULL,
         relative_humidity FLOAT(10) NOT NULL,
         pressure FLOAT(10) NOT NULL,
         dewpoint FLOAT(10) NOT NULL,
-        timestamp DATETIME
+        timestamp DATETIME,
+        filepath VARCHAR(30)
+    );
+""")
+                 
+# Create status table
+myCursor.execute("""
+    CREATE TABLE IF NOT EXISTS Status(
+        MAC VARCHAR(8) PRIMARY KEY,
+        is_up BOOLEAN NOT NULL
     );
 """)
 
