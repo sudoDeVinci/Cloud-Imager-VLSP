@@ -105,7 +105,7 @@ public class Server {
             }
         }
 
-        if (!errors.isEmpty()) {
+        if (errors.length() != 0) {
             throw new MalformedPacketException(errors.toString());
         }
 

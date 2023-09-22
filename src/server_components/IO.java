@@ -1,7 +1,10 @@
 package server_components;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -210,5 +213,21 @@ public class IO {
             serverMessage(headers[i] + " : " + packetHeaders[i] + " " + units[i]);
         }
         serverMessage(separator);
+    }
+
+    public static File locateFileRelativeToClass(String relativePath, Class<?> clazz) {
+    // Use the class's class loader to get the resource URL
+    URL url = clazz.getResource(relativePath);
+
+    if (url != null) {
+        try {
+            // Convert the URL to a file path
+            return new File(url.toURI());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+    // Return null if the file cannot be located
+    return null; 
     }
 }
