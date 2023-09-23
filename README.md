@@ -401,7 +401,7 @@ Above we see that there is an even smaller difference between the respective cha
 ### PCA ScatterPlot
 <br>
 
-Once a matrix of principle components (colour channels) and their per variance values is obtained, these can be visulaized in a PCA Plot. The DataFrame of all pixels is split into two (cloud pixel variance and sky pixel variance dataframes respectively) to allow for better labelling. The two highest variance PCs are then graphed onto a Principle component scatterplot of sky versus cloud pixels. This is the second part of [pca_graphs](pca_graphs.py).
+Once a matrix of principle components (colour channels) and their per variance values is obtained, these can be visulaized in a PCA Plot. The Data is split into two (cloud pixel variance and sky pixel variance matrices respectively) to allow for better labelling. The two highest variance PCs are then graphed onto a Principle component scatterplot of sky versus cloud pixels. This is the second part of [pca_graphs](pca_graphs.py).
 
 #### PCA ScatterPlot for High Res Images
 <br>
@@ -416,6 +416,7 @@ DSLR PCA BGR ScatterPLot            |  DSLR PCA HSV Scatterplot
 OV2640 PCA BGR ScatterPLot            |  OV2640 PCA HSV Scatterplot
 :-------------------------:|:-------------------------:
 ![BGR PCA ScatterPlot for ov2640](Graphs/old/BGRPcaGraph-esp.png "BGR PCA ScatterPlot for ov2640")  |  ![HSV PCA ScatterPlot for ov2640](Graphs/old/HSVPcaGraph-esp.png "HSV PCA ScatterPlot for ov2640")
+
 
 ### Final Comments
 
