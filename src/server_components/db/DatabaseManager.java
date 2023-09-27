@@ -17,7 +17,7 @@ public class DatabaseManager {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             // IO.serverMessage(String.format("Using:%nUser: %s%nPass: %s%n",ConfigManager.user, ConfigManager.pass));
-            conn = DriverManager.getConnection("jdbc:mysql://localhost", ConfigManager.user, ConfigManager.pass);
+            conn = DriverManager.getConnection("jdbc:MySQL://localhost:3306/weather", ConfigManager.user, ConfigManager.pass);
             applySchema(dropSchema);
 
             PreparedStatement st = conn.prepareStatement("USE weather");
