@@ -13,20 +13,21 @@ public class DatabaseManager {
         return conn;
     }
 
-    public static void connect(boolean dropSchema) throws RuntimeException{
+    public static void connect(boolean dropSchema) throws RuntimeException {
         try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            // IO.serverMessage(String.format("Using:%nUser: %s%nPass: %s%n",ConfigManager.user, ConfigManager.pass));
             conn = DriverManager.getConnection("jdbc:mysql://localhost", ConfigManager.user, ConfigManager.pass);
             applySchema(dropSchema);
 
             PreparedStatement st = conn.prepareStatement("USE weather");
             st.execute();
-        } catch(SQLException e) {
-            IO.errOut("Couldn't connect to database: ", e);
-            throw new RuntimeException("Couldn't connect to Database, Please check config and network/database status.");
+        } catch(ClassNotFoundException |SQLException e) {
+            throw new RuntimeException(e.toString());
         }
     }
 
-    private static void applySchema(boolean shouldDropSchema) {
+    private static void applySchema(boolean shouldDropSchema) throws RuntimeException {
         boolean exists = false;
 
         try (PreparedStatement st = conn.prepareStatement("SHOW DATABASES LIKE 'weather'")) {
@@ -34,14 +35,14 @@ public class DatabaseManager {
             exists = result.next();
             result.close();
         } catch (SQLException e) {
-            System.out.println(e);
+            throw new RuntimeException("Couldn't Run DB Query to find DB 'weather'.");
         }
 
         if (shouldDropSchema && exists) {
             try (PreparedStatement st = conn.prepareStatement("DROP DATABASE weather")) {
                 st.execute();
             } catch (SQLException e) {
-                System.out.println(e);
+                throw new RuntimeException("Couldn't drop DB 'weather'");
             }
         }
         if (shouldDropSchema || !exists) {
@@ -52,14 +53,12 @@ public class DatabaseManager {
                 if (schema != null) {
                     path = schema.getAbsolutePath();
                 } else {
-                    IO.serverMessage(String.format("Schema definition not found."));
-                    throw new RuntimeException();
+                    throw new RuntimeException("Schema definition not found.");
                 }
                 // pass the db credentials to the script
-                new ProcessBuilder("python", path, ConfigManager.user, ConfigManager.pass).inheritIO().start()
-                        .waitFor();
+                new ProcessBuilder("python", path, ConfigManager.user, ConfigManager.pass, ConfigManager.host).inheritIO().start().waitFor();
             } catch (Exception e) {
-                IO.errOut("Couldn't load schema for Database: ", e);
+                throw new RuntimeException("Couldn't load schema for Database: 'weather.'");
             }
         }
 

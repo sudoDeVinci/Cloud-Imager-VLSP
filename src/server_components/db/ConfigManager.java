@@ -1,4 +1,5 @@
 package server_components.db;
+
 import java.io.File;
 import java.util.Map;
 import server_components.IO;
@@ -21,6 +22,7 @@ public class ConfigManager {
     public static void load() {
         try {
             File configFile = IO.locateFileRelativeToClass("configs/db_cfg.toml", ConfigManager.class);
+            System.out.println("Looking for config file at: " + tomlPath);
             if (configFile != null) {
                 tomlPath = configFile.getAbsolutePath();
                 System.out.println("Config file located at: " + tomlPath);

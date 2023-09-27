@@ -1,4 +1,5 @@
 package server_components;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,9 +13,14 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import server_components.db.ConfigManager;
+import server_components.db.DatabaseManager;
 import server_components.exceptions.*;
 
 /**
@@ -227,10 +233,26 @@ public class Server {
 
 
     public static void main(String[] args) {
+
+        // Easier separation of args
+        List<String> argList = Arrays.asList(args);
+
+        // load the toml config for the db
+        ConfigManager.load();
+
+        try {
+            // Connect the the db
+            DatabaseManager.connect(argList.contains("drop"));
+        } catch (RuntimeException e) {
+            IO.errOut("Error During Server Initialization ->  ", e);
+        }
+
+        
+
         // new IO for io operations
         IO io = new IO();
         // set the default port for socket. 
-        final int DEFAULTPORT = 880;
+        final int DEFAULTPORT = 2000;
         int port = DEFAULTPORT;
         
         // Attempt to read custom port from args. if not specified correctly, use default.

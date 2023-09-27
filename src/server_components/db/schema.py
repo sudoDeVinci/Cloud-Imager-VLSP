@@ -52,7 +52,10 @@ myCursor.execute("""
 myCursor.execute("""
     CREATE TABLE IF NOT EXISTS Status(
         MAC VARCHAR(8) PRIMARY KEY,
-        is_up BOOLEAN NOT NULL
+        SHT BOOLEAN NOT NULL,
+        BMP BOOLEAN NOT NULL,
+        CAM BOOLEAN NOT NULL,
+        WIFI BOOLEAN NOT NULL
     );
 """)
 
