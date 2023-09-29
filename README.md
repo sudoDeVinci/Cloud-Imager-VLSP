@@ -1,4 +1,5 @@
 # Mesh Network for Cloud Detection, Tracking and Categorization
+
 - By: Tadj Cazaubon (tc222gf)
 
 ## Proposal
@@ -38,6 +39,9 @@ An Esp32 (base model or S3) with an OV5640 DVP camera module is pointed at the s
 3. The dewpoint is calculated according using the Magnus-Tetens formula [8].
 4. An image of the sky is taken.
 5. The image and readings are sent to a collections server for analysis.
+
+
+This server portion can found [Here](https://github.com/sudoDeVinci/CloudMeshVLSPDB)
 
 ## How to
 
