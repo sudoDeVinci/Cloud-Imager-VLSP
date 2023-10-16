@@ -347,7 +347,7 @@ int sendReadings(float* readings, int length) {
   String body = "temperature=" + readingStrings[0] + ""\
                 "&humidity=" + readingStrings[1] + ""\
                 "&pressure=" + readingStrings[2] + ""\
-                "&dewpoint=" + readingStrings[3];
+                "&dewpoint=" + readingStrings[3] + "\r\n";
 
   /*
    * Formulate the header for the POST request.
@@ -357,11 +357,12 @@ int sendReadings(float* readings, int length) {
                   "Content-Type: application/x-www-form-urlencoded\r\n"\
                   "Connection: close\r\n"\
                   "Content-Length: " + String(body.length()) + "\r\n"\
-                  "MAC-address: " + WiFi.macAddress() + "\r\n\r\n";
+                  "MAC-address: " + WiFi.macAddress() + "\r\n";
   
 
   Serial.println(header);
   Serial.println(body);
+  Serial.println();
 
   /*
    * Do a better loop to check if connected.
@@ -369,8 +370,8 @@ int sendReadings(float* readings, int length) {
   if (connect(HOST, READINGPORT) == 1) {
     return 1;
   }
-  client.print(header);
-  client.print(body);
+  client.println(header);
+  client.println(body);
 
   // TODO: ADD ACK LISTEN AND REPLAY
   return 0;
@@ -419,11 +420,11 @@ int sendStatuses(bool* statuses, size_t length) {
                   "Content-Type: application/x-www-form-urlencoded\r\n"\
                   "Connection: close\r\n"\
                   "Content-Length: " + String(body.length()) + "\r\n"\
-                  "MAC-address: " + WiFi.macAddress()+ "\r\n";
+                  "MAC-address: " + WiFi.macAddress() + "\r\n";
 
   Serial.println(packet);
-
-
+  Serial.println(body);
+  Serial.println();
   /*
    * Do a better loop to check if connected.
    */
@@ -463,9 +464,15 @@ int sendImage() {
                   "Content-Type: image/jpeg\r\n"\
                   "Connection: close\r\n"\
                   "Content-Length: " + String(fb->len) + "\r\n"\
-                  "MAC-address: " + WiFi.macAddress() + "\r\n\r\n";
+                  "MAC-address: " + WiFi.macAddress() + "\r\n";
 
-  client.print(header);
+  Serial.println(header);
+  Serial.println();
+
+  if (connect(HOST, IMAGEPORT) == 1) {
+    return 1;
+  }
+  client.println(header);
   client.write(fb->buf, fb->len); // Send the image data
 
   // TODO: ADD ACK LISTEN AND REPLAY
