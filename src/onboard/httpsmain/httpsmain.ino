@@ -43,7 +43,7 @@
  */
 const char* SSID = "Asimov-2.4GHZ";
 const char* PASS = "Asimov42";
-const IPAddress HOST(192, 168, 8, 99);
+const IPAddress HOST(192, 168, 0, 104);
 
 const uint16_t READINGPORT = 8080;
 const uint16_t REGISTERPORT = 8081;
@@ -145,10 +145,13 @@ void sleep_secs(int secs) {
 Adafruit_SHT31 shtSetup(TwoWire *wire) {
   Adafruit_SHT31 sht31 = Adafruit_SHT31(wire);
   if (!sht31.begin()) {
+    STATUSES[0] = false;
     Serial.println("Couldn't find SHT31");
   } else {
+    STATUSES[0] = true;
     Serial.println("SHT31 found!");
   }
+  
   return sht31;
 }
 
@@ -158,8 +161,10 @@ Adafruit_SHT31 shtSetup(TwoWire *wire) {
 Adafruit_BMP3XX bmpSetup(TwoWire *wire) {
   Adafruit_BMP3XX bmp;
   if (!bmp.begin_I2C(0x77, wire)) {
+    STATUSES[1] = false;
     Serial.println("Could not find a valid BMP3 sensor, check wiring!");
   } else {
+    STATUSES[1] = true;
     Serial.println("BMP found!");
     /**
      * Set up oversampling and filter initialization
@@ -225,6 +230,7 @@ int cameraSetup(void) {
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
+    STATUSES[2] = false;
     return 1;
   }
 
@@ -235,6 +241,7 @@ int cameraSetup(void) {
   s->set_saturation(s, 0); // lower the saturation
   
   Serial.println("Camera configuration complete!");
+  STATUSES[2] = true;
   return 0;
 }
 
@@ -280,6 +287,7 @@ int connect(IPAddress HOST, uint16_t PORT) {
   }
   Serial.println("");
   Serial.println("Connected with client status socket.");
+  return 0;
 }
 
 
@@ -304,8 +312,8 @@ int wifiSetup(void) {
           return 1;
       }
   }
-   client.setCACert(HOMECERT);
-   
+  // client.setCACert(HOMECERT);
+  client.setInsecure();
   
 
   Serial.println("");
@@ -348,7 +356,7 @@ int sendReadings(float* readings, int length) {
                   "Host: " + HOST.toString() + "\r\n"\
                   "Content-Type: application/x-www-form-urlencoded\r\n"\
                   "Connection: close\r\n"\
-                  "Connection-Length: " + String(body.length()) + "\r\n"\
+                  "Content-Length: " + String(body.length()) + "\r\n"\
                   "MAC-address: " + WiFi.macAddress() + "\r\n\r\n";
   
 
@@ -400,21 +408,21 @@ int sendStatuses(bool* statuses, size_t length) {
    */
   String body = "sht=" + statusStrings[0]+ ""\
                 "&bmp=" + statusStrings[1]+ ""\
-                "&cam=" + statusStrings[2];
+                "&cam=" + statusStrings[2]+ "\r\n";
 
 
   /*
    * Formulate the header for the POST request.
    */
-  String header = "POST / HTTP/1.1\r\n"\
+  String packet = "POST / HTTP/1.1\r\n"\
                   "Host: " + HOST.toString() + "\r\n"\
                   "Content-Type: application/x-www-form-urlencoded\r\n"\
                   "Connection: close\r\n"\
-                  "Connection-Length: " + String(body.length()) + "\r\n"\
-                  "MAC-address: " + WiFi.macAddress() + "\r\n\r\n";
+                  "Content-Length: " + String(body.length()) + "\r\n"\
+                  "MAC-address: " + WiFi.macAddress()+ "\r\n";
 
-  Serial.println(header);
-  Serial.println(body);
+  Serial.println(packet);
+
 
   /*
    * Do a better loop to check if connected.
@@ -422,8 +430,9 @@ int sendStatuses(bool* statuses, size_t length) {
   if (connect(HOST, SENSORSPORT) == 1) {
     return 1;
   }
-  client.print(header);
-  client.print(body);
+  client.println(packet);
+  client.println(body);
+  client.println();
 
   // TODO: ADD ACK LISTEN AND REPLAY
   return 0;
@@ -453,7 +462,7 @@ int sendImage() {
                   "Host: " + HOST.toString() + "\r\n"\
                   "Content-Type: image/jpeg\r\n"\
                   "Connection: close\r\n"\
-                  "Connection-Length: " + String(fb->len) + "\r\n"\
+                  "Content-Length: " + String(fb->len) + "\r\n"\
                   "MAC-address: " + WiFi.macAddress() + "\r\n\r\n";
 
   client.print(header);
@@ -491,23 +500,17 @@ void setup() {
   /**
    * Check for camera init error. 
    */
-  if (cameraSetup() == 0) {
-    STATUSES[2] = true; 
-  }
+  cameraSetup();
 
   /**
    * Check for BMP init error. 
    */
-  if (bmpSetup(&wire).performReading()) {
-    STATUSES[1] = true;
-  }
+  bmpSetup(&wire);
 
   /**
    * Check for SHT init error.
    */
-  if (!isnan(shtSetup(&wire).readHumidity())) {
-    STATUSES[0] = true;
-  }
+  shtSetup(&wire);
 
   
   if (sendStatuses(STATUSES, sizeof(STATUSES)) == 1) {
