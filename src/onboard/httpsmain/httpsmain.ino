@@ -43,7 +43,7 @@
  */
 const char* SSID = "VLSP-Innovation";
 const char* PASS = "9a5mPA8bU64!";
-const IPAddress HOST(192, 168, 8, 100);
+const IPAddress HOST(192, 168, 8, 99);
 
 const uint16_t READINGPORT = 8080;
 const uint16_t REGISTERPORT = 8081;
@@ -62,13 +62,41 @@ bool STATUSES[] = {false, false, false};
  * Serial for sensors & HTTP client
  */
 TwoWire wire = TwoWire(0);
-WiFiClient client;
 
 /**
  * Sensor objects to use later 
  */
 Adafruit_BMP3XX bmpGlob;
 Adafruit_SHT31 shtGlob;
+
+
+/**
+ * Server certificate for testing
+ */
+const char* TESTCERT  = "-----BEGIN CERTIFICATE-----\n" \
+"MIID5TCCAs0CFEr1LysJrhEHEDLyyOLr56g9RNHJMA0GCSqGSIb3DQEBCwUAMIGu\n" \
+"MQswCQYDVQQGEwJTRTEYMBYGA1UECAwPS1Jyb25vYmVyZ3MgTGFuMQ4wDAYDVQQH\n" \
+"DAVWYXhqbzEbMBkGA1UECgwSTGlubmUgU2NpZW5jZSBQYXJrMRcwFQYDVQQLDA5J\n" \
+"bm5vdmF0aW9uIExhYjEVMBMGA1UEAwwMMTkyLjE2OC44Ljk5MSgwJgYJKoZIhvcN\n" \
+"AQkBFhl0YWRqLmQuY2F6YXVib25AZ21haWwuY29tMB4XDTIzMTAxMTE0MDkwOVoX\n" \
+"DTI0MTAxMDE0MDkwOVowga4xCzAJBgNVBAYTAlNFMRgwFgYDVQQIDA9LUnJvbm9i\n" \
+"ZXJncyBMYW4xDjAMBgNVBAcMBVZheGpvMRswGQYDVQQKDBJMaW5uZSBTY2llbmNl\n" \
+"IFBhcmsxFzAVBgNVBAsMDklubm92YXRpb24gTGFiMRUwEwYDVQQDDAwxOTIuMTY4\n" \
+"LjguOTkxKDAmBgkqhkiG9w0BCQEWGXRhZGouZC5jYXphdWJvbkBnbWFpbC5jb20w\n" \
+"ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC6mo5QHIFpniO19igzqMYA\n" \
+"yhkKTIOY9Mp5i+7u0WXREu2xWkYN9qocWRRMi6MwI7N+FXAzMaw87npF/s/3eDkk\n" \
+"cn4Z17yUcIJHBvV25ig3NnXbbne39jtpaECKPqjznPoPsfTcNdGf5q7apHexgaZZ\n" \
+"Y+gkBu892eRHb3iUUQAvKfrbQEbeLsYB+jOVaG1Kf0vfh8e9mKBr38pcRUyDE8ak\n" \
+"gQ1PAP8UZziyM8QthyoYQVLD3WGmuV5b03daRtpMHd9oXb5fP38wNuU54XicQv/I\n" \
+"XbDnq2lCUpKWCLCSV+xj6LTwsLwiZwAn39dGeUcl1HQ2waMC7Nbujmfqf7teqHb1\n" \
+"AgMBAAEwDQYJKoZIhvcNAQELBQADggEBAIRxiWM3VwEYcF0TIB/1RgX3ye77ndGK\n" \
+"4P/qVporIqFCytjxP/1zSo+M+1ONqJ2Skc1RESXUN7Z/StrrpR3mqkqIWCfjXrLc\n" \
+"6oI7W3PTfR/AnRrKxBnGqyTOiAKbPqThm1WtLUslsZttj4TF2+wqoTkhOjPjj2V1\n" \
+"iApUHk4bowLn9cA74c+S/Zydo5Mv8d/go6dypr14pQheYnYjhYdHlUIHSl02aCkK\n" \
+"yVXT5AbtDI8oeJryPDSbml2geGVuZ1fHpLEVbX6WC/yh99lUzW4MvDRrSVGQmRBG\n" \
+"AfWSbZeM3MycahDxvfOVHYAmXjYTFrSeAaCBEjWB4Bs3IFpXaYJOLaw=\n" \
+"-----END CERTIFICATE-----\n";
+
 
 
 /**
@@ -257,8 +285,9 @@ int wifiSetup(void) {
   }
   /*
    * Connection is still encrypted, but not sure if you’re talking to the right server.
+   client.setCACert(TESTCERT);
    */
-  client.setInsecure();
+  
 
   Serial.println("");
   Serial.print("WiFi connected with IP: ");
@@ -296,7 +325,7 @@ int sendReadings(float* readings, int length) {
   /*
    * Formulate the header for the POST request.
    */
-  String header = "POST /" + String(READINGPORT) + " HTTPS/1.1\r\n"\
+  String header = "POST / HTTP/1.1\r\n"\
                   "Host: " + HOST.toString() + "\r\n"\
                   "Content-Type: application/x-www-form-urlencoded\r\n"\
                   "Connection: close\r\n"\
@@ -358,7 +387,7 @@ int sendStatuses(bool* statuses, size_t length) {
   /*
    * Formulate the header for the POST request.
    */
-  String header = "POST /" + String(SENSORSPORT) + " HTTPS/1.1\r\n"\
+  String header = "POST / HTTP/1.1\r\n"\
                   "Host: " + HOST.toString() + "\r\n"\
                   "Content-Type: application/x-www-form-urlencoded\r\n"\
                   "Connection: close\r\n"\
@@ -401,7 +430,7 @@ int sendImage() {
   /*
    * Formulate the header for the POST request.
    */
-  String header = "POST /" + String(IMAGEPORT) + " HTTPS/1.1\r\n"\
+  String header = "POST /" + String(IMAGEPORT) + " HTTP/1.1\r\n"\
                   "Host: " + HOST.toString() + "\r\n"\
                   "Content-Type: image/jpeg\r\n"\
                   "Connection: close\r\n"\
@@ -462,7 +491,7 @@ void setup() {
   }
 
   
-  if (sendStatus(STATUSES, sizeof(STATUSES)) == 1) {
+  if (sendStatuses(STATUSES, sizeof(STATUSES)) == 1) {
     sleep_minutes(10);
     Serial.println("Rebooting...");
     ESP.restart();
