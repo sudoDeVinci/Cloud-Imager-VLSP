@@ -41,8 +41,8 @@
  *  
  *  Should almost definitely store these on disk but here we are.
  */
-const char* SSID = "VLSP-Innovation";
-const char* PASS = "9a5mPA8bU64!";
+const char* SSID = "Asimov-2.4GHZ";
+const char* PASS = "Asimov42";
 const IPAddress HOST(192, 168, 8, 99);
 
 const uint16_t READINGPORT = 8080;
@@ -97,7 +97,28 @@ const char* TESTCERT  = "-----BEGIN CERTIFICATE-----\n" \
 "AfWSbZeM3MycahDxvfOVHYAmXjYTFrSeAaCBEjWB4Bs3IFpXaYJOLaw=\n" \
 "-----END CERTIFICATE-----\n";
 
-
+const char* HOMECERT = "-----BEGIN CERTIFICATE-----\n" \
+"MIIDtDCCApygAwIBAgIEZS0cNjANBgkqhkiG9w0BAQsFADCBmzELMAkGA1UEBhMC\n" \
+"U0UxEDAOBgNVBAgMB1bDpHhqw7YxFzAVBgNVBAcMDktyb25vYmVyZ3MgTGFuMRcw\n" \
+"FQYDVQQKDA5Jbm5vdmF0aW9uIExhYjEjMCEGA1UECwwaVsOkeGrDtiBMaW5uZSBT\n" \
+"Y2llbmNlIFBhcmsxIzAhBgNVBAMMGlbDpHhqw7YgTGlubmUgU2NpZW5jZSBQYXJr\n" \
+"MB4XDTIzMTAxNjExMTkxOFoXDTI0MTAxNTExMTkxOFowgZsxCzAJBgNVBAYTAlNF\n" \
+"MRAwDgYDVQQIDAdWw6R4asO2MRcwFQYDVQQHDA5Lcm9ub2JlcmdzIExhbjEXMBUG\n" \
+"A1UECgwOSW5ub3ZhdGlvbiBMYWIxIzAhBgNVBAsMGlbDpHhqw7YgTGlubmUgU2Np\n" \
+"ZW5jZSBQYXJrMSMwIQYDVQQDDBpWw6R4asO2IExpbm5lIFNjaWVuY2UgUGFyazCC\n" \
+"ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOmPRgG5VT38HxMl1cGOWthe\n" \
+"yvX+/CBR1Eby9gw4pa/pmcBsmTCMHS4tSUJ7FBoxpo9SAEYibwqbUSUxW+AxD31L\n" \
+"r1qRWLI/eVgum1XZq0DKmBy9B+4DV3o31RAcd0Z+/YmSg+1BnqldZMNoXR3kTRJG\n" \
+"WZAH2utiOXeuTLwXmlbKfo/pPtjWMH2qw3zx52HjoagsLkJOsmPZmUXLXrSw/0lT\n" \
+"FQ5rVkeAnXeqHJhwQQ5j+8jHyD3UfSIafEo/28MtUFfBIdC1vTARk+dvzLBlCnMd\n" \
+"6M9fLn7ayDCJKypEI9c2exGI2/R8u+rY9NwOW721UWH2A4JsVFDfsSM3f3mVDnsC\n" \
+"AwEAATANBgkqhkiG9w0BAQsFAAOCAQEAKu5Ygv/H7nCIwLOh3MANtjnM/1EjRqit\n" \
+"r4f5SYpwOSXd4up/DdHEZkaPI9qFC59kvk3tLO/df9K8lIcgK3Cc4wP+5PRu4w+l\n" \
+"4ANBJg2ZrEsTcczSNmpNv4Fuwh/deh4K31pdYKdZuebvcvuvDj0FLD68LnIyHUKR\n" \
+"L/SZCQyiPGgJNJRxh2nOD+9NOVm7Mmy5T04o+Z7zMffEZ10GpzdeFQPXsjBR+SfF\n" \
+"chqEjejTXO5fioYKZ3+r8dszFyaG9VIK7nG/Ptq8j85HGCdBBFsseh3eL/ctPJJv\n" \
+"cH1vJGvHyQqRldaEKHy+ByIfZWirWkOq+6IFGmaPD557iEVFItMHHA==\n" \
+"-----END CERTIFICATE-----\n" ;
 
 /**
  * Enter deep sleep for amount of minutes (converted to miocroseconds)
@@ -283,10 +304,8 @@ int wifiSetup(void) {
           return 1;
       }
   }
-  /*
-   * Connection is still encrypted, but not sure if you’re talking to the right server.
-   client.setCACert(TESTCERT);
-   */
+   client.setCACert(HOMECERT);
+   
   
 
   Serial.println("");
