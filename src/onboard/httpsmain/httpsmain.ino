@@ -7,7 +7,6 @@
 #include <Wire.h>
 
 
-
 /**
  * Select camera model
  * #define CAMERA_MODEL_WROVER_KIT
@@ -384,10 +383,23 @@ int sendReadings(float* readings, int length) {
 
 /**
  * Send a packet containing the statuses of the varous sensors.
- * [MAC] || [SHT] || [BMP] || [CAM]
  */
 int sendStatuses(bool* statuses, size_t length) {
 
+  /**
+   * Get the current time and format the timestamp as MySQL DATETIME.
+   */
+  // Get the current time
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+    return 1;
+  }
+
+  // Format the timestamp as MySQL DATETIME
+  char timestamp[20];
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", &timeinfo);
+  String stamp = String(timestamp); 
   /*
    * String array to hold the statuses of the various sensors.
    */
@@ -406,9 +418,9 @@ int sendStatuses(bool* statuses, size_t length) {
   /*
    * Formulate the body String of the POST request
    */
-  String body = "sht=" + statusStrings[0]+ ""\
-                "&bmp=" + statusStrings[1]+ ""\
-                "&cam=" + statusStrings[2]+ "\r\n";
+  String body = "sht="  + statusStrings[0] + ""\
+                "&bmp=" + statusStrings[1] + ""\
+                "&cam=" + statusStrings[2] + "\r\n";
 
 
   /*
@@ -419,9 +431,10 @@ int sendStatuses(bool* statuses, size_t length) {
                   "Content-Type: application/x-www-form-urlencoded\r\n"\
                   "Connection: close\r\n"\
                   "Content-Length: " + String(body.length()) + "\r\n"\
-                  "MAC-address: " + WiFi.macAddress()+ "\r\n";
+                  "Mac-address: " + WiFi.macAddress() + "\r\n"\
+                  "Timestamp: " + stamp + "\r\n";
 
-  Serial.println(packet);
+
 
 
   /*
@@ -433,17 +446,15 @@ int sendStatuses(bool* statuses, size_t length) {
   client.println(packet);
   client.println(body);
   client.println();
+  Serial.println(packet);
+  Serial.println(body);
 
   // TODO: ADD ACK LISTEN AND REPLAY
   return 0;
 }
 
 
-
-
-
-
-int sendImage() {
+int sendImage(String stamp) {
   /*
    * Capture an image multiple times to flush buffer
    */
@@ -463,10 +474,12 @@ int sendImage() {
                   "Content-Type: image/jpeg\r\n"\
                   "Connection: close\r\n"\
                   "Content-Length: " + String(fb->len) + "\r\n"\
-                  "MAC-address: " + WiFi.macAddress() + "\r\n\r\n";
+                  "Mac-address: " + WiFi.macAddress() + "\r\n"\
+                  "Timestamp: " + stamp + "\r\n";
 
-  client.print(header);
+  client.println(header);
   client.write(fb->buf, fb->len); // Send the image data
+  client.println();
 
   // TODO: ADD ACK LISTEN AND REPLAY
 
@@ -511,6 +524,11 @@ void setup() {
    * Check for SHT init error.
    */
   shtSetup(&wire);
+
+  /**
+   * Set the time by synching with a time server 
+   */
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
 
   
   if (sendStatuses(STATUSES, sizeof(STATUSES)) == 1) {
