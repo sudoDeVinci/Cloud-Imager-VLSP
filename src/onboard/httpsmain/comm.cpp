@@ -2,13 +2,15 @@
 #include <WiFiClientSecure.h>
 #include <Dns.h>
 
+/*
+*
 
 enum Ports: uint16_t {
-    READINGPORT = 8080;
-    REGISTERPORT = 8081;
-    SENSORSPORT = 8082;
-    IMAGEPORT = 8083;
-}
+    READINGPORT = 8080,
+    REGISTERPORT = 8081,
+    SENSORSPORT = 8082,
+    IMAGEPORT = 8083
+};
 
 struct Network {
     const char* SSID;
@@ -18,11 +20,6 @@ struct Network {
     const IPAddress DNS;
 }
 
-
-
-/**
- * Attempt to establish a server connection 10 times.
- */
 int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT) {
   int conn_count = 0;
   Serial.print("Connecting to Status Server Socket.");
@@ -40,11 +37,6 @@ int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT) {
   return 0;
 }
 
-/**
- * Attempt to connect to WiFi 10 times.
- * Return 0 if success, return 1 if not. 
- * 
- */
 int wifiSetup(WiFiClientSecure *client) {
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PASS);
@@ -66,9 +58,7 @@ int wifiSetup(WiFiClientSecure *client) {
 }
 
 
-/**
- * Send POST Request withn sensor data.
- */
+
 int sendReadings(float* readings, int length) {
 
   String readingStrings[length];
@@ -104,3 +94,4 @@ int sendReadings(float* readings, int length) {
 String body generateHeader(IPAddress Host) {
 
 }
+*/

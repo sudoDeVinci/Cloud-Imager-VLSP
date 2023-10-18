@@ -43,9 +43,9 @@
 
 // const char* SSID = "Asimov-2.4GHZ";
 // const char* PASS = "Asimov42";
-const char* PASS = "Asimov42";
-const char* SSID = "Asimov-2.4GHZ";
-const IPAddress HOST(192, 168, 0, 104);
+const char* PASS = "9a5mPA8bU64!";
+const char* SSID = "VLSP-Innovation";
+const IPAddress HOST(192, 168, 8, 99);
 
 const uint16_t READINGPORT = 8080;
 const uint16_t REGISTERPORT = 8081;
@@ -298,10 +298,17 @@ int connect(IPAddress HOST, uint16_t PORT) {
  * 
  */
 int wifiSetup(void) {
+
+  /**
+   * TODO: Setup DNS stuff for time server goodness
+   */
   IPAddress local_IP(192, 168, 0, 199);
   IPAddress gateway(192, 168, 0, 254);
   IPAddress subnet(255, 255, 255, 0);
-  IPAddress dns(8,8,8,8);   // add DNS 
+  IPAddress dns(8,8,8,8);
+
+
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PASS);
   WiFi.setSleep(false);
@@ -395,6 +402,7 @@ int sendReadings(float* readings, int length) {
   Serial.println(body);
 
   // TODO: ADD ACK LISTEN AND REPLAY
+  client.stop();
   return 0;
 
 }
@@ -472,6 +480,7 @@ int sendStatuses(bool* statuses, size_t length) {
   Serial.println(body);
 
   // TODO: ADD ACK LISTEN AND REPLAY
+  client.stop();
   return 0;
 }
 
@@ -559,13 +568,17 @@ void setup() {
   }
 }
 
+
+
 void loop() {
+  bmpGlob;
+  shtGlob;
   float readings[4] = {0,0,0,0};
   sendReadings(readings, 4);
   if (WiFi.status() != WL_CONNECTED) {
     wifiSetup();
   }
-  sleep_minutes(0.1);
+  sleep_minutes(5);
   //sendStatuses(STATUSES, sizeof(STATUSES));
 
 }
