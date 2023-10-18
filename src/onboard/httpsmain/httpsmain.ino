@@ -7,7 +7,6 @@
 #include <Wire.h>
 
 
-
 /**
  * Select camera model
  * #define CAMERA_MODEL_WROVER_KIT
@@ -41,8 +40,11 @@
  *  
  *  Should almost definitely store these on disk but here we are.
  */
-const char* SSID = "Asimov-2.4GHZ";
+
+// const char* SSID = "Asimov-2.4GHZ";
+// const char* PASS = "Asimov42";
 const char* PASS = "Asimov42";
+const char* SSID = "Asimov-2.4GHZ";
 const IPAddress HOST(192, 168, 0, 104);
 
 const uint16_t READINGPORT = 8080;
@@ -73,28 +75,27 @@ Adafruit_SHT31 shtGlob;
 /**
  * Server certificate for testing
  */
-const char* TESTCERT  = "-----BEGIN CERTIFICATE-----\n" \
-"MIID5TCCAs0CFEr1LysJrhEHEDLyyOLr56g9RNHJMA0GCSqGSIb3DQEBCwUAMIGu\n" \
-"MQswCQYDVQQGEwJTRTEYMBYGA1UECAwPS1Jyb25vYmVyZ3MgTGFuMQ4wDAYDVQQH\n" \
-"DAVWYXhqbzEbMBkGA1UECgwSTGlubmUgU2NpZW5jZSBQYXJrMRcwFQYDVQQLDA5J\n" \
-"bm5vdmF0aW9uIExhYjEVMBMGA1UEAwwMMTkyLjE2OC44Ljk5MSgwJgYJKoZIhvcN\n" \
-"AQkBFhl0YWRqLmQuY2F6YXVib25AZ21haWwuY29tMB4XDTIzMTAxMTE0MDkwOVoX\n" \
-"DTI0MTAxMDE0MDkwOVowga4xCzAJBgNVBAYTAlNFMRgwFgYDVQQIDA9LUnJvbm9i\n" \
-"ZXJncyBMYW4xDjAMBgNVBAcMBVZheGpvMRswGQYDVQQKDBJMaW5uZSBTY2llbmNl\n" \
-"IFBhcmsxFzAVBgNVBAsMDklubm92YXRpb24gTGFiMRUwEwYDVQQDDAwxOTIuMTY4\n" \
-"LjguOTkxKDAmBgkqhkiG9w0BCQEWGXRhZGouZC5jYXphdWJvbkBnbWFpbC5jb20w\n" \
-"ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC6mo5QHIFpniO19igzqMYA\n" \
-"yhkKTIOY9Mp5i+7u0WXREu2xWkYN9qocWRRMi6MwI7N+FXAzMaw87npF/s/3eDkk\n" \
-"cn4Z17yUcIJHBvV25ig3NnXbbne39jtpaECKPqjznPoPsfTcNdGf5q7apHexgaZZ\n" \
-"Y+gkBu892eRHb3iUUQAvKfrbQEbeLsYB+jOVaG1Kf0vfh8e9mKBr38pcRUyDE8ak\n" \
-"gQ1PAP8UZziyM8QthyoYQVLD3WGmuV5b03daRtpMHd9oXb5fP38wNuU54XicQv/I\n" \
-"XbDnq2lCUpKWCLCSV+xj6LTwsLwiZwAn39dGeUcl1HQ2waMC7Nbujmfqf7teqHb1\n" \
-"AgMBAAEwDQYJKoZIhvcNAQELBQADggEBAIRxiWM3VwEYcF0TIB/1RgX3ye77ndGK\n" \
-"4P/qVporIqFCytjxP/1zSo+M+1ONqJ2Skc1RESXUN7Z/StrrpR3mqkqIWCfjXrLc\n" \
-"6oI7W3PTfR/AnRrKxBnGqyTOiAKbPqThm1WtLUslsZttj4TF2+wqoTkhOjPjj2V1\n" \
-"iApUHk4bowLn9cA74c+S/Zydo5Mv8d/go6dypr14pQheYnYjhYdHlUIHSl02aCkK\n" \
-"yVXT5AbtDI8oeJryPDSbml2geGVuZ1fHpLEVbX6WC/yh99lUzW4MvDRrSVGQmRBG\n" \
-"AfWSbZeM3MycahDxvfOVHYAmXjYTFrSeAaCBEjWB4Bs3IFpXaYJOLaw=\n" \
+const char* TESTCERT  = "-----BEGIN CERTIFICATE-----\n"
+"MIIDnDCCAoSgAwIBAgIEZS6f7TANBgkqhkiG9w0BAQsFADCBjzELMAkGA1UEBhMC\n" \
+"U0UxFzAVBgNVBAgMDktyb25vYmVyZ3MgTGFuMRAwDgYDVQQHDAdWw6R4asO2MSQw\n" \
+"IgYDVQQKDBtWw6R4asO2IExpbm5lYSBTY2llbmNlIFBhcmsxFzAVBgNVBAsMDklu\n" \
+"bm92YXRpb24gTGFiMRYwFAYDVQQDDA1UYWRqIENhemF1Ym9uMB4XDTIzMTAxNzE0\n" \
+"NTMzM1oXDTI0MTAxNjE0NTMzM1owgY8xCzAJBgNVBAYTAlNFMRcwFQYDVQQIDA5L\n" \
+"cm9ub2JlcmdzIExhbjEQMA4GA1UEBwwHVsOkeGrDtjEkMCIGA1UECgwbVsOkeGrD\n" \
+"tiBMaW5uZWEgU2NpZW5jZSBQYXJrMRcwFQYDVQQLDA5Jbm5vdmF0aW9uIExhYjEW\n" \
+"MBQGA1UEAwwNVGFkaiBDYXphdWJvbjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC\n" \
+"AQoCggEBAJ75hDyV1aBn/kFie7t7VHSrCOr+VF8yWGxTau4sEU83FdO+0iCnLxyY\n" \
+"71IQ+j6WNjIi/aAunwm7dTyXsnqvAghfFYmp4BbdU9/fnPA+4UM3Bmhw1ps20j/v\n" \
+"5Vu60lSsF+v1MNKS/Odfop85LnKSrO0rx8mVz9Vw1lC0mH+l1aUVji7MHgbRhufU\n" \
+"A/sc7KjEEz6KZqUVuVpLeUcKLA4UGgwW+3ruPmbGzml67SVgVEi0eQMvwC3o0FEk\n" \
+"JNjsO8e+VV+JkKYlDthII677lqZzOwMVdG+bkj/RSgbFqa2nPJf7W2Kr0P1b+qmY\n" \
+"mT7Y8BHRLGSnA/zfSA2EqVRmO/WbFmkCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEA\n" \
+"Rb58Cwhpduz5yLK+4My2y4YYSuCEOl7UJu+9GnSi2M4z/NycO4JaQWmZvOQhR/iq\n" \
+"jwp8u/2Z+Tz1Gamfy3+y03SvREjqykM8yZF2Oqss0qreEegcQWXmWEWTSm/B3MPu\n" \
+"455lGyGwRxdiRAi7kHa+OavpVMbEnCHQ6Xnnx878JaTmpNRkovxGsPy7JAfezEsM\n" \
+"86/5+Fp8+RLCKeLABiULAj0coSAFEeQBFr8fnvnpeRerinr1oSZ0KIcoR61bOTBD\n" \
+"CNoBGribUny2YCkVhRxjBLfUxmZj0YEVrUfthVxFo5dGz6WRlG0KC2DY5MsiR/ZP\n" \
+"we7BslkJ31ayjCwd2m6KQA==\n" \
 "-----END CERTIFICATE-----\n";
 
 const char* HOMECERT = "-----BEGIN CERTIFICATE-----\n" \
@@ -126,7 +127,7 @@ const char* HOMECERT = "-----BEGIN CERTIFICATE-----\n" \
 void sleep_minutes(int minutes) {
   #include <esp_sleep.h>
   esp_sleep_enable_timer_wakeup(minutes * 60000000);
-  esp_deep_sleep_start();
+  esp_light_sleep_start();
 }
 
 /**
@@ -135,7 +136,7 @@ void sleep_minutes(int minutes) {
 void sleep_secs(int secs) {
   #include <esp_sleep.h>
   esp_sleep_enable_timer_wakeup(secs * 1000000);
-  esp_deep_sleep_start();
+  esp_light_sleep_start();
 }
 
 
@@ -275,18 +276,18 @@ void Scan () {
  */
 int connect(IPAddress HOST, uint16_t PORT) {
   int conn_count = 0;
-  Serial.print("Connecting to Status Server Socket.");
+  Serial.print("Connecting to Status Server Socket on Port: " + String(PORT));
   while (! client.connect(HOST, PORT)) {
     delay(random(200, 501));
     Serial.print(".");
     conn_count+=1;
     if (conn_count >= 10) {
-        Serial.println("Could not connect to server status socket.");
+        Serial.println("Could not connect to server socket.");
         return 1;
     }
   }
   Serial.println("");
-  Serial.println("Connected with client status socket.");
+  Serial.println("Connected with client socket.");
   return 0;
 }
 
@@ -297,6 +298,10 @@ int connect(IPAddress HOST, uint16_t PORT) {
  * 
  */
 int wifiSetup(void) {
+  IPAddress local_IP(192, 168, 0, 199);
+  IPAddress gateway(192, 168, 0, 254);
+  IPAddress subnet(255, 255, 255, 0);
+  IPAddress dns(8,8,8,8);   // add DNS 
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PASS);
   WiFi.setSleep(false);
@@ -328,6 +333,21 @@ int wifiSetup(void) {
  */
 int sendReadings(float* readings, int length) {
 
+  /**
+   * Get the current time and format the timestamp as MySQL DATETIME.
+   */
+  // Get the current time
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+    return 1;
+  }
+
+  // Format the timestamp as MySQL DATETIME
+  char timestamp[20];
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", &timeinfo);
+  String stamp = String(timestamp); 
+
   /*
    * String array to hold the readings of the various sensors.
    */
@@ -357,21 +377,22 @@ int sendReadings(float* readings, int length) {
                   "Content-Type: application/x-www-form-urlencoded\r\n"\
                   "Connection: close\r\n"\
                   "Content-Length: " + String(body.length()) + "\r\n"\
-                  "MAC-address: " + WiFi.macAddress() + "\r\n";
+                  "Mac-address: " + WiFi.macAddress() + "\r\n"\
+                  "Timestamp: " + stamp + "\r\n";
   
 
-  Serial.println(header);
-  Serial.println(body);
-  Serial.println();
-
-  /*
+   /*
    * Do a better loop to check if connected.
    */
   if (connect(HOST, READINGPORT) == 1) {
+    Serial.println("Not actually connected to the Server!");
     return 1;
   }
   client.println(header);
   client.println(body);
+  client.println();
+  Serial.println(header);
+  Serial.println(body);
 
   // TODO: ADD ACK LISTEN AND REPLAY
   return 0;
@@ -385,10 +406,23 @@ int sendReadings(float* readings, int length) {
 
 /**
  * Send a packet containing the statuses of the varous sensors.
- * [MAC] || [SHT] || [BMP] || [CAM]
  */
 int sendStatuses(bool* statuses, size_t length) {
 
+  /**
+   * Get the current time and format the timestamp as MySQL DATETIME.
+   */
+  // Get the current time
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+    return 1;
+  }
+
+  // Format the timestamp as MySQL DATETIME
+  char timestamp[20];
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", &timeinfo);
+  String stamp = String(timestamp); 
   /*
    * String array to hold the statuses of the various sensors.
    */
@@ -407,9 +441,9 @@ int sendStatuses(bool* statuses, size_t length) {
   /*
    * Formulate the body String of the POST request
    */
-  String body = "sht=" + statusStrings[0]+ ""\
-                "&bmp=" + statusStrings[1]+ ""\
-                "&cam=" + statusStrings[2]+ "\r\n";
+  String body = "sht="  + statusStrings[0] + ""\
+                "&bmp=" + statusStrings[1] + ""\
+                "&cam=" + statusStrings[2] + "\r\n";
 
 
   /*
@@ -420,11 +454,11 @@ int sendStatuses(bool* statuses, size_t length) {
                   "Content-Type: application/x-www-form-urlencoded\r\n"\
                   "Connection: close\r\n"\
                   "Content-Length: " + String(body.length()) + "\r\n"\
-                  "MAC-address: " + WiFi.macAddress() + "\r\n";
+                  "Mac-address: " + WiFi.macAddress() + "\r\n"\
+                  "Timestamp: " + stamp + "\r\n";
 
-  Serial.println(packet);
-  Serial.println(body);
-  Serial.println();
+
+
   /*
    * Do a better loop to check if connected.
    */
@@ -434,17 +468,15 @@ int sendStatuses(bool* statuses, size_t length) {
   client.println(packet);
   client.println(body);
   client.println();
+  Serial.println(packet);
+  Serial.println(body);
 
   // TODO: ADD ACK LISTEN AND REPLAY
   return 0;
 }
 
 
-
-
-
-
-int sendImage() {
+int sendImage(String stamp) {
   /*
    * Capture an image multiple times to flush buffer
    */
@@ -464,16 +496,12 @@ int sendImage() {
                   "Content-Type: image/jpeg\r\n"\
                   "Connection: close\r\n"\
                   "Content-Length: " + String(fb->len) + "\r\n"\
-                  "MAC-address: " + WiFi.macAddress() + "\r\n";
+                  "Mac-address: " + WiFi.macAddress() + "\r\n"\
+                  "Timestamp: " + stamp + "\r\n";
 
-  Serial.println(header);
-  Serial.println();
-
-  if (connect(HOST, IMAGEPORT) == 1) {
-    return 1;
-  }
-  client.println(header);
+  client.print(header);
   client.write(fb->buf, fb->len); // Send the image data
+  client.println();
 
   // TODO: ADD ACK LISTEN AND REPLAY
 
@@ -519,15 +547,25 @@ void setup() {
    */
   shtSetup(&wire);
 
+  /**
+   * Set the time by synching with a time server 
+   */
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+
   
   if (sendStatuses(STATUSES, sizeof(STATUSES)) == 1) {
-    sleep_minutes(10);
-    Serial.println("Rebooting...");
-    ESP.restart();
+    Serial.println("Couldn't send stauses.");
+    sleep_minutes(1);
   }
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  delay(10); // this speeds up the simulation
+  float readings[4] = {0,0,0,0};
+  sendReadings(readings, 4);
+  if (WiFi.status() != WL_CONNECTED) {
+    wifiSetup();
+  }
+  sleep_minutes(0.1);
+  //sendStatuses(STATUSES, sizeof(STATUSES));
+
 }
