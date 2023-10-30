@@ -443,7 +443,6 @@ int sendStatuses(bool* statuses, size_t length) {
    */
   for(int x = 0; x < length; x++) {
     statusStrings[x] = (statuses[x] ? "true" : "false");
-    //Serial.println("Element: " + statusStrings[x]);
   }
 
   /*
