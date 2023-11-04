@@ -6,55 +6,92 @@
 #include <WiFiClientSecure.h>
 #include "esp_camera.h"
 
-enum Ports: uint16_t {
+enum class Ports: uint16_t {
     READINGPORT = 8080,
     REGISTERPORT = 8081,
     SENSORSPORT = 8082,
     IMAGEPORT = 8083
 };
 
-typedef struct Network {
-    const char* SSID;
-    const char* PASS;
-    const IPAddress HOST;
-    const IPAddress GATEWAY;
-    const IPAddress DNS;
-}
+
+enum class MIME: String {
+    IMAGE_PNG = "image/png",
+    IMAGE_JPG = "image/jpeg",
+    APP_FORM = "application/x-www-form-urlencoded"
+};
+
+
+enum class HeaderFields: String {
+    POST = "POST / HTTP/1.1",
+    HOST = "Host: ",
+    MIME = "Content-Type: ",
+    CONNECTION = "Connection: close",
+    LENGTH = "Content-Length: ",
+    MAC = "MAC-address: ",
+    TIMESTAMP = "Timestamp: "
+};
+
+
+struct Network {
+    char* SSID;
+    char* PASS;
+    IPAddress HOST;
+    IPAddress GATEWAY;
+    IPAddress DNS;
+};
 
 
 /**
  * Connect to a HTTPS server.
  */
 int connect(WiFiClientSecure *client, IPAddress HOST, IPAddress PORT);
+
+
 /**
  * Connect to wifi Network and apply SSL certificate.
  */
 int wifiSetup(WiFiClientSecure *client, char* SSID, char* PASS);
+
+
 /**
- * Send readings from weather sensors to HOST on spoecified PORT. 
+ * Send readings from weather sensors to HOST on specified PORT. 
  */
 int sendReadings(float* readings, int length, IPAddress HOST, IPAddress READINGPORT);
+
+
 /**
  * Send statuses of weather sensors to HOST on specified PORT. 
  */
 int sendStatuses(bool* statuses, int length, IPAddress HOST, IPAddress SENSORSPORT);
+
+
 /**
  * Send Image buffer to HOST on specified PORT.
 */
 int sendImage(camera_fb_t *fb, IPAddress HOST, IPAddress IMAGEPORT);
+
+
 /**
  * Generate a header for a given HTTPS packet.
  */
-String body generateHeader(int bodyLength, IPAddress HOST, String macAddress);
+String generateHeader(MIME type, int bodyLength, IPAddress HOST, String macAddress);
+
+
 /**
  * Generate a header for a given HTTPS packet.
  * Some functions return size_t and therefore must be converted.
  * size_t can overflow int as its larger, but we only have 12MB of RAM, and the max image res
  * is like 720p.
  */
-String body generateHeader(size_t bodyLength, IPAddress HOST, String macAddress);
+String generateHeader(MIME type, size_t bodyLength, IPAddress HOST, String macAddress);
 
-#endif
+/**
+  * Get the current time and format the timestamp as MySQL DATETIME.
+  * timeinfo is an empty struct whihc is filled by calling getLocalTime().
+  */
+String getTime()
+
+
 
 /**
  * Server certificate for testing
@@ -104,3 +141,5 @@ const char* HOMECERT = "-----BEGIN CERTIFICATE-----\n" \
 "chqEjejTXO5fioYKZ3+r8dszFyaG9VIK7nG/Ptq8j85HGCdBBFsseh3eL/ctPJJv\n" \
 "cH1vJGvHyQqRldaEKHy+ByIfZWirWkOq+6IFGmaPD557iEVFItMHHA==\n" \
 "-----END CERTIFICATE-----\n";
+
+#endif

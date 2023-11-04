@@ -70,6 +70,9 @@ int sendReadings(float* readings, int length, IPAddress HOST, IPAddress READINGP
   client.println(body);
   client.println();
   client.stop();
+
+  body.remove();
+  header.remove();
   return 0;
 }
 
@@ -101,10 +104,13 @@ int sendStatuses(bool* statuses, int length, IPAddress HOST, IPAddress SENSORSPO
 
   if (connect(HOST, SENSORSPORT) == 1) return 1;
 
-  client.println(packet);
+  client.println(header);
   client.println(body);
   client.println();
   client.stop();
+
+  body.remove();
+  header.remove();
   return 0;
   
 }
@@ -126,33 +132,25 @@ int sendImage(camera_fb_t *fb, IPAddress HOST, IPAddress IMAGEPORT) {
   client.write(fb -> buf, length);
   client.println();
   client.stop();
+  header.remove();
   return 0;
 }
-
 
 /**
  * Generate a header for a given HTTPS packet.
  */
-String body generateHeader(int bodyLength, IPAddress HOST, String macAddress) {
-  /**
-   * Get the current time and format the timestamp as MySQL DATETIME.
-   * timeinfo is an empty struct whihc is filled by calling getLocalTime().
-   */
-  struct tm timeinfo;
-  if (!getLocalTime(&timeinfo)) {
-    Serial.println("Failed to obtain time");
-    return "None";
-  }
-  char timestamp[20];
-  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", &timeinfo);
-  String stamp = String(timestamp);
+String generateHeader(MIME type, int bodyLength, IPAddress HOST, String macAddress) {
+  
+  String stamp = getTime();
+
+
 
   String header = "POST / HTTP/1.1\r\n"\
                   "Host: " + HOST.toString() + "\r\n"\
-                  "Content-Type: application/x-www-form-urlencoded\r\n"\
+                  "Content-Type: "+ static_cast<String>(type) +"\r\n"\
                   "Connection: close\r\n"\
                   "Content-Length: " + String(bodyLength) + "\r\n"\
-                  "MAC-address: " + macAddress + "\r\n";
+                  "MAC-address: " + macAddress + "\r\n"\
                   "Timestamp: " + stamp + "\r\n";
   return header;
 }
@@ -163,7 +161,23 @@ String body generateHeader(int bodyLength, IPAddress HOST, String macAddress) {
  * size_t can overflow int as its larger, but we only have 12MB of RAM, and the max image res
  * is like 720p.
  */
-String body generateHeader(size_t bodyLength, IPAddress HOST, String macAddress) {
+String generateHeader(MIME type, size_t bodyLength, IPAddress HOST, String macAddress) {
   int length = static_cast<int>(bodyLength);
-  return generateHeader(int length, IPAddress HOST, String macAddress);
+  return generateHeader(type, int length, IPAddress HOST, String macAddress);
+}
+
+
+/**
+  * Get the current time and format the timestamp as MySQL DATETIME.
+  * timeinfo is an empty struct whihc is filled by calling getLocalTime().
+  */
+String getTime() {
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+    return "None";
+  }
+  char timestamp[20];
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", &timeinfo);
+  return String(timestamp);
 }
