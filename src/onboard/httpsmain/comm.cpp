@@ -6,7 +6,7 @@
 int connect(WiFiClientSecure *client, IPAddress HOST, IPAddress PORT) {
   int conn_count = 0;
   Serial.print("Connecting to Status Server Socket.");
-  while (! client.connect(HOST, PORT)) {
+  while (! client -> connect(HOST, PORT)) {
     delay(random(200, 501));
     Serial.print(".");
     conn_count+=1;
@@ -28,7 +28,7 @@ int wifiSetup(WiFiClientSecure *client, char* SSID, char* PASS) {
   WiFi.begin(SSID, PASS);
   WiFi.setSleep(false);
   Serial.print("Connecting to WiFi Network .");
-  Serial.print(Network::SSID);
+  Serial.print(SSID);
   int connect_count = 0; 
   while (WiFi.status() != WL_CONNECTED) {
       delay(random(400, 601));
@@ -39,13 +39,13 @@ int wifiSetup(WiFiClientSecure *client, char* SSID, char* PASS) {
           return 1;
       }
   }
-  client.setInsecure();
+  client -> setInsecure();
 }
 
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-int sendReadings(float* readings, int length, IPAddress HOST, IPAddress READINGPORT) {
+int sendReadings(WiFiClientSecure *client, float* readings, int length, IPAddress HOST, IPAddress READINGPORT) {
 
   String readingStrings[length];
   for(int x = 0; x < length; x++) {
@@ -57,22 +57,22 @@ int sendReadings(float* readings, int length, IPAddress HOST, IPAddress READINGP
                 "&pressure=" + readingStrings[2] + ""\
                 "&dewpoint=" + readingStrings[3] + "\r\n";
 
-  String header = generateHeader(body.length(), HOST, WiFi.macAddress());
+  String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress());
   if (header == "None") return 1;
 
   Serial.println(header);
   Serial.println(body);
   Serial.println();
 
-  if (connect(HOST, READINGPORT) == 1) return 1;
+  if (connect(client, HOST, READINGPORT) == 1) return 1;
 
-  client.println(header);
-  client.println(body);
-  client.println();
-  client.stop();
+  client -> println(header);
+  client -> println(body);
+  client -> println();
+  client -> stop();
 
-  body.remove();
-  header.remove();
+  //body.remove();
+  //header.remove();
   return 0;
 }
 
@@ -80,7 +80,7 @@ int sendReadings(float* readings, int length, IPAddress HOST, IPAddress READINGP
 /**
  * Send statuses of weather sensors to HOST on specified PORT. 
  */
-int sendStatuses(bool* statuses, int length, IPAddress HOST, IPAddress SENSORSPORT) {
+int sendStatuses(WiFiClientSecure *client, bool* statuses, int length, IPAddress HOST, IPAddress SENSORSPORT) {
   /*
    * Populate the String fields for the POST.
    * We need the stauses for the rest of the program but dont wanna hold a bunch of strings
@@ -95,22 +95,22 @@ int sendStatuses(bool* statuses, int length, IPAddress HOST, IPAddress SENSORSPO
                 "&bmp=" + statusStrings[1] + ""\
                 "&cam=" + statusStrings[2] + "\r\n";
 
-  String header = generateHeader(body.length(), HOST, WiFi.macAddress());
+  String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress());
   if (header == "None") return 1;
 
   Serial.println(header);
   Serial.println(body);
   Serial.println();
 
-  if (connect(HOST, SENSORSPORT) == 1) return 1;
+  if (connect(client, HOST, SENSORSPORT) == 1) return 1;
 
-  client.println(header);
-  client.println(body);
-  client.println();
-  client.stop();
+  client -> println(header);
+  client -> println(body);
+  client -> println();
+  client -> stop();
 
-  body.remove();
-  header.remove();
+  //body.remove();
+  //header.remove();
   return 0;
   
 }
@@ -118,36 +118,36 @@ int sendStatuses(bool* statuses, int length, IPAddress HOST, IPAddress SENSORSPO
 /**
  * Send Image buffer to HOST on specified PORT.
 */
-int sendImage(camera_fb_t *fb, IPAddress HOST, IPAddress IMAGEPORT) {
+int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, IPAddress IMAGEPORT) {
   
-  String header = generateHeader(length, HOST, WiFi.macAddress());
+  String header = generateHeader(MIMEType::IMAGE_JPG, fb -> len, HOST, WiFi.macAddress());
   if (header == "None") return 1;
 
   Serial.println(header);
   Serial.println();
 
-  if (connect(HOST, IMAGEPORT) == 1) return 1;
+  if (connect(client, HOST, IMAGEPORT) == 1) return 1;
 
-  client.println(header);
-  client.write(fb -> buf, length);
-  client.println();
-  client.stop();
-  header.remove();
+  client -> println(header);
+  client -> write(fb -> buf, length);
+  client -> println();
+  client -> stop();
+  //header.remove();
   return 0;
 }
 
 /**
  * Generate a header for a given HTTPS packet.
  */
-String generateHeader(MIME type, int bodyLength, IPAddress HOST, String macAddress) {
+String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macAddress) {
   
   String stamp = getTime();
-
+  char* mimeType = MIMEStr[static_cast<int>(type)];
 
 
   String header = "POST / HTTP/1.1\r\n"\
                   "Host: " + HOST.toString() + "\r\n"\
-                  "Content-Type: "+ static_cast<String>(type) +"\r\n"\
+                  "Content-Type: "+ static_cast<String>(mimeType) +"\r\n"\
                   "Connection: close\r\n"\
                   "Content-Length: " + String(bodyLength) + "\r\n"\
                   "MAC-address: " + macAddress + "\r\n"\
@@ -161,9 +161,9 @@ String generateHeader(MIME type, int bodyLength, IPAddress HOST, String macAddre
  * size_t can overflow int as its larger, but we only have 12MB of RAM, and the max image res
  * is like 720p.
  */
-String generateHeader(MIME type, size_t bodyLength, IPAddress HOST, String macAddress) {
+String generateHeader(MIMEType type, size_t bodyLength, IPAddress HOST, String macAddress) {
   int length = static_cast<int>(bodyLength);
-  return generateHeader(type, int length, IPAddress HOST, String macAddress);
+  return generateHeader(type, length, HOST, macAddress);
 }
 
 

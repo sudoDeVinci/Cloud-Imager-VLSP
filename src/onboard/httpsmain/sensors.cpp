@@ -1,5 +1,17 @@
 #include "sensors.h"
 
+/**
+ * Clock speeds for different camera 
+*/
+#define CAMERA_CLK 20000000
+#define CAMERA_MODEL_WROVER_KIT
+#define CAMERA_MODEL_ESP32S3_EYE
+#define MAGNUS_A 17.625
+#define MAGNUS_B 243.04
+/** 
+ * https://metar-taf.com/ESMX
+ */
+#define SEALEVELPRESSURE_HPA (1020.6)
 
 /**
  * Setup the SHT31-D and return the sensor object.
@@ -38,6 +50,30 @@ Adafruit_BMP3XX bmpSetup(TwoWire *wire, Sensors::Status *stat) {
   }
 
   return bmp;
+}
+
+/**
+ * Scan Serial connection on predefined pins for sensors. Print the addresses in hex. 
+ */
+void Scan (TwoWire *wire) {
+  Serial.println ();
+  Serial.println ("I2C scanner. Scanning ...");
+  byte count = 0;
+
+  for (byte i = 8; i < 120; i++) {
+    wire -> beginTransmission(i);
+    if (wire -> endTransmission() == 0) {
+      Serial.print ("Found address: ");
+      Serial.print (i, DEC);
+      Serial.print (" (0x");
+      Serial.print (i, HEX);     
+      Serial.println (")");
+      count++;
+    }
+  }
+  Serial.print ("Found ");      
+  Serial.print (count, DEC);
+  Serial.println (" device(s).");
 }
 
 /**
@@ -92,7 +128,7 @@ int cameraSetup(Sensors::Status *stat) {
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
-    STATUSES[2] = false;
+    stat -> CAM = false;
   }
 
   sensor_t * s = esp_camera_sensor_get();
@@ -102,5 +138,5 @@ int cameraSetup(Sensors::Status *stat) {
   s->set_saturation(s, 0); // lower the saturation
   
   Serial.println("Camera configuration complete!");
-  STATUSES[2] = true;
+  stat -> CAM = true;
 }

@@ -1,4 +1,4 @@
-#include "esp_camera.h"
+/*#include "esp_camera.h"
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
@@ -7,16 +7,12 @@
 #include <Wire.h>
 
 
-/**
  * Select camera model
  * #define CAMERA_MODEL_WROVER_KIT
- */
 
 #define CAMERA_MODEL_ESP32S3_EYE
 
-/**
- * Clock speeds for different camera 
-*/
+*Clock speeds for different camera 
 #define CAMERA_CLK 20000000
 
 
@@ -24,14 +20,12 @@
 #define MAGNUS_A 17.625
 #define MAGNUS_B 243.04
 
-/** 
  * https://metar-taf.com/ESMX
- */
+ *
 #define SEALEVELPRESSURE_HPA (1020.6)
 
-/**
  * Time to sleep 
- */
+ *
 #define SLEEP_TIME_MINUTES 10 
 
 /** ===========================
@@ -39,7 +33,7 @@
  *  =========================== 
  *  
  *  Should almost definitely store these on disk but here we are.
- */
+ *
 
 // const char* SSID = "Asimov-2.4GHZ";
 // const char* PASS = "Asimov42";
@@ -57,24 +51,24 @@ WiFiClientSecure client;
 /**
  * Boolean array of sensor statuses 
  * [SHT] || [BMP] || [CAM]
- */
+ *
 bool STATUSES[] = {false, false, false};
 
 /*
  * Serial for sensors & HTTP client
- */
+ *
 TwoWire wire = TwoWire(0);
 
 /**
  * Sensor objects to use later 
- */
+ *
 Adafruit_BMP3XX bmpGlob;
 Adafruit_SHT31 shtGlob;
 
 
 /**
  * Server certificate for testing
- */
+ *
 const char* TESTCERT  = "-----BEGIN CERTIFICATE-----\n"
 "MIIDnDCCAoSgAwIBAgIEZS6f7TANBgkqhkiG9w0BAQsFADCBjzELMAkGA1UEBhMC\n" \
 "U0UxFzAVBgNVBAgMDktyb25vYmVyZ3MgTGFuMRAwDgYDVQQHDAdWw6R4asO2MSQw\n" \
@@ -123,7 +117,7 @@ const char* HOMECERT = "-----BEGIN CERTIFICATE-----\n" \
 
 /**
  * Enter deep sleep for amount of minutes (converted to miocroseconds)
- */
+ *
 void sleep_minutes(int minutes) {
   #include <esp_sleep.h>
   esp_sleep_enable_timer_wakeup(minutes * 60000000);
@@ -132,7 +126,7 @@ void sleep_minutes(int minutes) {
 
 /**
  * Enter deep sleep for amount of minutes (converted to miocroseconds)
- */
+ *
 void sleep_secs(int secs) {
   #include <esp_sleep.h>
   esp_sleep_enable_timer_wakeup(secs * 1000000);
@@ -142,7 +136,7 @@ void sleep_secs(int secs) {
 
 /**
  * Setup the SHT31-D and return the sensor object.
- */
+ *
 Adafruit_SHT31 shtSetup(TwoWire *wire, bool[] STATUSES) {
   Adafruit_SHT31 sht31 = Adafruit_SHT31(wire);
   if (!sht31.begin()) {
@@ -158,7 +152,7 @@ Adafruit_SHT31 shtSetup(TwoWire *wire, bool[] STATUSES) {
 
 /*
  * Setup and calibrate the BMP390. Return the sensor object.
- */
+ *
 Adafruit_BMP3XX bmpSetup(TwoWire *wire) {
   Adafruit_BMP3XX bmp;
   if (!bmp.begin_I2C(0x77, wire)) {
@@ -169,7 +163,7 @@ Adafruit_BMP3XX bmpSetup(TwoWire *wire) {
     Serial.println("BMP found!");
     /**
      * Set up oversampling and filter initialization
-     */
+     *
     bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
     bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);
     bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
@@ -182,7 +176,7 @@ Adafruit_BMP3XX bmpSetup(TwoWire *wire) {
 /**
  * Set up camera for taking periodic images.
  * Return 1 if good, 0 if failed at some point. 
- */
+ *
 int cameraSetup(void) {
 
   Serial.println("Setting up camera...");
@@ -248,7 +242,7 @@ int cameraSetup(void) {
 
 /**
  * Scan Serial connection on predefined pins for sensors. Print the addresses in hex. 
- */
+ *
 void Scan () {
   Serial.println ();
   Serial.println ("I2C scanner. Scanning ...");
@@ -273,7 +267,7 @@ void Scan () {
 
 /**
  * Attempt to establish a server connection 10 times.
- */
+ *
 int connect(IPAddress HOST, uint16_t PORT) {
   int conn_count = 0;
   Serial.print("Connecting to Status Server Socket on Port: " + String(PORT));
@@ -296,12 +290,12 @@ int connect(IPAddress HOST, uint16_t PORT) {
  * Attempt to connect to WiFi 10 times.
  * Return 0 if success, return 1 if not. 
  * 
- */
+ *
 int wifiSetup(void) {
 
   /**
    * TODO: Setup DNS stuff for time server goodness
-   */
+   *
   IPAddress local_IP(192, 168, 0, 199);
   IPAddress gateway(192, 168, 0, 254);
   IPAddress subnet(255, 255, 255, 0);
@@ -337,12 +331,12 @@ int wifiSetup(void) {
 
 /**
  * Send POST Request withn sensor data.
- */
+ *
 int sendReadings(float* readings, int length) {
 
   /**
    * Get the current time and format the timestamp as MySQL DATETIME.
-   */
+   *
   // Get the current time
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) {
@@ -357,12 +351,12 @@ int sendReadings(float* readings, int length) {
 
   /*
    * String array to hold the readings of the various sensors.
-   */
+   *
   String readingStrings[length];
 
   /*
    * Populate the String fields for the POST.
-   */
+   *
   for(int x = 0; x < length; x++) {
     readingStrings[x] = String(readings[x]);
     //Serial.println("Element: " + statusStrings[x]);
@@ -370,7 +364,7 @@ int sendReadings(float* readings, int length) {
 
   /*
    * Formulate the body String of the POST request
-   */
+   *
   String body = "temperature=" + readingStrings[0] + ""\
                 "&humidity=" + readingStrings[1] + ""\
                 "&pressure=" + readingStrings[2] + ""\
@@ -378,7 +372,7 @@ int sendReadings(float* readings, int length) {
 
   /*
    * Formulate the header for the POST request.
-   */
+   *
   String header = "POST / HTTP/1.1\r\n"\
                   "Host: " + HOST.toString() + "\r\n"\
                   "Content-Type: application/x-www-form-urlencoded\r\n"\
@@ -390,7 +384,7 @@ int sendReadings(float* readings, int length) {
 
    /*
    * Do a better loop to check if connected.
-   */
+   *
   if (connect(HOST, READINGPORT) == 1) {
     Serial.println("Not actually connected to the Server!");
     return 1;
@@ -414,12 +408,12 @@ int sendReadings(float* readings, int length) {
 
 /**
  * Send a packet containing the statuses of the varous sensors.
- */
+ *
 int sendStatuses(bool* statuses, size_t length) {
 
   /**
    * Get the current time and format the timestamp as MySQL DATETIME.
-   */
+   *
   // Get the current time
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) {
@@ -433,21 +427,21 @@ int sendStatuses(bool* statuses, size_t length) {
   String stamp = String(timestamp); 
   /*
    * String array to hold the statuses of the various sensors.
-   */
+   *
   String statusStrings[length];
 
   /*
    * Populate the String fields for the POST.
    * We need the stauses for the rest of the program but dont wanna hold a bunch of strings
    * in memory, so we hold them as booleans then convert them to String equivalents before sending.
-   */
+   *
   for(int x = 0; x < length; x++) {
     statusStrings[x] = (statuses[x] ? "true" : "false");
   }
 
   /*
    * Formulate the body String of the POST request
-   */
+   *
   String body = "sht="  + statusStrings[0] + ""\
                 "&bmp=" + statusStrings[1] + ""\
                 "&cam=" + statusStrings[2] + "\r\n";
@@ -455,7 +449,7 @@ int sendStatuses(bool* statuses, size_t length) {
 
   /*
    * Formulate the header for the POST request.
-   */
+   *
   String packet = "POST / HTTP/1.1\r\n"\
                   "Host: " + HOST.toString() + "\r\n"\
                   "Content-Type: application/x-www-form-urlencoded\r\n"\
@@ -468,7 +462,7 @@ int sendStatuses(bool* statuses, size_t length) {
 
   /*
    * Do a better loop to check if connected.
-   */
+   *
   if (connect(HOST, SENSORSPORT) == 1) {
     return 1;
   }
@@ -487,7 +481,7 @@ int sendStatuses(bool* statuses, size_t length) {
 int sendImage(String stamp) {
   /*
    * Capture an image multiple times to flush buffer
-   */
+   *
   camera_fb_t *fb = esp_camera_fb_get();
   esp_camera_fb_return(fb);
   fb = esp_camera_fb_get();
@@ -498,7 +492,7 @@ int sendImage(String stamp) {
 
   /*
    * Formulate the header for the POST request.
-   */
+   *
   String header = "POST /" + String(IMAGEPORT) + " HTTP/1.1\r\n"\
                   "Host: " + HOST.toString() + "\r\n"\
                   "Content-Type: image/jpeg\r\n"\
@@ -527,13 +521,13 @@ void setup() {
    * wire.begin(sda, scl)
    * 32,33 for ESP32 WROVER
    * 41,42 for ESP32 S3
-   */
+   *
   wire.begin(41,42);
   
   /**
    * Check for wifi init error.
-   * If no wifi, attempt to restart object.
-   */
+   * f no wifi, attempt to restart object.
+   *
   if (wifiSetup() == 1) {
     sleep_minutes(10);
     Serial.println("Rebooting...");
@@ -542,22 +536,22 @@ void setup() {
 
   /**
    * Check for camera init error. 
-   */
+   *
   cameraSetup();
 
   /**
    * Check for BMP init error. 
-   */
+   *
   bmpSetup(&wire);
 
   /**
    * Check for SHT init error.
-   */
+   *
   shtSetup(&wire);
 
   /**
    * Set the time by synching with a time server 
-   */
+   *
   configTime(0, 0, "pool.ntp.org", "time.nist.gov");
 
   
@@ -568,7 +562,7 @@ void setup() {
 }
 
 
-
+/*
 void loop() {
   bmpGlob;
   shtGlob;
@@ -581,3 +575,4 @@ void loop() {
   //sendStatuses(STATUSES, sizeof(STATUSES));
 
 }
+*/
