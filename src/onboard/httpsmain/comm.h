@@ -20,12 +20,6 @@ enum class MIMEType {
     APP_FORM
 };
 
-const char* MIMEStr[] = {
-    "image/png",
-    "image/jpeg",
-    "application/x-www-form-urlencoded"
-};
-
 
 enum HeaderFields { 
     POST,
@@ -35,16 +29,6 @@ enum HeaderFields {
     LENGTH,
     MAC,
     TIMESTAMP
-};
-
-const char* HeaderStr[] = {
-  "POST / HTTP/1.1",
-  "Host: ",
-  "Content-Type: ",
-  "Connection: close",
-  "Content-Length: ",
-  "MAC-address: ",
-  "Timestamp: "
 };
 
 
@@ -105,7 +89,7 @@ String generateHeader(MIMEType type, size_t bodyLength, IPAddress HOST, String m
   * Get the current time and format the timestamp as MySQL DATETIME.
   * timeinfo is an empty struct whihc is filled by calling getLocalTime().
   */
-String getTime()
+String getTime();
 
 
 #endif

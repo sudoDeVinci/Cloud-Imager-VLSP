@@ -1,4 +1,5 @@
-/*#include "esp_camera.h"
+/*
+#include "esp_camera.h"
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>

@@ -1,17 +1,18 @@
 #include "sensors.h"
+#include "camera_pins.h"
 
 /**
  * Clock speeds for different camera 
 */
-#define CAMERA_CLK 20000000
-#define CAMERA_MODEL_WROVER_KIT
-#define CAMERA_MODEL_ESP32S3_EYE
+
 #define MAGNUS_A 17.625
 #define MAGNUS_B 243.04
 /** 
  * https://metar-taf.com/ESMX
  */
 #define SEALEVELPRESSURE_HPA (1020.6)
+#define CAMERA_CLK 20000000
+#define CAMERA_MODEL_ESP32S3_EYE
 
 /**
  * Setup the SHT31-D and return the sensor object.

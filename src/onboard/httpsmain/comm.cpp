@@ -1,5 +1,24 @@
 #include "comm.h"
 
+
+String MIMEStr[] = {
+    "image/png",
+    "image/jpeg",
+    "application/x-www-form-urlencoded"
+};
+
+String HeaderStr[] = {
+  "POST / HTTP/1.1",
+  "Host: ",
+  "Content-Type: ",
+  "Connection: close",
+  "Content-Length: ",
+  "MAC-address: ",
+  "Timestamp: "
+};
+
+
+
 /**
  * Connect to a HTTPS server.
  */
@@ -129,7 +148,7 @@ int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, IPAddre
   if (connect(client, HOST, IMAGEPORT) == 1) return 1;
 
   client -> println(header);
-  client -> write(fb -> buf, length);
+  client -> write(fb -> buf, fb -> len);
   client -> println();
   client -> stop();
   //header.remove();
@@ -142,12 +161,12 @@ int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, IPAddre
 String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macAddress) {
   
   String stamp = getTime();
-  char* mimeType = MIMEStr[static_cast<int>(type)];
+  String mimeType = MIMEStr[static_cast<int>(type)];
 
 
   String header = "POST / HTTP/1.1\r\n"\
                   "Host: " + HOST.toString() + "\r\n"\
-                  "Content-Type: "+ static_cast<String>(mimeType) +"\r\n"\
+                  "Content-Type: "+ mimeType +"\r\n"\
                   "Connection: close\r\n"\
                   "Content-Length: " + String(bodyLength) + "\r\n"\
                   "MAC-address: " + macAddress + "\r\n"\

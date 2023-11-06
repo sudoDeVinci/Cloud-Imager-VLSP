@@ -7,6 +7,19 @@
 #include "Adafruit_BMP3XX.h"
 #include <Wire.h>
 
+/**
+ * Clock speeds for different camera 
+*/
+
+#define MAGNUS_A 17.625
+#define MAGNUS_B 243.04
+/** 
+ * https://metar-taf.com/ESMX
+ */
+#define SEALEVELPRESSURE_HPA (1020.6)
+#define CAMERA_CLK 20000000
+#define CAMERA_MODEL_ESP32S3_EYE
+
 
 struct Sensors {
     TwoWire wire;
