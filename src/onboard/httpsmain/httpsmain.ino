@@ -72,8 +72,8 @@ void setup() {
 
 void loop() {
   String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
-  Serial.print(readings[0] + " | ");
-  Serial.print(readings[1] + " | ");
-  Serial.print(readings[2] + " | ");
-  Serial.print(readings[3] + " | ");
+  Serial.print(readings[0] + " deg C | ");
+  Serial.print(readings[1] + " % | ");
+  Serial.print(readings[2] + " hPa | ");
+  Serial.print(readings[3] + " deg C | ");
 }
