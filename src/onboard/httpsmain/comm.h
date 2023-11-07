@@ -5,6 +5,7 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include "sensors.h"
+#include <time.h>
 //#include "esp_camera.h"
 
 enum class Ports: uint16_t {
@@ -40,20 +41,18 @@ struct Network {
     IPAddress HOST;
     IPAddress GATEWAY;
     IPAddress DNS;
-    WiFiClientSecure CLIENT;
+    WiFiClientSecure *CLIENT;
 };
-
-
-/**
- * Connect to a HTTPS server.
- */
-int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT);
-
 
 /**
  * Connect to wifi Network and apply SSL certificate.
  */
 int wifiSetup(WiFiClientSecure *client, const char* SSID, const char* PASS, Sensors::Status *stat);
+
+/**
+ * Connect to a HTTPS server.
+ */
+int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT);
 
 
 /**

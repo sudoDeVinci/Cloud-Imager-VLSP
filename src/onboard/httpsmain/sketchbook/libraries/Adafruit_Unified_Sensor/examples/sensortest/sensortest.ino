@@ -12,7 +12,7 @@ Adafruit_ADXL343 accel = Adafruit_ADXL343(12345);
 
 void displaySensorDetails(void)
 {
-  sensor_t sensor;
+  Adafruit_sensor_t sensor;
   accel.getSensor(&sensor);
   Serial.println("------------------------------------");
   Serial.print  ("Sensor:       "); Serial.println(sensor.name);

@@ -17,6 +17,30 @@ String HeaderStr[] = {
   "Timestamp: "
 };
 
+/**
+ * Connect to wifi Network and apply SSL certificate.
+ */
+int wifiSetup(WiFiClientSecure *client, const char* SSID, const char* PASS, Sensors::Status *stat) {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(SSID, PASS);
+  WiFi.setSleep(false);
+  Serial.print("Connecting to WiFi Network " + String(SSID));
+  int connect_count = 0; 
+  while (WiFi.status() != WL_CONNECTED) {
+      delay(random(400, 601));
+      Serial.print(".");
+      connect_count+=1;
+      if (connect_count >= 10) {
+          Serial.println("Could not connect to Wifi.");
+          stat -> WIFI = false;
+          return 1;
+      }
+  }
+  stat -> WIFI = true;
+  client -> setInsecure();
+  Serial.println("Connected!");
+  return 0;
+}
 
 
 /**
@@ -39,29 +63,7 @@ int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT) {
   return 0;
 }
 
-/**
- * Connect to wifi Network and apply SSL certificate.
- */
-int wifiSetup(WiFiClientSecure *client, const char* SSID, const char* PASS, Sensors::Status *stat) {
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(SSID, PASS);
-  WiFi.setSleep(false);
-  Serial.print("Connecting to WiFi Network .");
-  Serial.print(SSID);
-  int connect_count = 0; 
-  while (WiFi.status() != WL_CONNECTED) {
-      delay(random(400, 601));
-      Serial.print(".");
-      connect_count+=1;
-      if (connect_count >= 10) {
-          Serial.println("Could not connect to WIfi.");
-          stat -> WIFI = false;
-          return 1;
-      }
-  }
-  stat -> WIFI = true;
-  client -> setInsecure();
-}
+
 
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
@@ -179,12 +181,17 @@ String generateHeader(MIMEType type, size_t bodyLength, IPAddress HOST, String m
   * timeinfo is an empty struct whihc is filled by calling getLocalTime().
   */
 String getTime() {
+  const char* ntpServer = "pool.ntp.org";
+  const long  gmtOffset_sec = 1;
+  const int   daylightOffset_sec = 3600;
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) {
     Serial.println("Failed to obtain time");
     return "None";
   }
   char timestamp[20];
-  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", &timeinfo);
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d-%H-%M-%S", &timeinfo);
   return String(timestamp);
 }

@@ -19,25 +19,22 @@
 /**
  * Setup the SHT31-D and return the sensor object.
  */
-Adafruit_SHT31 shtSetup(TwoWire *wire, Sensors::Status *stat) {
-  Adafruit_SHT31 sht31 = Adafruit_SHT31(wire);
-  if (!sht31.begin()) {
+void shtSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_SHT31 *sht) {
+  if (!sht -> begin()) {
     stat -> SHT = false;
     Serial.println("Couldn't find SHT31");
   } else {
     stat -> SHT = true;
     Serial.println("SHT31 found!");
   }
-  
-  return sht31;
 }
 
 /*
  * Setup and calibrate the BMP390. Return the sensor object.
  */
-Adafruit_BMP3XX bmpSetup(TwoWire *wire, Sensors::Status *stat) {
-  Adafruit_BMP3XX bmp;
-  if (!bmp.begin_I2C(0x77, wire)) {
+void bmpSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_BMP3XX *bmp) {
+  
+  if (!bmp -> begin_I2C(0x77, wire)) {
     stat -> BMP = false;
     Serial.println("Could not find a valid BMP3 sensor, check wiring!");
   } else {
@@ -46,13 +43,11 @@ Adafruit_BMP3XX bmpSetup(TwoWire *wire, Sensors::Status *stat) {
     /**
      * Set up oversampling and filter initialization
      */
-    bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
-    bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);
-    bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
-    bmp.setOutputDataRate(BMP3_ODR_50_HZ);
+    bmp -> setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
+    bmp -> setPressureOversampling(BMP3_OVERSAMPLING_4X);
+    bmp -> setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
+    bmp -> setOutputDataRate(BMP3_ODR_50_HZ);
   }
-
-  return bmp;
 }
 
 /**
@@ -148,22 +143,20 @@ void cameraSetup(Sensors::Status *stat) {
 /**
  * Read the humidity from the SHT-31D in rel percent. Return a String.
  */
-float read(Adafruit_SHT31 *sht) {
-  float hum = sht -> readHumidity();
-  if(!isnan(hum)) {
-    return hum; 
-  }
-  return UNDEFINED;
+void read(Adafruit_SHT31 *sht, float *hum) {
+  float h = sht -> readHumidity();
+  if(!isnan(h)) *hum = h; 
 }
 
 /**
  * Read the Temperature and pressure from the BMP390 in deg C and hPa.
  */
-double* read(Adafruit_BMP3XX *bmp) {
-  double* out = new double[3]{UNDEFINED, UNDEFINED, UNDEFINED};
+void read(Adafruit_BMP3XX *bmp, double *out) {
 
-  if (! bmp -> performReading()) return out;
-
+  if (! bmp -> performReading()) {
+    Serial.println("Couldn't perform reading in bmp!");
+    return;
+  }
   double temp = bmp -> temperature;
   if(!isnan(temp)) out[0] = temp;
 
@@ -174,7 +167,7 @@ double* read(Adafruit_BMP3XX *bmp) {
   double altitude = static_cast<double>(alt);
   if(!isnan(altitude)) out[2] = altitude;
 
-  return out;
+  return;
 }
 
 String calcDP(double temperature, float humidity, double pressure, double altitude) {
@@ -188,25 +181,27 @@ String calcDP(double temperature, float humidity, double pressure, double altitu
 }
 
 String* readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp) {
-  String* thpd = new String[4]{"None", "None", "None", "None"}; 
-  double tpa[3] = {UNDEFINED, UNDEFINED, UNDEFINED};
+  String* thpd = new String[4]{"None", "None", "None", "None"};
+  double* tpa = new double[3]{UNDEFINED, UNDEFINED, UNDEFINED};
   float humidity = UNDEFINED;
 
-  if(stat -> BMP == true) double* tpa = read(bmp);
-  if(stat -> SHT == true) humidity = read(sht);
+  //Serial.println("Reading from bmp.");
+  if(stat -> BMP == true) read(bmp, tpa);
+  //Serial.println("Reading from SHT");
+  if(stat -> SHT == true) read(sht, &humidity);
 
-  if(tpa[0]!=UNDEFINED && tpa[1]!=UNDEFINED && tpa[2]!=UNDEFINED && humidity !=UNDEFINED) {
+  //Serial.println("Getting dewpoint");
+  if(tpa[0]!=UNDEFINED && tpa[1]!=UNDEFINED && tpa[2]!=UNDEFINED && humidity!=UNDEFINED) {
     String dew = calcDP(tpa[0], humidity, tpa[1], tpa[2]);
     thpd[3] = dew;
   }
 
-  if(!isnan(tpa[0])) thpd[0] = String(thpd[0]);
-  if(!isnan(humidity)) thpd[0] = String(humidity);
-  if(!isnan(tpa[1])) thpd[0] = String(thpd[1]);
+  //Serial.println("Stringifying");
+  if(tpa[0] != UNDEFINED) thpd[0] = String(tpa[0]);
+  if(humidity != UNDEFINED) thpd[1] = String(humidity);
+  if(tpa[1] != UNDEFINED) thpd[2] = String(tpa[1]);
+  //Serial.println("Clearing");
 
-  delete[] tpa;
-  delete &humidity;
-
-
+  //Serial.println("Cleared");
   return thpd;
 }

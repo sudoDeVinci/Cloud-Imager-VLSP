@@ -191,7 +191,7 @@ typedef struct {
                        sensor */
   int32_t min_delay; /**< min delay in microseconds between events. zero = not a
                         constant rate */
-} sensor_t;
+} Adafruit_sensor_t;
 
 /** @brief Common sensor interface to unify various sensors.
  * Intentionally modeled after sensors.h in the Android API:
@@ -216,7 +216,7 @@ public:
       @returns True if able to fetch an event */
   virtual bool getEvent(sensors_event_t *) = 0;
   /*! @brief Get info about the sensor itself */
-  virtual void getSensor(sensor_t *) = 0;
+  virtual void getSensor(Adafruit_sensor_t *) = 0;
 
   void printSensorDetails(void);
 };

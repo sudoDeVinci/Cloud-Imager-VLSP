@@ -92,7 +92,7 @@ typedef enum
 } sensors_type_t;
 ```
 
-## Sensor Details (`sensor_t`)
+## Sensor Details (`Adafruit_sensor_t`)
 
 This typedef describes the specific capabilities of this sensor, and allows us to know what sensor we are using beneath the abstraction layer.
 
@@ -109,7 +109,7 @@ typedef struct
     float    min_value;
     float    resolution;
     int32_t  min_delay;
-} sensor_t;
+} Adafruit_sensor_t;
 ```
 
 The individual fields are intended to be used as follows:
@@ -187,7 +187,7 @@ bool getEvent(sensors_event_t*);
 Calling this function will populate the supplied sensors\_event\_t reference with the latest available sensor data.  You should call this function as often as you want to update your data.
 
 ```c++
-void getSensor(sensor_t*);
+void getSensor(Adafruit_sensor_t*);
 ```
 Calling this function will provide some basic information about the sensor (the sensor name, driver version, min and max values, etc.
 
@@ -253,9 +253,9 @@ An example of reading the [TSL2561](https://github.com/adafruit/Adafruit_TSL2561
 Similarly, we can get the basic technical capabilities of this sensor with the following code:
 
 ```c++
- sensor_t sensor;
+ Adafruit_sensor_t sensor;
  
- sensor_t sensor;
+ Adafruit_sensor_t sensor;
  tsl.getSensor(&sensor);
 
  /* Display the sensor details */

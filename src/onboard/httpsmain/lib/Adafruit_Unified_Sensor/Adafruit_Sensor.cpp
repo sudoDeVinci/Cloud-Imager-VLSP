@@ -6,7 +6,7 @@
 */
 /**************************************************************************/
 void Adafruit_Sensor::printSensorDetails(void) {
-  sensor_t sensor;
+  Adafruit_sensor_t sensor;
   getSensor(&sensor);
   Serial.println(F("------------------------------------"));
   Serial.print(F("Sensor:       "));
