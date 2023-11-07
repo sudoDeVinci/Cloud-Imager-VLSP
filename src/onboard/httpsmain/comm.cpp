@@ -22,7 +22,7 @@ String HeaderStr[] = {
 /**
  * Connect to a HTTPS server.
  */
-int connect(WiFiClientSecure *client, IPAddress HOST, IPAddress PORT) {
+int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT) {
   int conn_count = 0;
   Serial.print("Connecting to Status Server Socket.");
   while (! client -> connect(HOST, PORT)) {
@@ -42,7 +42,7 @@ int connect(WiFiClientSecure *client, IPAddress HOST, IPAddress PORT) {
 /**
  * Connect to wifi Network and apply SSL certificate.
  */
-int wifiSetup(WiFiClientSecure *client, char* SSID, char* PASS) {
+int wifiSetup(WiFiClientSecure *client, const char* SSID, const char* PASS, Sensors::Status *stat) {
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PASS);
   WiFi.setSleep(false);
@@ -55,26 +55,23 @@ int wifiSetup(WiFiClientSecure *client, char* SSID, char* PASS) {
       connect_count+=1;
       if (connect_count >= 10) {
           Serial.println("Could not connect to WIfi.");
+          stat -> WIFI = false;
           return 1;
       }
   }
+  stat -> WIFI = true;
   client -> setInsecure();
 }
 
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-int sendReadings(WiFiClientSecure *client, float* readings, int length, IPAddress HOST, IPAddress READINGPORT) {
+int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddress HOST) {
 
-  String readingStrings[length];
-  for(int x = 0; x < length; x++) {
-    readingStrings[x] = String(readings[x]);
-  }
-
-  String body = "temperature=" + readingStrings[0] + ""\
-                "&humidity=" + readingStrings[1] + ""\
-                "&pressure=" + readingStrings[2] + ""\
-                "&dewpoint=" + readingStrings[3] + "\r\n";
+  String body = "temperature=" + readings[0] + ""\
+                "&humidity=" + readings[1] + ""\
+                "&pressure=" + readings[2] + ""\
+                "&dewpoint=" + readings[3] + "\r\n";
 
   String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress());
   if (header == "None") return 1;
@@ -83,7 +80,7 @@ int sendReadings(WiFiClientSecure *client, float* readings, int length, IPAddres
   Serial.println(body);
   Serial.println();
 
-  if (connect(client, HOST, READINGPORT) == 1) return 1;
+  if (connect(client, HOST, static_cast<uint16_t>(Ports::READINGPORT)) == 1) return 1;
 
   client -> println(header);
   client -> println(body);
@@ -99,20 +96,11 @@ int sendReadings(WiFiClientSecure *client, float* readings, int length, IPAddres
 /**
  * Send statuses of weather sensors to HOST on specified PORT. 
  */
-int sendStatuses(WiFiClientSecure *client, bool* statuses, int length, IPAddress HOST, IPAddress SENSORSPORT) {
-  /*
-   * Populate the String fields for the POST.
-   * We need the stauses for the rest of the program but dont wanna hold a bunch of strings
-   * in memory, so we hold them as booleans then convert them to String equivalents before sending.
-   */
-  String statusStrings[length];
-  for(int x = 0; x < length; x++) {
-    statusStrings[x] = (statuses[x] ? "true" : "false");
-  }
+int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST) {
 
-  String body = "sht="  + statusStrings[0] + ""\
-                "&bmp=" + statusStrings[1] + ""\
-                "&cam=" + statusStrings[2] + "\r\n";
+  String body = "sht="  + String(stat -> SHT) + ""\
+                "&bmp=" + String(stat -> BMP) + ""\
+                "&cam=" + String(stat -> CAM)+ "\r\n";
 
   String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress());
   if (header == "None") return 1;
@@ -121,7 +109,7 @@ int sendStatuses(WiFiClientSecure *client, bool* statuses, int length, IPAddress
   Serial.println(body);
   Serial.println();
 
-  if (connect(client, HOST, SENSORSPORT) == 1) return 1;
+  if (connect(client, HOST, static_cast<uint16_t>(Ports::SENSORSPORT)) == 1) return 1;
 
   client -> println(header);
   client -> println(body);
@@ -137,7 +125,7 @@ int sendStatuses(WiFiClientSecure *client, bool* statuses, int length, IPAddress
 /**
  * Send Image buffer to HOST on specified PORT.
 */
-int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, IPAddress IMAGEPORT) {
+int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST) {
   
   String header = generateHeader(MIMEType::IMAGE_JPG, fb -> len, HOST, WiFi.macAddress());
   if (header == "None") return 1;
@@ -145,7 +133,7 @@ int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, IPAddre
   Serial.println(header);
   Serial.println();
 
-  if (connect(client, HOST, IMAGEPORT) == 1) return 1;
+  if (connect(client, HOST, static_cast<uint16_t>(Ports::IMAGEPORT)) == 1) return 1;
 
   client -> println(header);
   client -> write(fb -> buf, fb -> len);

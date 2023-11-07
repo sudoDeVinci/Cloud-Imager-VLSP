@@ -22,7 +22,7 @@
 
 
 struct Sensors {
-    TwoWire wire;
+    TwoWire *wire;
     Adafruit_BMP3XX BMP;
     Adafruit_SHT31 SHT;
     camera_fb_t *CAM;
@@ -31,6 +31,7 @@ struct Sensors {
         bool CAM = false;
         bool SHT = false;
         bool BMP = false;
+        bool WIFI = false;
     }status;
 };
 
@@ -53,6 +54,20 @@ void Scan (TwoWire *wire);
  * Set up camera for taking periodic images.
  * Return 1 if good, 0 if failed at some point. 
  */
-int cameraSetup(Sensors::Status *stat);
+void cameraSetup(Sensors::Status *stat);
+
+/**
+ * Read the humidity from the SHT-31D in rel percent. Return a String.
+ */
+float read(Adafruit_SHT31 *sht);
+
+/**
+ * Read the Temperature and pressure from the BMP390 in deg C and hPa.
+ */
+double* read(Adafruit_BMP3XX *bmp);
+
+String calcDP(double temperature, float humidity, double pressure, double altitude);
+
+String* readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp);
 
 #endif

@@ -4,7 +4,8 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
-#include "esp_camera.h"
+#include "sensors.h"
+//#include "esp_camera.h"
 
 enum class Ports: uint16_t {
     READINGPORT = 8080,
@@ -33,42 +34,44 @@ enum HeaderFields {
 
 
 struct Network {
-    char* SSID;
-    char* PASS;
+    const char* SSID;
+    const char* PASS;
+    const char* CERT;
     IPAddress HOST;
     IPAddress GATEWAY;
     IPAddress DNS;
+    WiFiClientSecure CLIENT;
 };
 
 
 /**
  * Connect to a HTTPS server.
  */
-int connect(WiFiClientSecure *client, IPAddress HOST, IPAddress PORT);
+int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT);
 
 
 /**
  * Connect to wifi Network and apply SSL certificate.
  */
-int wifiSetup(WiFiClientSecure *client, char* SSID, char* PASS);
+int wifiSetup(WiFiClientSecure *client, const char* SSID, const char* PASS, Sensors::Status *stat);
 
 
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-int sendReadings(float* readings, int length, IPAddress HOST, IPAddress READINGPORT);
+int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddress HOST);
 
 
 /**
  * Send statuses of weather sensors to HOST on specified PORT. 
  */
-int sendStatuses(bool* statuses, int length, IPAddress HOST, IPAddress SENSORSPORT);
+int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST);
 
 
 /**
  * Send Image buffer to HOST on specified PORT.
 */
-int sendImage(camera_fb_t *fb, IPAddress HOST, IPAddress IMAGEPORT);
+int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST);
 
 
 /**

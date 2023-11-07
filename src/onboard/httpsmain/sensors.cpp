@@ -14,6 +14,8 @@
 #define CAMERA_CLK 20000000
 #define CAMERA_MODEL_ESP32S3_EYE
 
+#define UNDEFINED -69420.00
+
 /**
  * Setup the SHT31-D and return the sensor object.
  */
@@ -81,7 +83,7 @@ void Scan (TwoWire *wire) {
  * Set up camera for taking periodic images.
  * Return 1 if good, 0 if failed at some point. 
  */
-int cameraSetup(Sensors::Status *stat) {
+void cameraSetup(Sensors::Status *stat) {
 
   Serial.println("Setting up camera...");
 
@@ -140,4 +142,71 @@ int cameraSetup(Sensors::Status *stat) {
   
   Serial.println("Camera configuration complete!");
   stat -> CAM = true;
+}
+
+
+/**
+ * Read the humidity from the SHT-31D in rel percent. Return a String.
+ */
+float read(Adafruit_SHT31 *sht) {
+  float hum = sht -> readHumidity();
+  if(!isnan(hum)) {
+    return hum; 
+  }
+  return UNDEFINED;
+}
+
+/**
+ * Read the Temperature and pressure from the BMP390 in deg C and hPa.
+ */
+double* read(Adafruit_BMP3XX *bmp) {
+  double* out = new double[3]{UNDEFINED, UNDEFINED, UNDEFINED};
+
+  if (! bmp -> performReading()) return out;
+
+  double temp = bmp -> temperature;
+  if(!isnan(temp)) out[0] = temp;
+
+  double pres = bmp -> pressure;
+  if(!isnan(pres)) out[1] = pres;
+
+  float alt = bmp -> readAltitude(SEALEVELPRESSURE_HPA);
+  double altitude = static_cast<double>(alt);
+  if(!isnan(altitude)) out[2] = altitude;
+
+  return out;
+}
+
+String calcDP(double temperature, float humidity, double pressure, double altitude) {
+    double alpha = ((MAGNUS_A * temperature) / (MAGNUS_B + temperature)) + log(humidity / 100.0);
+    double dewPoint = (MAGNUS_B * alpha) / (MAGNUS_A - alpha);
+
+    // Correct for altitude
+    dewPoint = dewPoint - (altitude / 1000.0);
+
+    return String(dewPoint);
+}
+
+String* readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp) {
+  String* thpd = new String[4]{"None", "None", "None", "None"}; 
+  double tpa[3] = {UNDEFINED, UNDEFINED, UNDEFINED};
+  float humidity = UNDEFINED;
+
+  if(stat -> BMP == true) double* tpa = read(bmp);
+  if(stat -> SHT == true) humidity = read(sht);
+
+  if(tpa[0]!=UNDEFINED && tpa[1]!=UNDEFINED && tpa[2]!=UNDEFINED && humidity !=UNDEFINED) {
+    String dew = calcDP(tpa[0], humidity, tpa[1], tpa[2]);
+    thpd[3] = dew;
+  }
+
+  if(!isnan(tpa[0])) thpd[0] = String(thpd[0]);
+  if(!isnan(humidity)) thpd[0] = String(humidity);
+  if(!isnan(tpa[1])) thpd[0] = String(thpd[1]);
+
+  delete[] tpa;
+  delete &humidity;
+
+
+  return thpd;
 }
