@@ -37,14 +37,16 @@ void setup() {
 
   /**
    * Setting up credentials.
-   * network.SSID = "Asimov-2.4GHZ";
-   * network.PASS = "Asimov42";
+   *
+   * network.SSID = "VLSP-Innovation";
+   * network.PASS = "9a5mPA8bU64!";
    * TODO: move this onto disk to be loaded later. 
    */
   
+  network.SSID = "Asimov-2.4GHZ";
+  network.PASS = "Asimov42";
   network.CLIENT = &client;
-  network.SSID = "VLSP-Innovation";
-  network.PASS = "9a5mPA8bU64!";
+  
   network.HOST = IPAddress(192, 168, 8, 99);
 
   wifiSetup(network.CLIENT, network.SSID, network.PASS, &sensors.status);

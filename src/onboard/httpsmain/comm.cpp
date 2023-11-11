@@ -190,10 +190,10 @@ String getTime(tm *timeinfo, time_t *now, int timer) {
     time(now);
     localtime_r(now, timeinfo);
     Serial.print(".");
-    delay(15);
-  } while (((millis() - start) <= (1000 * timer)) && (timeinfo -> tm_year == 0xFF));
-  
-  if (timeinfo -> tm_year == 0xFF) return "None";
+    delay(150);
+  } while (((millis() - start) <= (1000 * timer)) && (timeinfo -> tm_year <= 1970));
+  Serial.println();
+  if (timeinfo -> tm_year == 1970) return "None";
 
   char timestamp[30];
   strftime(timestamp, sizeof(timestamp), "%Y-%m-%d-%H-%M-%S", localtime(now));
