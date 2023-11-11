@@ -11,6 +11,7 @@ Adafruit_BMP3XX bmp;
 Adafruit_SHT31 sht;
 TwoWire wire = TwoWire(0);
 
+
 void printReadings(String* readings) {
   Serial.print(readings[0] + " deg C | ");
   Serial.print(readings[1] + " % | ");
@@ -47,7 +48,11 @@ void setup() {
   network.HOST = IPAddress(192, 168, 8, 99);
 
   wifiSetup(network.CLIENT, network.SSID, network.PASS, &sensors.status);
-  
+  const char* ntpServer = "pool.ntp.org";
+  const char* timezone = "CET-1-CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00";
+  configTime(0, 0, ntpServer);
+  setenv("TZ", timezone, 1);
+
 
 
   sht = Adafruit_SHT31(sensors.wire);
@@ -56,16 +61,15 @@ void setup() {
   sensors.BMP = bmp;
   bmpSetup(sensors.wire, &sensors.status, &sensors.BMP);
   cameraSetup(&sensors.status);
-  
 }
 
 
 void loop() {
-  sendStatuses(network.CLIENT, &sensors.status, network.HOST);
+  String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
+  sendStatuses(network.CLIENT, &sensors.status, network.HOST, timestamp);
   String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
   printReadings(readings);
-  sendReadings(network.CLIENT, readings, 4, network.HOST);
-  delay(5000);
-  //Serial.println("Clearing");
+  sendReadings(network.CLIENT, readings, 4, network.HOST, timestamp);
+  delay(2000);
   delete[] readings;
 }

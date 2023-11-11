@@ -68,14 +68,14 @@ int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT) {
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddress HOST) {
+int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddress HOST, String timestamp) {
 
   String body = "temperature=" + readings[0] + ""\
                 "&humidity=" + readings[1] + ""\
                 "&pressure=" + readings[2] + ""\
                 "&dewpoint=" + readings[3] + "\r\n";
 
-  String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress());
+  String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress(), timestamp);
   if (header == "None") return 1;
 
   Serial.println(header);
@@ -98,13 +98,13 @@ int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddre
 /**
  * Send statuses of weather sensors to HOST on specified PORT. 
  */
-int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST) {
+int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST, String timestamp) {
 
   String body = "sht="  + String(stat -> SHT) + ""\
                 "&bmp=" + String(stat -> BMP) + ""\
                 "&cam=" + String(stat -> CAM)+ "\r\n";
 
-  String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress());
+  String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress(), timestamp);
   if (header == "None") return 1;
 
   Serial.println(header);
@@ -127,9 +127,9 @@ int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST
 /**
  * Send Image buffer to HOST on specified PORT.
 */
-int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST) {
+int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, String timestamp) {
   
-  String header = generateHeader(MIMEType::IMAGE_JPG, fb -> len, HOST, WiFi.macAddress());
+  String header = generateHeader(MIMEType::IMAGE_JPG, fb -> len, HOST, WiFi.macAddress(), timestamp);
   if (header == "None") return 1;
 
   Serial.println(header);
@@ -148,9 +148,8 @@ int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST) {
 /**
  * Generate a header for a given HTTPS packet.
  */
-String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macAddress) {
-  
-  String stamp = getTime();
+String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macAddress, String timestamp) {
+
   String mimeType = MIMEStr[static_cast<int>(type)];
 
 
@@ -160,7 +159,7 @@ String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macA
                   "Connection: close\r\n"\
                   "Content-Length: " + String(bodyLength) + "\r\n"\
                   "MAC-address: " + macAddress + "\r\n"\
-                  "Timestamp: " + stamp + "\r\n";
+                  "Timestamp: " + timestamp + "\r\n";
   return header;
 }
 
@@ -170,28 +169,33 @@ String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macA
  * size_t can overflow int as its larger, but we only have 12MB of RAM, and the max image res
  * is like 720p.
  */
-String generateHeader(MIMEType type, size_t bodyLength, IPAddress HOST, String macAddress) {
+String generateHeader(MIMEType type, size_t bodyLength, IPAddress HOST, String macAddress, String timestamp) {
   int length = static_cast<int>(bodyLength);
-  return generateHeader(type, length, HOST, macAddress);
+  return generateHeader(type, length, HOST, macAddress, timestamp);
 }
 
 
 /**
   * Get the current time and format the timestamp as MySQL DATETIME.
   * timeinfo is an empty struct whihc is filled by calling getLocalTime().
+  * Big thanks to Andreas Spiess:
+  * https://github.com/SensorsIot/NTP-time-for-ESP8266-and-ESP32/blob/master/NTP_Example/NTP_Example.ino
+  *
+  *  If tm_year is not equal to 0xFF, it is assumed that valid time information has been received.
   */
-String getTime() {
-  const char* ntpServer = "pool.ntp.org";
-  const long  gmtOffset_sec = 1;
-  const int   daylightOffset_sec = 3600;
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+String getTime(tm *timeinfo, time_t *now, int timer) {
+  uint32_t start = millis();
 
-  struct tm timeinfo;
-  if (!getLocalTime(&timeinfo)) {
-    Serial.println("Failed to obtain time");
-    return "None";
-  }
-  char timestamp[20];
-  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d-%H-%M-%S", &timeinfo);
+  do {
+    time(now);
+    localtime_r(now, timeinfo);
+    Serial.print(".");
+    delay(15);
+  } while (((millis() - start) <= (1000 * timer)) && (timeinfo -> tm_year == 0xFF));
+  
+  if (timeinfo -> tm_year == 0xFF) return "None";
+
+  char timestamp[30];
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d-%H-%M-%S", localtime(now));
   return String(timestamp);
 }

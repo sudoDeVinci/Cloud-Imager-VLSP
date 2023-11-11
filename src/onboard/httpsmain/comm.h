@@ -42,6 +42,8 @@ struct Network {
     IPAddress GATEWAY;
     IPAddress DNS;
     WiFiClientSecure *CLIENT;
+    tm TIMEINFO;
+    time_t NOW;
 };
 
 /**
@@ -58,25 +60,25 @@ int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT);
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddress HOST);
+int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddress HOST, String timestamp);
 
 
 /**
  * Send statuses of weather sensors to HOST on specified PORT. 
  */
-int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST);
+int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST, String timestamp);
 
 
 /**
  * Send Image buffer to HOST on specified PORT.
 */
-int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST);
+int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, String timestamp);
 
 
 /**
  * Generate a header for a given HTTPS packet.
  */
-String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macAddress);
+String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macAddress, String timestamp);
 
 
 /**
@@ -85,13 +87,13 @@ String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macA
  * size_t can overflow int as its larger, but we only have 12MB of RAM, and the max image res
  * is like 720p.
  */
-String generateHeader(MIMEType type, size_t bodyLength, IPAddress HOST, String macAddress);
+String generateHeader(MIMEType type, size_t bodyLength, IPAddress HOST, String macAddress, String timestamp);
 
 /**
   * Get the current time and format the timestamp as MySQL DATETIME.
   * timeinfo is an empty struct whihc is filled by calling getLocalTime().
   */
-String getTime();
+String getTime(tm *timeinfo, time_t *now, int timer);
 
 
 #endif
