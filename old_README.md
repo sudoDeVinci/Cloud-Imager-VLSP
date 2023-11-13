@@ -4,7 +4,6 @@
 
 ## Proposal
 
-
 Quick yet accurate Weather prediction is imperative for certain industries to now only survive,
 but simply exist. An important factor of these is the ability to track, categorize and predict
 movements of clouds within a given area.
@@ -30,18 +29,19 @@ My proposal is the construction of a number of 'weather stations' which take atm
 
 The following is an attempt to put into practice the most current research to create a mesh network of these weather staions which can detect, track, and categorize clouds.
 
+
 ## Setup
 
-An Esp32-S3 with an OV5640 DVP camera module is pointed at the sky at a location and predetermined angle (prefereably perpendicular).
+An Esp32 (base model or S3) with an OV5640 DVP camera module is pointed at the sky at a location and predetermined angle (prefereably perpendicular).
 
-1. An SHT31-D takes Relative Humidity and Temperature readings.
-2. A BMP390 takes Air Pressure readings.
-3. The Dewpoint is calculated according using the Magnus-Tetens formula [8].
-4. An image of the sky is taken with the OV5640.
+1. An SHT31-D takes Relative Humidity readings.
+2. A BMP390 takes Air Pressure and Temperature readings.
+3. The dewpoint is calculated according using the Magnus-Tetens formula [8].
+4. An image of the sky is taken.
 5. The image and readings are sent to a collections server for analysis.
 
-This server portion can found [Here](https://github.com/sudoDeVinci/CloudMeshVLSPDB).
 
+This server portion can found [Here](https://github.com/sudoDeVinci/CloudMeshVLSPDB)
 
 ## How to
 
@@ -53,76 +53,262 @@ I mostly use VScode for programming.
 [Server components](src/server_components/) are made in Java, and [microcontrollers](src/onboard/) are programmed in C. Graphing components for now are stil made in python for simplicity, but I plan to write these in JavaCV to integrate them within [Server components](src/server_components/).
 
 Sometimes however, I use [adafruit ampy](https://learn.adafruit.com/micropython-basics-load-files-and-run-code/install-ampy) for interfacing with the boards due to needing more complex operations, such as the [utility](/utility/) scripts. This was mainly used before the switch, but readers may find use in these.
-Many of the utility board functions are alternatively available through esp-IDF, but setup and use of it are memory intensive and complex. My development machine (2C4T Celeron J4125 w/ 8GB DDR4) simply cant take it.
+Many of the utility board functions are alternatively available through esp-IDF, but setup and use of it are memory intensive and complex. My development machine (2C4t Celeron J4125 w/ 8GB DDR4) simply cant take it.
 
-### ESP32-S3
+### ESP32 WROVER
 
-The ESP32-S3-OTG Dev board by Freenove was chosen because of:
-1. Better vector instructions for image handling.
-2. Insanely better power efficiency.
-3. Increased flash memory.
-4. OTG capability.
+The ESP32 WROVER Dev board by Freenove was chosen simply because of availability and driver support for the DVP camera.
+The manufacturer repository for the board can be found [here](https://github.com/Freenove/Freenove_ESP32_WROVER_Board).
 
 #### Reading from sensors
 To read from the SHT31-D, we use the Adafruit_SHT31 library. 
 To read from the BMP390, we use the Adafruit_BMP3XX libray.
-We will be connecting these on the same serial bus to the esp, as they occupy different addresses (0x44 and 0x77 respectively). We use pins not occupied by the cameras on internal serial operations (41 and 42). We use the Wire library to make an instance with these as our SDA and SCL for Serial Bus 0.
+We will be connecting these on the same serial bus to the esp, as they occupy different addresses (0x44 and 0x77 respectively). We use pins not occupied by the cameras on internal serial operations (32 and 33). We use the Wire library to make an instance with these as our SDA and SCL for Serial Bus 0.
 
-* Remember to have 3.3kΩ pull-up resistors (at least 2KΩ seems to work fine).
-
-To make things easier, I store pointers to alot of my sensors and networking related objects in structs.
+* Remember to have 3.3kΩ pull-up resistors  
 
 ```C
-struct Sensors {
-    TwoWire *wire;
-    Adafruit_BMP3XX BMP;
-    Adafruit_SHT31 SHT;
-    camera_fb_t *CAM;
+...
 
-    struct Status {
-        bool CAM = false;
-        bool SHT = false;
-        bool BMP = false;
-        bool WIFI = false;
-    }status;
-};
+TwoWire wire = TwoWire(0);
+
+void setup() {
+  Serial.begin(115200);
+  wire.begin(32,33);
+
+  ...
+
+}
+
+...
 ```
 
-I use pointers so that I can have a majority of these functions in separate cpp files to separate responsibility. Sensor related functionality is in [sensors.cpp](src/onboard/httpsmain/sensors.cpp), and networking related functionality is in [comm.cpp](src/onboard/httpsmain/comm.cpp). 
-Pointers are also useful so that the structures containing them can be kept within a global scope, but mutated within methods. I find this helps keep memory management simple.
+I've created an initialization function for each sensor. We pass the reference to the TwoWire instance we create, then attempt to initialize and calibrate them. We then get each of the readings as well as the dewpoint.
 
-##### A Note on Memory
-To try to squeeze out the largest amount of space possible for images, memory management is important. This however is weighed against the fact that many of the libraries use Strings. Due to the sequential nature of execution, not many strings must be held in memory at any given time, however, their use can cause fragmentation of the heap overtime. This is addressed mostly using reserve() when creating strings and letting those same strings go out of scope from their creation. if a string is used in the main loop, it must be directly freed.
 ```C
-String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macAddress, String timestamp) {
+...
+Adafruit_BMP3XX bmpGlob = bmpSetup(&wire);
+Adafruit_SHT31 shtGlob = shtSetup(&wire);
 
-  String mimeType = MIMEStr[static_cast<int>(type)];
+while (true) {
+  if (! bmpGlob.performReading()) {
+    Serial.println("Failed to perform reading :(");
+    return;
+  }
 
-  int end = strlen("\r\n");
+  float humidity = shtGlob.readHumidity();
+  float pressure = bmpGlob.readPressure();
+  float temperature = bmpGlob.readTemperature();
+  float dewpoint = calcDewpoint(temperature, humidity);
+  ...
+}
+...
+```
 
-  int headerLength = HeaderStr[0].length() + end +
-                     HeaderStr[1].length() + HOST.toString().length() + end +
-                     HeaderStr[2].length() + mimeType.length() + end + 
-                     HeaderStr[3].length() + end + 
-                     HeaderStr[4].length() + String(bodyLength).length() + end +
-                     HeaderStr[5].length() + macAddress.length() + end +
-                     HeaderStr[6].length() + timestamp.length();
+When sending the readings, they're made into a string with a specified format:
+```C
 
+...
 
-  String header;
-  header.reserve(headerLength+1);
-
-  header += HeaderStr[0]+"\r\n";
-  header += HeaderStr[1] + HOST.toString() + "\r\n";
-  header += HeaderStr[2] + mimeType +"\r\n";
-  header += HeaderStr[3] + "\r\n";
-  header += HeaderStr[4] + String(bodyLength) + "\r\n";
-  header += HeaderStr[5] + macAddress + "\r\n";
-  header += HeaderStr[6] + timestamp + "\r\n";
-  
-  return header;
+String constructPacket(size_t size, float T, float RH, float Pa, float DP) {
+  String packet = "";
+  packet.concat("[" + String(size) + "]#");
+  packet.concat("[" + String(CANON_NAME) + "]#");
+  packet.concat("[" + String(T) + "]#");
+  packet.concat("[" + String(RH) + "]#");
+  packet.concat("[" + String(Pa) + "]#");
+  packet.concat("[" + String(DP) + "]XX");
+  return leftpad_str(packet, 64, 'X');
 }
 ```
+
+leftpad_str() is a leftpad function I made to ensure the packet is always a fixed-size.
+
+#### Taking a picture
+Taking a picture with the OV5640 is the same as the OV2640, however the sensor frequency must be changed from 20MHZ to 12MHZ, and the OV5640 allows for up 1080p images comfortably. The ESP32 WROVER has PSRAM, meaning we can use FHD resolutions and a slightly higher jpeg compression quality. Here is the camera setup I used for initializing the OV5640:
+
+```C
+int cameraSetup(void) {
+  camera_config_t config;
+  config.ledc_channel = LEDC_CHANNEL_0;
+  config.ledc_timer = LEDC_TIMER_0;
+  config.pin_d0 = Y2_GPIO_NUM;
+  config.pin_d1 = Y3_GPIO_NUM;
+  config.pin_d2 = Y4_GPIO_NUM;
+  config.pin_d3 = Y5_GPIO_NUM;
+  config.pin_d4 = Y6_GPIO_NUM;
+  config.pin_d5 = Y7_GPIO_NUM;
+  config.pin_d6 = Y8_GPIO_NUM;
+  config.pin_d7 = Y9_GPIO_NUM;
+  config.pin_xclk = XCLK_GPIO_NUM;
+  config.pin_pclk = PCLK_GPIO_NUM;
+  config.pin_vsync = VSYNC_GPIO_NUM;
+  config.pin_href = HREF_GPIO_NUM;
+  config.pin_sscb_sda = SIOD_GPIO_NUM;
+  config.pin_sscb_scl = SIOC_GPIO_NUM;
+  config.pin_pwdn = PWDN_GPIO_NUM;
+  config.pin_reset = RESET_GPIO_NUM;
+  config.xclk_freq_hz = 12000000;
+  config.frame_size = FRAMESIZE_FHD;
+  config.pixel_format = PIXFORMAT_JPEG;
+  config.grab_mode = CAMERA_GRAB_LATEST;
+  config.fb_location = CAMERA_FB_IN_PSRAM;
+  config.jpeg_quality = 15;
+  config.fb_count = 1;
+
+  esp_err_t err = esp_camera_init(&config);
+  if (err != ESP_OK) {
+    Serial.printf("Camera init failed with error 0x%x", err);
+    return 0;
+  }
+
+  sensor_t * s = esp_camera_sensor_get();
+  s->set_vflip(s, 1); // flip it back
+  s->set_brightness(s, 1);
+  s->set_saturation(s, 0);
+  
+  Serial.println("Camera configuration complete!");
+  return 1;
+}
+```
+If your controller does not have PSRAM, you may want to do another optional check, and lower your settings accordingly.
+Simply, to take a picture, and get teh image size in bytes once the camera is initialized:
+
+```C
+    #include "esp_camera.h"
+
+    ...
+
+    camera_fb_t *fb = esp_camera_fb_get();
+    esp_camera_fb_return(fb);
+    fb = esp_camera_fb_get();
+    esp_camera_fb_return(fb);
+    fb = esp_camera_fb_get();
+
+    size_t imageSize;
+    if (!fb) {
+        imageSize = 0;
+    } else {
+        imageSize = fb->len;
+    }
+    Serial.print("Image Buffer Size (bytes): ");
+    Serial.println(imageSize);
+```
+
+We need the image size in bytes for sending the data over tcp, and writing it to the jpeg on the server. We flush the buffer mutliple times to ensure the new picture taken is in fact new.
+
+```C
+ esp_camera_fb_return(fb)
+```
+Returns and empties the image buffer.
+
+
+#### Wi-Fi Connection
+Wi-Fi connection is simple so I'll gloss over it. Firstly specify the connection credentials.
+```C
+const char* ssid = "**************";
+const char* password = "*********";
+const char* host = "255.255.255.247";
+const uint16_t port = 69;
+```
+Now we attempt to connecto the the Access point a set number of times, each time checking the conection state. very simple but effective way in most cases.
+```C
+#include <WiFi.h>
+
+... 
+
+int wifiSetup(void) {
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+    WiFi.setSleep(false);
+
+    int connect_count = 0; 
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+        connect_count+=1;
+        if (connect_count >= 10) {
+            Serial.println("Could not connect to WIfi.");
+            return 0;
+        }
+    }
+    Serial.println("");
+    Serial.print("WiFi connected with IP: ");
+    Serial.println(WiFi.localIP());
+    return 1;
+}
+```
+
+Within our main loop() now, we must:
+
+1. Instantiate a connection with the server:
+```C
+#include <WiFi.h>
+
+...
+
+WiFiClient client;
+
+...
+
+void loop() {
+    ...
+    
+    if (!client.connect(host, port)) {
+        Serial.println("Couldn't connect to host.");
+        return;
+    }
+    Serial.println("Successfully connected!");
+    
+    ...
+}
+```
+
+2. Construct and send the packet as a padded string.
+```C
+    ...
+
+    String packet = constructPacket(imageSize, temperature, humidity, pressure, dewpoint);
+    Serial.println("Packet: " + packet);
+
+    client.println(packet);
+    delay(1000);
+
+    ...
+
+```
+
+3. If the image buffer is not 0, write it to the server socket.
+```C
+...
+
+if (imageSize == 0) {
+    Serial.println("Image buffer empty. Only readings sent as-is.");
+    delay(500000);
+    return;
+  }
+
+  client.write(fb->buf, imageSize);
+
+  esp_camera_fb_return(fb); 
+
+  ...
+
+```
+
+4. CLose the socket connection.
+```C
+...
+
+client.stop();
+
+...
+
+```
+
+### Server
+TODO: SHOW SERVER IMPLEMENTATION.
+
 
 ## Analysis
 
@@ -135,7 +321,7 @@ Not Yet Available.
 #### OV2460
 While colour space based operations are fairly easy on high quality images, the OV2460 is not high quality. Contrast is low, over/under-exposure are almost ensured and ISO changes are not only drastic but cause unwanted light filtering and other strange behaviour:
 
-<img src = 'images/reference_ov2640/Image20.png' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
+<img src = 'images/reference_ov2640/Image77.png' alt="MarineGEO circle logo" style="height: 300px; width:400px;"/>
 
 ### Colourspace Frequency Histogram
 

@@ -152,14 +152,28 @@ String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macA
 
   String mimeType = MIMEStr[static_cast<int>(type)];
 
+  int end = strlen("\r\n");
 
-  String header = "POST / HTTP/1.1\r\n"\
-                  "Host: " + HOST.toString() + "\r\n"\
-                  "Content-Type: "+ mimeType +"\r\n"\
-                  "Connection: close\r\n"\
-                  "Content-Length: " + String(bodyLength) + "\r\n"\
-                  "MAC-address: " + macAddress + "\r\n"\
-                  "Timestamp: " + timestamp + "\r\n";
+  int headerLength = HeaderStr[0].length() + end +
+                     HeaderStr[1].length() + HOST.toString().length() + end +
+                     HeaderStr[2].length() + mimeType.length() + end + 
+                     HeaderStr[3].length() + end + 
+                     HeaderStr[4].length() + String(bodyLength).length() + end +
+                     HeaderStr[5].length() + macAddress.length() + end +
+                     HeaderStr[6].length() + timestamp.length();
+
+
+  String header;
+  header.reserve(headerLength+1);
+
+  header += HeaderStr[0]+"\r\n";
+  header += HeaderStr[1] + HOST.toString() + "\r\n";
+  header += HeaderStr[2] + mimeType +"\r\n";
+  header += HeaderStr[3] + "\r\n";
+  header += HeaderStr[4] + String(bodyLength) + "\r\n";
+  header += HeaderStr[5] + macAddress + "\r\n";
+  header += HeaderStr[6] + timestamp + "\r\n";
+  
   return header;
 }
 
