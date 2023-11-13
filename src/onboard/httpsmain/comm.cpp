@@ -196,6 +196,6 @@ String getTime(tm *timeinfo, time_t *now, int timer) {
   if (timeinfo -> tm_year == 1970) return "None";
 
   char timestamp[30];
-  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d-%H-%M-%S", localtime(now));
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", localtime(now));
   return String(timestamp);
 }
