@@ -25,6 +25,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
   Serial.println("Setting up.");
+  String firmware_version = "0.0.1";
 
   /**
    * wire.begin(sda, scl)
@@ -55,7 +56,8 @@ void setup() {
   configTime(0, 0, ntpServer);
   setenv("TZ", timezone, 1);
 
-
+  OTAUpdate(network, firmware_version);
+  
 
   sht = Adafruit_SHT31(sensors.wire);
   sensors.SHT = sht;

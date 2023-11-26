@@ -213,3 +213,77 @@ String getTime(tm *timeinfo, time_t *now, int timer) {
   strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", localtime(now));
   return String(timestamp);
 }
+
+
+/**
+ * Read the SSL certificate for a given network into a char array.  
+ */
+void readCertificateFile(fs::FS &fs, const char *certPath, const char* &certContent) {
+    File certFile = fs.open(certPath);
+    if (!certFile) {
+        return;
+    }
+
+    size_t certSize = certFile.size();
+    char* tempBuffer = new char[certSize + 1];  // +1 for null-terminator
+    if (certFile.readBytes(tempBuffer, certSize) == certSize) {
+        tempBuffer[certSize] = '\0';  // Null-terminate the string
+        certContent = strdup(tempBuffer);  // Create a dynamically allocated copy
+    }
+    delete[] tempBuffer;
+    certFile.close();
+}
+
+
+/**
+ * Try to load the config file for a network object.
+ */
+bool readConfigFile(fs::FS &fs, const char *path, Network &network) {
+  File file = fs.open(path);
+    if (!file) {
+        Serial.println("Failed to open config file");
+        return false;
+    }
+
+    while (file.available()) {
+        String line = file.readStringUntil('\n');
+        line.trim();
+
+        if (line.startsWith("SSID")) {
+            network.SSID = line.substring(line.indexOf('"') + 1, line.lastIndexOf('"')).c_str();
+        } else if (line.startsWith("PASS")) {
+            network.PASS = line.substring(line.indexOf('"') + 1, line.lastIndexOf('"')).c_str();
+        } else if (line.startsWith("HOST")) {
+            network.HOST.fromString(line.substring(line.indexOf('=') + 1).c_str());
+        } else if (line.startsWith("GATEWAY")) {
+            network.GATEWAY.fromString(line.substring(line.indexOf('=') + 1).c_str());
+        } else if (line.startsWith("DNS")) {
+            network.DNS.fromString(line.substring(line.indexOf('=') + 1).c_str());
+        } else if (line.startsWith("CERT")) {
+            String certFileName = line.substring(line.indexOf('=') + 2).c_str(); // Get everything after the '='
+            String certFilePath = String(CERT_FOLDER) + "/" + certFileName;  // Adjust the path accordingly
+            readCertificateFile(fs, certFilePath.c_str(), network.CERT);
+        }
+    }
+
+    file.close();
+    return true;
+}
+
+void OTAUpdate(Network network, String firmware_version) {
+  t_httpUpdate_return ret = httpUpdate.update(*network.CLIENT, network.HOST.toString(),
+                            static_cast<uint16_t>(Ports::READINGPORT), "/", firmware_version); 
+  switch (ret) {
+    case HTTP_UPDATE_FAILED:
+      Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+      break;
+
+    case HTTP_UPDATE_NO_UPDATES:
+      Serial.println("HTTP_UPDATE_NO_UPDATES");
+      break;
+
+    case HTTP_UPDATE_OK:
+      Serial.println("HTTP_UPDATE_OK");
+      break;
+  }
+}
