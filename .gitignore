@@ -9,5 +9,7 @@ lib64/*
 *.nbc
 *.nbi
 *.pyc
+*.crt
+*.pem
 
 lib64

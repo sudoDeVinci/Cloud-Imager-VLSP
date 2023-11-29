@@ -205,3 +205,14 @@ String* readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp
   //Serial.println("Cleared");
   return thpd;
 }
+
+/**
+ * Print the readings for the sesnsors.
+ */
+void printReadings(String* readings) {
+  Serial.print(readings[0] + " deg C | ");
+  Serial.print(readings[1] + " % | ");
+  Serial.print(readings[2] + " hPa | ");
+  Serial.print(readings[3] + " deg C | ");
+  Serial.println();
+}

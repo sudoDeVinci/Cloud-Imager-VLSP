@@ -1,6 +1,8 @@
 #include "sensors.h"
 #include "comm.h"
 
+#define FIRMWARE_VERSION "0.0.1"
+
 /**
  * My beautiful globals
  */
@@ -11,21 +13,12 @@ Adafruit_BMP3XX bmp;
 Adafruit_SHT31 sht;
 TwoWire wire = TwoWire(0);
 
-
-void printReadings(String* readings) {
-  Serial.print(readings[0] + " deg C | ");
-  Serial.print(readings[1] + " % | ");
-  Serial.print(readings[2] + " hPa | ");
-  Serial.print(readings[3] + " deg C | ");
-  Serial.println();
-}
-
-
 void setup() {
   Serial.begin(115200);
   Serial.println();
   Serial.println("Setting up.");
-  String firmware_version = "0.0.1";
+
+  sdmmcInit();
 
   /**
    * wire.begin(sda, scl)
@@ -38,27 +31,34 @@ void setup() {
 
   /**
    * Setting up credentials.
-   *
+   * ----------------------------------
    * network.SSID = "VLSP-Innovation";
    * network.PASS = "9a5mPA8bU64!";
+   * ----------------------------------
+   * network.SSID = "Asimov-2.4GHZ";
+   * network.PASS = "Asimov42";
+   * network.HOST = IPAddress(192, 168, 8, 99);
+   * 
    * TODO: move this onto disk to be loaded later. 
    */
-  
-  network.SSID = "Asimov-2.4GHZ";
-  network.PASS = "Asimov42";
+
+
+  /**
+   * Read the profile config for the device network struct. 
+   */
+  const char* profile = "test.cfg";
+  if(!readProfile(SD_MMC, profile, network)) // TODO: do something cause the profile reading failed.
+
   network.CLIENT = &client;
   
-  network.HOST = IPAddress(192, 168, 8, 99);
-
   wifiSetup(network.CLIENT, network.SSID, network.PASS, &sensors.status);
   const char* ntpServer = "pool.ntp.org";
   const char* timezone = "CET-1-CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00";
   configTime(0, 0, ntpServer);
   setenv("TZ", timezone, 1);
 
-  OTAUpdate(network, firmware_version);
+  OTAUpdate(network, FIRMWARE_VERSION);
   
-
   sht = Adafruit_SHT31(sensors.wire);
   sensors.SHT = sht;
   shtSetup(sensors.wire, &sensors.status, &sensors.SHT);
@@ -69,6 +69,7 @@ void setup() {
 
 
 void loop() {
+  OTAUpdate(network, FIRMWARE_VERSION);
   String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
   sendStatuses(network.CLIENT, &sensors.status, network.HOST, timestamp);
   String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);

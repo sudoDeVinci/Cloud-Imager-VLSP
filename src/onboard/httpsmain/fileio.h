@@ -9,7 +9,9 @@
 #define SD_MMC_CLK  39 //Please do not modify it. 
 #define SD_MMC_D0   40 //Please do not modify it.
 #define CERT_FOLDER "/certs"
-#define NETWORK_FOLDER "/network"
+#define SERVER_FOLDER "/servers"
+#define AP_FOLDER "/aps"
+#define PROFILE_FOLDER "/profiles"
 void sdmmcInit(void); 
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels);
@@ -24,5 +26,5 @@ void testFileIO(fs::FS &fs, const char * path);
 
 void writejpg(fs::FS &fs, const char * path, const uint8_t *buf, size_t size);
 int readFileNum(fs::FS &fs, const char * dirname);
-
+const char* readString(const String& line);
 #endif

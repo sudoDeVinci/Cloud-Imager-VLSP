@@ -71,4 +71,9 @@ String calcDP(double temperature, float humidity, double pressure, double altitu
 
 String* readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp);
 
+/**
+ * Print the readings for the sesnsors.
+ */
+void printReadings(String* readings);
+
 #endif

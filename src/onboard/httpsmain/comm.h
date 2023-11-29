@@ -111,10 +111,22 @@ String getTime(tm *timeinfo, time_t *now, int timer);
  */
 void readCertificateFile(fs::FS &fs, const char *certPath, const char* &certContent);
 
+
 /**
- * Try to load the config file for a network object.
+ * Try to load the config file for a network AP.
  */
-bool readConfigFile(fs::FS &fs, const char *path, Network &network);
+bool readServerConf(fs::FS &fs, const char *path, Network &network);
+
+
+/**
+ * Try to load the config file for a network AP.
+ */
+bool readAPConf(fs::FS &fs, const char *path, Network &network);
+
+/**
+ * Try to load the config file for a connection profile.
+ */
+bool readProfile(fs::FS &fs, const char *path, Network &network);
 
 /**
  * Update the board firmware via the update server.

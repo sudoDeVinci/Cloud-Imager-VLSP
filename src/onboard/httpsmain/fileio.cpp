@@ -12,16 +12,7 @@ void sdmmcInit(void){
       Serial.println("No SD_MMC card attached");
       return;
   }
-  Serial.print("SD_MMC Card Type: ");
-  if(cardType == CARD_MMC){
-      Serial.println("MMC");
-  } else if(cardType == CARD_SD){
-      Serial.println("SDSC");
-  } else if(cardType == CARD_SDHC){
-      Serial.println("SDHC");
-  } else {
-      Serial.println("UNKNOWN");
-  }
+
   uint64_t cardSize = SD_MMC.cardSize() / (1024 * 1024);
   Serial.printf("SD_MMC Card Size: %lluMB\n", cardSize);  
   Serial.printf("Total space: %lluMB\r\n", SD_MMC.totalBytes() / (1024 * 1024));
@@ -209,4 +200,32 @@ int readFileNum(fs::FS &fs, const char * dirname){
       num++;
     }
     return num;  
+}
+
+/**
+ * Extract the double-quote enclosed string from a line in a conf file.
+ */
+const char* readString(const String& line) {
+    // Find the position of '=' and the first double quote
+    int equalsIndex = line.indexOf('=');
+    int quoteStartIndex = line.indexOf('"', equalsIndex);
+
+    // Check if '=' and '"' are found
+    if (equalsIndex != -1 && quoteStartIndex != -1) {
+        int quoteEndIndex = line.indexOf('"', quoteStartIndex + 1);
+
+        // Check if the second double quote is found
+        if (quoteEndIndex != -1) {
+            int pathStartIndex = quoteStartIndex + 1;
+            int pathLength = quoteEndIndex - pathStartIndex;
+
+            // Extract the file path
+            char* filePath = new char[pathLength + 1];  // +1 for null-terminator
+            line.substring(pathStartIndex, quoteEndIndex).toCharArray(filePath, pathLength + 1);
+
+            return filePath;
+        }
+    }
+
+    return nullptr;
 }
