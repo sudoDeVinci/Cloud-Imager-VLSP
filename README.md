@@ -32,6 +32,7 @@ The following is an attempt to put into practice the most current research to cr
 
 ## Setup
 
+### ESP32-S3
 An Esp32-S3 with an OV5640 DVP camera module is pointed at the sky at a location and predetermined angle (prefereably perpendicular).
 
 1. An SHT31-D takes Relative Humidity and Temperature readings.
@@ -42,8 +43,16 @@ An Esp32-S3 with an OV5640 DVP camera module is pointed at the sky at a location
 
 This server portion can found [Here](https://github.com/sudoDeVinci/CloudMeshVLSPDB).
 
+### Pi Pico W / Secondary Pi Pico
+A Pi Pico W is connected to the ESP32 over UART, as well as the same WiFi access point the ESP32 is connected to. The pico:
 
-## How to
+1. Send interrupt signals to the pico to receive UART data strings.
+2. Relay system status messages.
+3. Reset the device in case of faulty update.
+4. Change system config files on the ESP32  SD card.
+
+
+## How
 
 Microcontrollers are programmed using Arduino Studio.
 I mostly use VScode for programming. 
@@ -72,7 +81,11 @@ We will be connecting these on the same serial bus to the esp, as they occupy di
 
 To make things easier, I store pointers to alot of my sensors and networking related objects in structs.
 
-```C
+<br>
+
+Sensor state object defined in sensors.h:
+
+```cpp
 struct Sensors {
     TwoWire *wire;
     Adafruit_BMP3XX BMP;
@@ -88,12 +101,33 @@ struct Sensors {
 };
 ```
 
+<br>
+
+Network profile object defined in comm.h:
+
+```cpp
+struct Network {
+    const char* SSID;
+    const char* PASS;
+    const char* CERT;
+    IPAddress HOST;
+    IPAddress GATEWAY;
+    IPAddress DNS;
+    WiFiClientSecure *CLIENT;
+    tm TIMEINFO;
+    time_t NOW;
+};
+```
+
+<br>
+
 I use pointers so that I can have a majority of these functions in separate cpp files to separate responsibility. Sensor related functionality is in [sensors.cpp](src/onboard/httpsmain/sensors.cpp), and networking related functionality is in [comm.cpp](src/onboard/httpsmain/comm.cpp). 
 Pointers are also useful so that the structures containing them can be kept within a global scope, but mutated within methods. I find this helps keep memory management simple.
 
-##### A Note on Memory
-To try to squeeze out the largest amount of space possible for images, memory management is important. This however is weighed against the fact that many of the libraries use Strings. Due to the sequential nature of execution, not many strings must be held in memory at any given time, however, their use can cause fragmentation of the heap overtime. This is addressed mostly using reserve() when creating strings and letting those same strings go out of scope from their creation. if a string is used in the main loop, it must be directly freed.
-```C
+#### Notes on Memory
+To try to squeeze out the largest amount of space possible for images, memory management is important. This however is weighed against the fact that many of the libraries use Strings. Due to the sequential nature of execution, not many strings must be held in memory at any given time, however, their use can cause fragmentation of the heap overtime. This is addressed mostly using reserve() when creating strings and letting those same strings go out of scope from their creation. If a string is used in the main loop, it must be directly freed.
+
+```cpp
 String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macAddress, String timestamp) {
 
   String mimeType = MIMEStr[static_cast<int>(type)];
@@ -123,6 +157,22 @@ String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macA
   return header;
 }
 ```
+
+<br>
+
+### Notes on Power
+
+|State|ESP32-S3|Pi Pico W|
+|-----|--------|---------|
+|Antenna Off| | |
+|Antennae On| | |
+|Wi-Fi Connected| | |
+|Light Sleep| | |
+|Deep Sleep| | |
+
+<br>
+
+I choose manual packet construction over JSON, as I need to both be able to add new headers like the timestamp and MacAdress, but also use the WiFiClientSecure Library for communication.
 
 ## Analysis
 
