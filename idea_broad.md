@@ -34,15 +34,15 @@ Secondary elements like the direction and speed can also be inferred from the im
 ### Image Quality 
 While colour space based operations are fairly easy on high quality images, the OV2460 is not high quality. Contrast is low, over/under-exposure are almost ensured and ISO changes are not only drastic but cause unwanted light filtering and other strange behaviour:
 
-![Example Image](Reference-Images-esp\Image66.png)
+![Example Image](images\reference_ov2640\Image20.png)
 
 ### Colourspace Overlap
 
-Each reference image in [Reference-Images](Reference-Images/) has a corresponding image in [Blocked-Images](Blocked-Images/).
+Each reference image in [Reference-Images](images/reference_ov2640/) has a corresponding image in [Blocked-Images](images/reference_ov2640/).
 
 Reference Image            |  Blocked Image
 :-------------------------:|:-------------------------:
-![Reference Image](Reference-Images/Image17.png)  |  ![Blocked Image](Blocked-Images/Image17.png)
+![Reference Image](images\reference_dslr\Image20.png)  |  ![Blocked Image](images\blocked_dslr\Image20.png)
 
 The Blocked out images are coloured such that clouds are coloured red and the sky is coloured black. Small borders around clouds are left as to not capture the noise of whispy cloud edges.
 
@@ -50,14 +50,14 @@ The Blocked out images are coloured such that clouds are coloured red and the sk
 
 These show the frequency graphs for the colour channels of the 60 images of the sky, separated into regions of sky and cloud.
 
-![BGR Frequency Chart for High Res Images](Graphs/BGRBarGraph.png "BGR Frequency Chart for High Res Images")
+![BGR Frequency Chart for High Res Images](Graphs/old/BGRBarGraph.png "BGR Frequency Chart for High Res Images")
 
 ### ScreePlot for Images
 <br>
 
 These show the screeplots for the colour channels of the 60 higher resolution images of the sky, colour channels separated as principle components to check the variance percentage in differentiating sky versus cloud pixels.
 
-![BGR ScreePlot for High Res Images](Graphs/BGRScree.png "BGR ScreePlot for High Res Images")
+![BGR ScreePlot for High Res Images](Graphs/old/BGRScree.png "BGR ScreePlot for High Res Images")
 
 Above we see that the red channel accounts for ~80% of the variance in the cloud vs sky regions, with the green channel accounting for just under 20%. This means that in classification, the red and green channels are the main factors. We could then discard  
 
@@ -67,9 +67,11 @@ Above we see that the red channel accounts for ~80% of the variance in the cloud
 Once a matrix of principle components (colour channels) and their per variance values is obtained, these can be visulaized in a PCA Plot.
 <br>
 
-![BGR PCA ScatterPlot for High Res Images](Graphs/BGRPcaGraph.png "BGR PCA ScatterPlot for High Res Images")
+![BGR PCA ScatterPlot for High Res Images](Graphs/new_pca_dslr_rgb.png "BGR PCA ScatterPlot for High Res Images")
+![HSV PCA ScatterPlot for High Res Images](Graphs/new_pca_dslr_hsv.png "HSV PCA ScatterPlot for High Res Images")
+![YCbCr PCA ScatterPlot for High Res Images](Graphs/new_pca_dslr_YCbCr.png "YCbCr PCA ScatterPlot for High Res Images")
 
-- It can be seen that sky and cloud regions can be separated somewhat via visible colour space, and this separation simplified via singular value decomposition.
+- It can be seen that sky and cloud regions can be separated somewhat via visible colour space, and this separation simplified via singular value decomposition, and other similar techniques.
 
 ## Cloud Base Height
 
