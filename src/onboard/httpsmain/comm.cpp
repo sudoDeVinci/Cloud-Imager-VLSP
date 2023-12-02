@@ -24,21 +24,21 @@ int wifiSetup(WiFiClientSecure *client, const char* SSID, const char* PASS, Sens
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PASS);
   WiFi.setSleep(false);
-  Serial.print("Connecting to WiFi Network " + String(SSID));
+  debugln("Connecting to WiFi Network " + String(SSID));
   int connect_count = 0; 
   while (WiFi.status() != WL_CONNECTED) {
       delay(random(400, 601));
-      Serial.print(".");
+      debug(".");
       connect_count+=1;
       if (connect_count >= 10) {
-          Serial.println("Could not connect to Wifi.");
+          debugln("Could not connect to Wifi.");
           stat -> WIFI = false;
           return 1;
       }
   }
   stat -> WIFI = true;
   client -> setInsecure();
-  Serial.println("Connected!");
+  debugln("Connected!");
   return 0;
 }
 
@@ -48,18 +48,18 @@ int wifiSetup(WiFiClientSecure *client, const char* SSID, const char* PASS, Sens
  */
 int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT) {
   int conn_count = 0;
-  Serial.print("Connecting to Status Server Socket.");
+  debug("Connecting to Status Server Socket.");
   while (! client -> connect(HOST, PORT)) {
     delay(random(200, 501));
-    Serial.print(".");
+    debug(".");
     conn_count+=1;
     if (conn_count >= 10) {
-        Serial.println("Could not connect to server status socket.");
+        debugln("Could not connect to server status socket.");
         return 1;
     }
   }
-  Serial.println("");
-  Serial.println("Connected with client status socket.");
+  debugln("");
+  debugln("Connected with client status socket.");
   return 0;
 }
 
@@ -78,9 +78,9 @@ int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddre
   String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress(), timestamp);
   if (header == "None") return 1;
 
-  Serial.println(header);
-  Serial.println(body);
-  Serial.println();
+  debugln(header);
+  debugln(body);
+  debugln();
 
   if (connect(client, HOST, static_cast<uint16_t>(Ports::READINGPORT)) == 1) return 1;
 
@@ -107,9 +107,9 @@ int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST
   String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress(), timestamp);
   if (header == "None") return 1;
 
-  Serial.println(header);
-  Serial.println(body);
-  Serial.println();
+  debugln(header);
+  debugln(body);
+  debugln();
 
   if (connect(client, HOST, static_cast<uint16_t>(Ports::SENSORSPORT)) == 1) return 1;
 
@@ -132,8 +132,8 @@ int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, String 
   String header = generateHeader(MIMEType::IMAGE_JPG, fb -> len, HOST, WiFi.macAddress(), timestamp);
   if (header == "None") return 1;
 
-  Serial.println(header);
-  Serial.println();
+  debugln(header);
+  debugln();
 
   if (connect(client, HOST, static_cast<uint16_t>(Ports::IMAGEPORT)) == 1) return 1;
 
@@ -203,10 +203,10 @@ String getTime(tm *timeinfo, time_t *now, int timer) {
   do {
     time(now);
     localtime_r(now, timeinfo);
-    Serial.print(".");
+    debug(".");
     delay(150);
   } while (((millis() - start) <= (1000 * timer)) && (timeinfo -> tm_year <= 1970));
-  Serial.println();
+  debugln();
   if (timeinfo -> tm_year == 1970) return "None";
 
   char timestamp[30];
@@ -244,7 +244,7 @@ bool readServerConf(fs::FS &fs, const char *path, Network &network) {
   String pathStr = String(SERVER_FOLDER)+"/"+String(path);
   File file = fs.open(pathStr.c_str());
   if (!file) {
-      Serial.println("Failed to open config file");
+      debugln("Failed to open config file");
       return false;
   }
 
@@ -273,7 +273,7 @@ bool readAPConf(fs::FS &fs, const char *path, Network &network) {
   String pathStr = String(AP_FOLDER)+"/"+String(path);
   File file = fs.open(pathStr.c_str());
   if (!file) {
-      Serial.println("Failed to open config file");
+      debugln("Failed to open config file");
       return false;
   }
 
@@ -303,7 +303,7 @@ bool readProfile(fs::FS &fs, const char *path, Network &network) {
   String pathStr = String(PROFILE_FOLDER)+"/"+String(path);
   File file = fs.open(pathStr.c_str());
   if (!file) {
-    Serial.println("Failed to open config file");
+    debugln("Failed to open config file");
     return false;
   }
 
@@ -327,9 +327,6 @@ bool readProfile(fs::FS &fs, const char *path, Network &network) {
   }
 
   file.close();
-  
-  free((void*)*apPath);
-  free((void*)*serverPath);
   return true;
 }
 
@@ -341,15 +338,15 @@ void OTAUpdate(Network network, String firmware_version) {
                             static_cast<uint16_t>(Ports::READINGPORT), "/", firmware_version); 
   switch (ret) {
     case HTTP_UPDATE_FAILED:
-      Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+      debugf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
       break;
 
     case HTTP_UPDATE_NO_UPDATES:
-      Serial.println("HTTP_UPDATE_NO_UPDATES");
+      debugln("HTTP_UPDATE_NO_UPDATES");
       break;
 
     case HTTP_UPDATE_OK:
-      Serial.println("HTTP_UPDATE_OK");
+      debugln("HTTP_UPDATE_OK");
       break;
   }
 }

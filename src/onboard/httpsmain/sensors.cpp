@@ -22,10 +22,10 @@
 void shtSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_SHT31 *sht) {
   if (!sht -> begin()) {
     stat -> SHT = false;
-    Serial.println("Couldn't find SHT31");
+    debugln("Couldn't find SHT31");
   } else {
     stat -> SHT = true;
-    Serial.println("SHT31 found!");
+    debugln("SHT31 found!");
   }
 }
 
@@ -36,10 +36,10 @@ void bmpSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_BMP3XX *bmp) {
   
   if (!bmp -> begin_I2C(0x77, wire)) {
     stat -> BMP = false;
-    Serial.println("Could not find a valid BMP3 sensor, check wiring!");
+    debugln("Could not find a valid BMP3 sensor, check wiring!");
   } else {
     stat -> BMP = true;
-    Serial.println("BMP found!");
+    debugln("BMP found!");
     /**
      * Set up oversampling and filter initialization
      */
@@ -54,24 +54,24 @@ void bmpSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_BMP3XX *bmp) {
  * Scan Serial connection on predefined pins for sensors. Print the addresses in hex. 
  */
 void Scan (TwoWire *wire) {
-  Serial.println ();
-  Serial.println ("I2C scanner. Scanning ...");
+  debugln ();
+  debugln ("I2C scanner. Scanning ...");
   byte count = 0;
 
   for (byte i = 8; i < 120; i++) {
     wire -> beginTransmission(i);
     if (wire -> endTransmission() == 0) {
-      Serial.print ("Found address: ");
-      Serial.print (i, DEC);
-      Serial.print (" (0x");
-      Serial.print (i, HEX);     
-      Serial.println (")");
+      debug ("Found address: ");
+      debug (i, DEC);
+      debug (" (0x");
+      debug (i, HEX);     
+      debugln (")");
       count++;
     }
   }
-  Serial.print ("Found ");      
-  Serial.print (count, DEC);
-  Serial.println (" device(s).");
+  debug ("Found ");      
+  debug (count, DEC);
+  debugln (" device(s).");
 }
 
 /**
@@ -80,7 +80,7 @@ void Scan (TwoWire *wire) {
  */
 void cameraSetup(Sensors::Status *stat) {
 
-  Serial.println("Setting up camera...");
+  debugln("Setting up camera...");
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -125,7 +125,7 @@ void cameraSetup(Sensors::Status *stat) {
   // camera init
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
-    Serial.printf("Camera init failed with error 0x%x", err);
+    debugf("Camera init failed with error 0x%x", err);
     stat -> CAM = false;
   }
 
@@ -135,7 +135,7 @@ void cameraSetup(Sensors::Status *stat) {
   s->set_brightness(s, 1); // up the brightness just a bit
   s->set_saturation(s, 0); // lower the saturation
   
-  Serial.println("Camera configuration complete!");
+  debugln("Camera configuration complete!");
   stat -> CAM = true;
 }
 
@@ -154,7 +154,7 @@ void read(Adafruit_SHT31 *sht, float *hum) {
 void read(Adafruit_BMP3XX *bmp, double *out) {
 
   if (! bmp -> performReading()) {
-    Serial.println("Couldn't perform reading in bmp!");
+    debugln("Couldn't perform reading in bmp!");
     return;
   }
   double temp = bmp -> temperature;
@@ -185,24 +185,24 @@ String* readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp
   double* tpa = new double[3]{UNDEFINED, UNDEFINED, UNDEFINED};
   float humidity = UNDEFINED;
 
-  //Serial.println("Reading from bmp.");
+  //debugln("Reading from bmp.");
   if(stat -> BMP == true) read(bmp, tpa);
-  //Serial.println("Reading from SHT");
+  //debugln("Reading from SHT");
   if(stat -> SHT == true) read(sht, &humidity);
 
-  //Serial.println("Getting dewpoint");
+  //debugln("Getting dewpoint");
   if(tpa[0]!=UNDEFINED && tpa[1]!=UNDEFINED && tpa[2]!=UNDEFINED && humidity!=UNDEFINED) {
     String dew = calcDP(tpa[0], humidity, tpa[1], tpa[2]);
     thpd[3] = dew;
   }
 
-  //Serial.println("Stringifying");
+  //debugln("Stringifying");
   if(tpa[0] != UNDEFINED) thpd[0] = String(tpa[0]);
   if(humidity != UNDEFINED) thpd[1] = String(humidity);
   if(tpa[1] != UNDEFINED) thpd[2] = String(tpa[1]);
-  //Serial.println("Clearing");
+  //debugln("Clearing");
 
-  //Serial.println("Cleared");
+  //debugln("Cleared");
   return thpd;
 }
 
@@ -210,9 +210,9 @@ String* readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp
  * Print the readings for the sesnsors.
  */
 void printReadings(String* readings) {
-  Serial.print(readings[0] + " deg C | ");
-  Serial.print(readings[1] + " % | ");
-  Serial.print(readings[2] + " hPa | ");
-  Serial.print(readings[3] + " deg C | ");
-  Serial.println();
+  debug(readings[0] + " deg C | ");
+  debug(readings[1] + " % | ");
+  debug(readings[2] + " hPa | ");
+  debug(readings[3] + " deg C | ");
+  debugln();
 }

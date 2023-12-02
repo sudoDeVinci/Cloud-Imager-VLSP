@@ -7,6 +7,7 @@
 #include "Adafruit_SHT31.h"
 #include "Adafruit_BMP3XX.h"
 #include <Wire.h>
+#include "fileio.h"
 
 /**
  * Clock speeds for different camera 

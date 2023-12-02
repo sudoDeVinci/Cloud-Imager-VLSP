@@ -164,11 +164,11 @@ String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macA
 
 |State|ESP32-S3|Pi Pico W|
 |-----|--------|---------|
-|Antenna Off| | |
-|Antennae On| | |
-|Wi-Fi Connected| | |
-|Light Sleep| | |
-|Deep Sleep| | |
+|Antenna Off| | 0.20 A|
+|Antennae On| 0.30 A| |
+|Wi-Fi Connected| 0.30 A : 1.40 W| |
+|Light Sleep|0.14 A : 0.651 W| |
+|Deep Sleep| | 0.13 A|
 
 <br>
 

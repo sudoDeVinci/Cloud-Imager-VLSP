@@ -15,8 +15,8 @@ TwoWire wire = TwoWire(0);
 
 void setup() {
   Serial.begin(115200);
-  Serial.println();
-  Serial.println("Setting up.");
+  debugln();
+  debugln("Setting up.");
 
   sdmmcInit();
 
@@ -46,8 +46,8 @@ void setup() {
   /**
    * Read the profile config for the device network struct. 
    */
-  const char* profile = "test.cfg";
-  if(!readProfile(SD_MMC, profile, network)) // TODO: do something cause the profile reading failed.
+  const char* profile = "home.cfg";
+  readProfile(SD_MMC, profile, network);// TODO: do something cause the profile reading failed.
 
   network.CLIENT = &client;
   
@@ -73,8 +73,14 @@ void loop() {
   String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
   sendStatuses(network.CLIENT, &sensors.status, network.HOST, timestamp);
   String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
-  printReadings(readings);
+  if(DEBUG) printReadings(readings);
   sendReadings(network.CLIENT, readings, 4, network.HOST, timestamp);
-  delay(2000);
   delete[] readings;
+  delay(10);
+  sleep_mins(5);
+}
+
+void sleep_mins(float mins) {
+  esp_sleep_enable_timer_wakeup(mins*60000000); //10 seconds
+  esp_light_sleep_start();
 }
