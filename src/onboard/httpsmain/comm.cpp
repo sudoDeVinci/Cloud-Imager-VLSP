@@ -48,21 +48,45 @@ int wifiSetup(WiFiClientSecure *client, const char* SSID, const char* PASS, Sens
  */
 int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT) {
   int conn_count = 0;
-  debug("Connecting to Status Server Socket.");
+  debug("Connecting to Server Socket.");
   while (! client -> connect(HOST, PORT)) {
     delay(random(200, 501));
     debug(".");
     conn_count+=1;
     if (conn_count >= 10) {
-        debugln("Could not connect to server status socket.");
+        debugln("Could not connect to server socket.");
         return 1;
     }
   }
   debugln("");
-  debugln("Connected with client status socket.");
+  debugln("Connected with server socket.");
   return 0;
 }
 
+int send(WiFiClientSecure *client, String header, String body) {
+  // Check the connection status
+  if (!client->connected()) {
+    debugln("Pre-sending: Connection lost");
+    client->stop(); // Close the connection
+    return 1;
+  }
+
+  client -> println(header);
+  client -> println(body);
+  client -> println();
+
+  // Check the connection status
+  if (!client->connected()) {
+    debugln("post-Sending: Connection lost");
+    client->stop(); // Close the connection
+    return 1;
+  }
+
+  client -> stop();
+
+  debugln();
+  return 0;
+}
 
 
 /**
@@ -70,9 +94,9 @@ int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT) {
  */
 int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddress HOST, String timestamp) {
 
-  String body = "temperature=" + readings[0] + ""\
-                "&humidity=" + readings[1] + ""\
-                "&pressure=" + readings[2] + ""\
+  String body = "temperature=" + readings[0] +
+                "&humidity=" + readings[1] + 
+                "&pressure=" + readings[2] +
                 "&dewpoint=" + readings[3] + "\r\n";
 
   String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress(), timestamp);
@@ -84,14 +108,7 @@ int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddre
 
   if (connect(client, HOST, static_cast<uint16_t>(Ports::READINGPORT)) == 1) return 1;
 
-  client -> println(header);
-  client -> println(body);
-  client -> println();
-  client -> stop();
-
-  //body.remove();
-  //header.remove();
-  return 0;
+  return send(client, header, body);  
 }
 
 
@@ -100,8 +117,8 @@ int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddre
  */
 int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST, String timestamp) {
 
-  String body = "sht="  + String(stat -> SHT) + ""\
-                "&bmp=" + String(stat -> BMP) + ""\
+  String body = "sht="  + String(stat -> SHT) +
+                "&bmp=" + String(stat -> BMP) +
                 "&cam=" + String(stat -> CAM)+ "\r\n";
 
   String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress(), timestamp);
@@ -113,15 +130,7 @@ int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST
 
   if (connect(client, HOST, static_cast<uint16_t>(Ports::SENSORSPORT)) == 1) return 1;
 
-  client -> println(header);
-  client -> println(body);
-  client -> println();
-  client -> stop();
-
-  //body.remove();
-  //header.remove();
-  return 0;
-  
+  return send(client, header, body);
 }
 
 /**
@@ -138,10 +147,19 @@ int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, String 
   if (connect(client, HOST, static_cast<uint16_t>(Ports::IMAGEPORT)) == 1) return 1;
 
   client -> println(header);
+
+  // Check the connection status
+  if (!client->connected()) {
+    debugln("Connection lost");
+    client->stop(); // Close the connection
+    return 1;
+  }
+
   client -> write(fb -> buf, fb -> len);
   client -> println();
   client -> stop();
-  //header.remove();
+  
+  debugln();
   return 0;
 }
 
@@ -199,6 +217,7 @@ String generateHeader(MIMEType type, size_t bodyLength, IPAddress HOST, String m
   */
 String getTime(tm *timeinfo, time_t *now, int timer) {
   uint32_t start = millis();
+  debug("Getting time!");
 
   do {
     time(now);
@@ -211,6 +230,7 @@ String getTime(tm *timeinfo, time_t *now, int timer) {
 
   char timestamp[30];
   strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", localtime(now));
+  debugln("Got time!");
   return String(timestamp);
 }
 
@@ -335,7 +355,7 @@ bool readProfile(fs::FS &fs, const char *path, Network &network) {
  */
 void OTAUpdate(Network network, String firmware_version) {
   t_httpUpdate_return ret = httpUpdate.update(*network.CLIENT, network.HOST.toString(),
-                            static_cast<uint16_t>(Ports::READINGPORT), "/", firmware_version); 
+                            static_cast<uint16_t>(Ports::UPDATEPORT), "/", firmware_version); 
   switch (ret) {
     case HTTP_UPDATE_FAILED:
       debugf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());

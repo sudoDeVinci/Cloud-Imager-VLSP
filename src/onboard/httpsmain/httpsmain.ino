@@ -70,17 +70,19 @@ void setup() {
 
 void loop() {
   OTAUpdate(network, FIRMWARE_VERSION);
+  delay(100);
   String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
   sendStatuses(network.CLIENT, &sensors.status, network.HOST, timestamp);
+  delay(100);
   String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
-  if(DEBUG) printReadings(readings);
   sendReadings(network.CLIENT, readings, 4, network.HOST, timestamp);
   delete[] readings;
-  delay(10);
+  debugln("Going to sleep!...");
+  delay(100);
   sleep_mins(5);
 }
 
 void sleep_mins(float mins) {
   esp_sleep_enable_timer_wakeup(mins*60000000); //10 seconds
-  esp_light_sleep_start();
+  esp_deep_sleep_start();
 }
