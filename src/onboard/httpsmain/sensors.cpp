@@ -102,18 +102,18 @@ void cameraSetup(Sensors::Status *stat) {
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = CAMERA_CLK;
-  config.frame_size = FRAMESIZE_UXGA;
+  config.frame_size = FRAMESIZE_FHD;
   config.pixel_format = PIXFORMAT_JPEG;
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.jpeg_quality = 12;
+  config.jpeg_quality = 15;
   config.fb_count = 1;
 
 
   // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
   // for larger pre-allocated frame buffer.
   if(psramFound()){
-    config.jpeg_quality = 10;
+    config.jpeg_quality = 5;
     config.fb_count = 2;
     config.grab_mode = CAMERA_GRAB_LATEST;
   } else {
@@ -133,7 +133,7 @@ void cameraSetup(Sensors::Status *stat) {
   // initial sensors are flipped vertically and colors are a bit saturated
   s->set_vflip(s, 1); // flip it back
   s->set_brightness(s, 1); // up the brightness just a bit
-  s->set_saturation(s, 0); // lower the saturation
+  s->set_saturation(s, -1); // lower the saturation
   
   debugln("Camera configuration complete!");
   stat -> CAM = true;

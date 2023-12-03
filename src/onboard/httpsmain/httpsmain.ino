@@ -69,20 +69,51 @@ void setup() {
 
 
 void loop() {
-  OTAUpdate(network, FIRMWARE_VERSION);
-  delay(100);
+
   String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
+
+  camera_fb_t * fb = NULL;
+  sensors.status.CAM = true;
+  fb = esp_camera_fb_get();
+  if(!fb) {
+    debugln("Camera capture failed");
+    sensors.status.CAM = false;
+  }
+  if(sensors.status.CAM) sendImage(network.CLIENT, fb, network.HOST, timestamp);
+  esp_camera_fb_return(fb);
+  delay(50);
+
   sendStatuses(network.CLIENT, &sensors.status, network.HOST, timestamp);
-  delay(100);
+  delay(50);
+
   String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
   sendReadings(network.CLIENT, readings, 4, network.HOST, timestamp);
   delete[] readings;
+  delay(50);
+
+  OTAUpdate(network, FIRMWARE_VERSION);
+  delay(50);
+
   debugln("Going to sleep!...");
-  delay(100);
+  delay(50);
   sleep_mins(5);
 }
 
 void sleep_mins(float mins) {
   esp_sleep_enable_timer_wakeup(mins*60000000); //10 seconds
   esp_deep_sleep_start();
+}
+
+void captureImage(camera_fb_t * fb, Sensors::Status *status) {
+  // Take Picture with Camera
+  fb = esp_camera_fb_get();  
+
+  if(!fb) {
+    debugln("Camera capture failed");
+    status ->CAM = false;
+    return;
+  }
+
+  status ->CAM = true;
+  return;
 }

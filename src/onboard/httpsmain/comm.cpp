@@ -63,24 +63,25 @@ int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT) {
   return 0;
 }
 
-int send(WiFiClientSecure *client, String header, String body) {
+int check(WiFiClientSecure *client, String message) {
   // Check the connection status
   if (!client->connected()) {
-    debugln("Pre-sending: Connection lost");
+    debugln(message);
     client->stop(); // Close the connection
     return 1;
   }
+  return 0;
+}
+
+int send(WiFiClientSecure *client, String header, String body) {
+  
+  if(check(client, "pre-send: Not connected.")) return 1;
 
   client -> println(header);
   client -> println(body);
   client -> println();
 
-  // Check the connection status
-  if (!client->connected()) {
-    debugln("post-Sending: Connection lost");
-    client->stop(); // Close the connection
-    return 1;
-  }
+  if(check(client, "post-send: Not connected.")) return 1;
 
   client -> stop();
 
@@ -108,7 +109,10 @@ int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddre
 
   if (connect(client, HOST, static_cast<uint16_t>(Ports::READINGPORT)) == 1) return 1;
 
-  return send(client, header, body);  
+  int status;
+  status = send(client, header, body);
+  check(client, "post-close: Not connected.");
+  return status;
 }
 
 
@@ -130,7 +134,10 @@ int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST
 
   if (connect(client, HOST, static_cast<uint16_t>(Ports::SENSORSPORT)) == 1) return 1;
 
-  return send(client, header, body);
+  int status;
+  status = send(client, header, body);
+  check(client, "post-close: Not connected.");
+  return status;
 }
 
 /**
