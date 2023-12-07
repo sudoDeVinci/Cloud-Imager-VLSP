@@ -1,10 +1,4 @@
-#include "comm.h"
-
-Network network;
-WiFiClientSecure client;
-
-const char* shitbox_cert = R"(
-------BEGIN CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
 MIIDnjCCAoagAwIBAgIEZXEiATANBgkqhkiG9w0BAQsFADCBkDELMAkGA1UEBhMC
 U0UxFzAVBgNVBAgMDktyb25vYmVyZ3MgTGFuMRAwDgYDVQQHDAdWw6R4asO2MSQw
 IgYDVQQKDBtWw6R4asO2IExpbm5lYSBTY2llbmNlIFBhcmsxGDAWBgNVBAsMD0lu
@@ -25,27 +19,4 @@ NMi+FQomPH1MaISYahNyII69CV1vZ2MvK0ZyFB+XM0TZDGEyIH5IrDhfLz9cpSKF
 OFTpol6kaIkpQg49nyAGzPGEMA9STa2ydBeejFMdZCRRDLgY9h5xYBH4/o2MM+Fh
 hUXWRtMt2/x9sGa9WnapoWFjtDhGO76I0u10ATI0jrY/arMMSUWtlhEbJrSsQ8F2
 +4FYojHKO+QpBhNxESQROnD9
------END CERTIFICATE-----)";
-
-void setup() {
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("Setting up.");
-
-  sdmmcInit();
-
-  writeFile(SD_MMC, "/certs/server.cer", shitbox_cert);
-  writeFile(SD_MMC, "/servers/server.cfg","HOST=192.168.0.103\nCERT=/certs/server.cer");
-  const char* profile = "server.cfg";
-  readProfile(SD_MMC, profile, network);
-
-  Serial.println(network.SSID);
-  Serial.println(network.PASS);
-  Serial.println(network.DNS);
-  Serial.println(network.HOST);
-  readFile(SD_MMC, "/certs/server.cer");
-}
-
-void loop() {
-  delay(1);
-}
+-----END CERTIFICATE-----
