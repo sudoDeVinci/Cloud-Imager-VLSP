@@ -36,6 +36,9 @@ void setup() {
 
   writeFile(SD_MMC, "/certs/server.cer", shitbox_cert);
   writeFile(SD_MMC, "/servers/server.cfg","HOST=192.168.0.103\nCERT=/certs/server.cer");
+  writeFile(SD_MMC, "/aps/server.cfg", "SSID=\"Asimov-2.4GHZ\"\nPASS=\"Asimov42\"\nDNS=8.8.8.8")
+  writeFile(SD_MMC, "/profiles/server.cfg", "SERVER=\"server.cfg\"\nAP=\"server.cfg\"")
+  
   const char* profile = "server.cfg";
   readProfile(SD_MMC, profile, network);
 
