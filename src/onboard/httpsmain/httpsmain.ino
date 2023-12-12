@@ -1,7 +1,7 @@
 #include "sensors.h"
 #include "comm.h"
 
-#define FIRMWARE_VERSION "0.0.1"
+#define FIRMWARE_VERSION "0.0.0.2"
 
 /**
  * My beautiful globals
@@ -28,25 +28,10 @@ void setup() {
   sensors.wire = &wire;
   sensors.wire -> begin(41,42);
 
-
-  /**
-   * Setting up credentials.
-   * ----------------------------------
-   * network.SSID = "VLSP-Innovation";
-   * network.PASS = "9a5mPA8bU64!";
-   * ----------------------------------
-   * network.SSID = "Asimov-2.4GHZ";
-   * network.PASS = "Asimov42";
-   * network.HOST = IPAddress(192, 168, 8, 99);
-   * 
-   * TODO: move this onto disk to be loaded later. 
-   */
-
-
   /**
    * Read the profile config for the device network struct. 
    */
-  const char* profile = "home.cfg";
+  const char* profile = "server.cfg";
   readProfile(SD_MMC, profile, network);// TODO: do something cause the profile reading failed.
 
   network.CLIENT = &client;
@@ -72,6 +57,16 @@ void loop() {
 
   String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
 
+  /**
+  * Send sensor statuses.
+  */
+  sendStatuses(network.CLIENT, &sensors.status, network.HOST, timestamp);
+  delay(50);
+
+  /**
+  * Try to capture image.
+  * If false, change camera status.
+  */
   camera_fb_t * fb = NULL;
   sensors.status.CAM = true;
   fb = esp_camera_fb_get();
@@ -79,16 +74,21 @@ void loop() {
     debugln("Camera capture failed");
     sensors.status.CAM = false;
   }
-  if(sensors.status.CAM) sendImage(network.CLIENT, fb, network.HOST, timestamp);
-  esp_camera_fb_return(fb);
-  delay(50);
 
-  sendStatuses(network.CLIENT, &sensors.status, network.HOST, timestamp);
-  delay(50);
-
+  /**
+  * Send readings from the other sensors.
+  */
   String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
   sendReadings(network.CLIENT, readings, 4, network.HOST, timestamp);
   delete[] readings;
+  delay(50);
+  
+
+  /**
+  * If camera is up, send and release image buffer. 
+  */
+  if(sensors.status.CAM) sendImage(network.CLIENT, fb, network.HOST, timestamp);
+  esp_camera_fb_return(fb);
   delay(50);
 
   OTAUpdate(network, FIRMWARE_VERSION);

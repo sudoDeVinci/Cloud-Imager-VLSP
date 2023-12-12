@@ -258,6 +258,7 @@ def filesync(blc:str, ref:str, cld:str, sky:str) -> bool:
     print("Files Synced")
     return True        
 
+
 def main(colour_index: int) -> None:
     
     # PCA performed for RGB, HSV or YCbCr.
@@ -270,27 +271,6 @@ if __name__ == '__main__':
     start = datetime.now()
     empty = False
     
-    if ( not os.path.exists(blocked_images_folder) or not os.path.exists(reference_images_folder)):
-        print("bad path")
-        os._exit(1)
-    
-    if (not os.path.exists(cloud_images_folder)):
-        os.mkdir(cloud_images_folder)
-        empty = True
-    
-    if (not os.path.exists(sky_images_folder)):
-        os.mkdir(sky_images_folder)
-        empty = True
-    
-    if empty:
-        separate_datasets(blocked_images_folder, reference_images_folder)
-
-    else:
-        synced = filesync(blocked_images_folder, reference_images_folder, cloud_images_folder, sky_images_folder)
-        if (not synced):
-            os._exit(1)
-
-
     # create a process pool
     with ProcessPoolExecutor(max_workers=4) as executor:
         _ = executor.map(main, range(3))

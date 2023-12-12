@@ -8,7 +8,6 @@ from PIL import Image
 from gc import collect
 import os
 import cv2
-from numba import cuda, jit
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
 
@@ -16,13 +15,13 @@ from concurrent.futures import ProcessPoolExecutor
 camera = "dslr"
 
 # Global paths
-root_image_folder = 'CloudMeshVLSP/images'
+root_image_folder = 'images/'
 blocked_images_folder = f"{root_image_folder}/blocked_{camera}"
 reference_images_folder = f"{root_image_folder}/reference_{camera}"
 cloud_images_folder = f"{root_image_folder}/cloud_{camera}"
 sky_images_folder = f"{root_image_folder}/sky_{camera}"
 
-root_graph_folder = 'CloudMeshVLSP/Graphs'
+root_graph_folder = 'Graphs/'
 
 # TODO: Better histogram generation
 

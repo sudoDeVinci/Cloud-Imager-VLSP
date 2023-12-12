@@ -75,13 +75,16 @@ int check(WiFiClientSecure *client, String message) {
 
 int send(WiFiClientSecure *client, String header, String body) {
   
-  if(check(client, "pre-send: Not connected.")) return 1;
+  if(check(client, "Pre-Headers: Not connected.")) return 1;
 
   client -> println(header);
+
+  if(check(client, "Post-Headers: Not connected.")) return 1;
+
   client -> println(body);
   client -> println();
 
-  if(check(client, "post-send: Not connected.")) return 1;
+  if(check(client, "Post-Body: Not connected.")) return 1;
 
   client -> stop();
 
@@ -94,7 +97,7 @@ int send(WiFiClientSecure *client, String header, String body) {
  * Send readings from weather sensors to HOST on specified PORT. 
  */
 int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddress HOST, String timestamp) {
-
+  debugln("\n[READINGS]");
   String body = "temperature=" + readings[0] +
                 "&humidity=" + readings[1] + 
                 "&pressure=" + readings[2] +
@@ -111,7 +114,6 @@ int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddre
 
   int status;
   status = send(client, header, body);
-  check(client, "post-close: Not connected.");
   return status;
 }
 
@@ -120,7 +122,7 @@ int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddre
  * Send statuses of weather sensors to HOST on specified PORT. 
  */
 int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST, String timestamp) {
-
+  debugln("\n[STATUS]");
   String body = "sht="  + String(stat -> SHT) +
                 "&bmp=" + String(stat -> BMP) +
                 "&cam=" + String(stat -> CAM)+ "\r\n";
@@ -136,7 +138,6 @@ int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST
 
   int status;
   status = send(client, header, body);
-  check(client, "post-close: Not connected.");
   return status;
 }
 
@@ -144,7 +145,7 @@ int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST
  * Send Image buffer to HOST on specified PORT.
 */
 int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, String timestamp) {
-  
+  debugln("\n[IMAGE]");
   String header = generateHeader(MIMEType::IMAGE_JPG, fb -> len, HOST, WiFi.macAddress(), timestamp);
   if (header == "None") return 1;
 
@@ -153,18 +154,20 @@ int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, String 
 
   if (connect(client, HOST, static_cast<uint16_t>(Ports::IMAGEPORT)) == 1) return 1;
 
+  if(check(client, ">> Pre-Header: Not connected.")) return 1;
+
   client -> println(header);
 
-  // Check the connection status
-  if (!client->connected()) {
-    debugln("Connection lost");
-    client->stop(); // Close the connection
-    return 1;
-  }
+  if(check(client, ">> Post-Headers: Not connected.")) return 1;
 
   client -> write(fb -> buf, fb -> len);
+
+  if(check(client, ">> Post-Body: Not connected.")) return 1;
+
   client -> println();
   client -> stop();
+
+  if(check(client, ">> Post-All: Not connected.")) return 1;
   
   debugln();
   return 0;
@@ -361,6 +364,7 @@ bool readProfile(fs::FS &fs, const char *path, Network &network) {
  * Update the firmware for the device.
  */
 void OTAUpdate(Network network, String firmware_version) {
+  debugln("\n[UPDATES]");
   t_httpUpdate_return ret = httpUpdate.update(*network.CLIENT, network.HOST.toString(),
                             static_cast<uint16_t>(Ports::UPDATEPORT), "/", firmware_version); 
   switch (ret) {
