@@ -1,321 +1,128 @@
-import numpy as np
-import numpy.typing
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import normalize
 import matplotlib.pyplot as plt
-from PIL import Image
-from gc import collect
-import os
-import cv2
-from numba import cuda, jit
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
 
-# For typing
-Mat = numpy.typing.NDArray[np.uint8]
-
-# Camera model
-camera = "dslr"
-
-# Global paths
-root_image_folder = 'images'
-blocked_images_folder = f"{root_image_folder}/blocked_{camera}"
-reference_images_folder = f"{root_image_folder}/reference_{camera}"
-cloud_images_folder = f"{root_image_folder}/cloud_{camera}"
-sky_images_folder = f"{root_image_folder}/sky_{camera}"
-
-root_graph_folder = 'Graphs'
+from config import *
+from extract import raw_images
 
 
-def read(Blocked, Reference, cloudBGR, skyBGR, cloudHSV, skyHSV):
+def __count(xyz_sk:np.array) -> np.array:
     """
-    An assumption of this function is that all images are of the same size.
-    As to not raise an error
-
-    We read in our images and convert them to HSV
     """
-
-
-    blockedImage = cv2.imread(Blocked)
-    blockedImage = cv2.resize(blockedImage,(400, 300))
-    blockedImageHSV = cv2.cvtColor(blockedImage,cv2.COLOR_BGR2HSV)
-
+    unique, counts = np.unique(xyz_sk, return_counts=True)
+    freq = np.asarray((unique, counts)).T
+    return freq
+    
     
 
-    referenceImage = cv2.imread(Reference)
-    referenceImage = cv2.resize(referenceImage,(400, 300))
-    referenceImageHSV = cv2.cvtColor(referenceImage,cv2.COLOR_BGR2HSV)
 
-    #----------------------------------------------------------------------------------------------------#
-    #----------------------------------------------------------------------------------------------------#
+def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
+ 
+    components:list[3]
+    # The colour tag is a tag used to show the corresponding graphs whihc channels were used.
+    colour_tag:str
 
-    """
-    First we make a mask for red colours
-    We'll use Red to represent Clouds
-    Red can have hue values between 0-10, but also 170-180
-    """
-
-    u_b_red1HSV = np.array([10, 255, 255])
-    l_b_red1HSV = np.array([0, 30, 30])
-
-    u_b_red2HSV = np.array([180, 255, 255])
-    l_b_red2HSV = np.array([170, 50, 50])
-
-    maskOneRedHSV = cv2.inRange(blockedImageHSV,l_b_red1HSV,u_b_red1HSV)
-    maskTwoRedHSV = cv2.inRange(blockedImageHSV,l_b_red2HSV,u_b_red2HSV)
-
-    redMaskHSV = cv2.bitwise_or(maskOneRedHSV,maskTwoRedHSV)
-
-    """
-    Now we do the same for Black.
-    We'll use a range of black to represent The Sky
-    """
-
-    u_b_blackHSV = np.array([180, 255,30])
-    l_b_blackHSV = np.array([0, 0, 0])
-
-    blackMaskHSV = cv2.inRange(blockedImageHSV,l_b_blackHSV,u_b_blackHSV)
-
-    #----------------------------------------------------------------------------------------------------#
-    #----------------------------------------------------------------------------------------------------#
-
-    """
-    Apply masks and create HSV versions of our images.
-    """
-
-    cloudImageHSV = cv2.bitwise_and(referenceImageHSV,referenceImageHSV,mask = redMaskHSV)
-    skyImageHSV = cv2.bitwise_and(referenceImageHSV,referenceImageHSV,mask = blackMaskHSV)
-
-    cloudImageBGR = cv2.cvtColor(cloudImageHSV,cv2.COLOR_HSV2BGR)
-    skyImageBGR =  cv2.cvtColor(skyImageHSV,cv2.COLOR_HSV2BGR)
-
-    """
-    cv2.imshow("cloudBGR", cloudImageBGR)
-    cv2.imshow("skyBGR", skyImageBGR)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    """
-
-    #----------------------------------------------------------------------------------------------------#
-    #----------------------------------------------------------------------------------------------------#
+    match colour_index:
+        case 0:
+            components = ['red', 'green', 'blue']
+            colour_tag = 'rgb'
+        case 1:
+            components = ['hue','saturation','value']
+            colour_tag = 'hsv'
+        case 2:
+            components = ['brightness','Chroma Blue','Chroma Red']
+            colour_tag = 'YCbCr'
+        case _:
+            components = ['red', 'green', 'blue']
+            colour_tag = 'rgb'
     
-    """
-    Delete so my celeron laptop doesnt explode
-    Hurts speed slightly but helps to be able to run on lower end devices.
-    """
-    del u_b_red1HSV 
-    del l_b_red1HSV 
-    del u_b_red2HSV 
-    del l_b_red2HSV 
-    del maskOneRedHSV 
-    del maskTwoRedHSV 
-    del redMaskHSV 
-    del u_b_blackHSV 
-    del l_b_blackHSV 
-    del blackMaskHSV
-    gc.collect()
-
-    #----------------------------------------------------------------------------------------------------#
-    #----------------------------------------------------------------------------------------------------#
-
-
-    cbgrch = cv2.split(cloudImageBGR)
-
-    sbgrch = cv2.split(skyImageBGR)
-
-    chsvch = cv2.split(cloudImageHSV)
-
-    shsvch = cv2.split(skyImageHSV)
-
-    @jit(nopython=True, cache=True)
-    def readoutbgr(bgr, nparray):
-        b, g, r = bgr
-        for x,y,z in zip(b,g,r):
-            for i,o,u in zip(x,y,z):
-                if i!= 0 or o!=0 or u!=0:
-                    if i and o and u:
-                        nparray[0][i] += 1
-                        nparray[1][o] += 1
-                        nparray[2][u] += 1
-        return nparray
     
-    @jit(nopython=True, cache=True)
-    def readouthsv(hsv, nparray):
-        h, s, v = hsv
-        for x,y,z in zip(h,s,v):
-            for i,o,u in zip(x,y,z):
-                if u!=0:
-                    nparray[0][i] += 1
-                    nparray[1][o] += 1
-                    nparray[2][u] += 1
-        return nparray
+    # Process images
+    data_sky = raw_images(sky_folder, colour_index)
+    data_cloud = raw_images(cloud_folder, colour_index)
+    
+    x_cloud_freq = __count(np.array(data_cloud[:, 0]))
+    y_cloud_freq = __count(np.array(data_cloud[:, 1]))
+    z_cloud_freq = __count(np.array(data_cloud[:, 2]))
+    
+    x_sky_freq = __count(np.array(data_sky[:, 0]))
+    y_sky_freq = __count(np.array(data_sky[:, 1]))
+    z_sky_freq = __count(np.array(data_sky[:, 2]))
+    
+    del data_cloud, data_sky
+    
+    debug(x_cloud_freq[0])
+    
+    distributionBarGraphGenerator([x_cloud_freq, x_sky_freq], [y_cloud_freq, y_sky_freq], [z_cloud_freq, z_sky_freq], components, colour_tag)
     
 
-    cloudBGR = readoutbgr(cbgrch, cloudBGR)
-    skyBGR = readoutbgr(sbgrch, skyBGR)
-
-    skyHSV = readouthsv(shsvch, skyHSV)
-    cloudHSV = readouthsv(chsvch, cloudHSV)
-
-    return cloudBGR, skyBGR, cloudHSV, skyHSV
-
-#---------------------------------------------------------------------------------------------------------#
-#---------------------------------------------------------------------------------------------------------#
-
-"""
-Generate BGR and HSV Bar Graphs
-"""
-
-def distributionBarGraphGenerator(cloudBGR, skyBGR, cloudHSV, skyHSV , graphFolder, bins):
-
-    bgrGraphsavePath = os.path.join(graphFolder,'BGRBarGraph-esp.png')
-    hsvGraphsavePath = os.path.join(graphFolder,'HSVBarGraph-esp.png')
-
-    cloudBlues,cloudGreens,cloudReds = cloudBGR
-    skyBlues,skyGreens,skyReds = skyBGR
-
-    skyHues, skySats, skyValues = skyHSV
-    cloudHues, cloudSats, cloudValues = cloudHSV
 
 
-    print(f"> There are: \n └  {sum(cloudBlues)} cloud datapoints\n └  {sum(skyBlues)} sky datapoints")
+def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour_tag: str):
+    """
+    Generate BGR and HSV Bar Graphs
+    """
+    
+    x_c = x[0]
+    x_s = x[1]
+    y_c = y[0]
+    y_s = y[1]
+    z_c = z[0]
+    z_s = z[1]
+    
+    #bins = [*range(0,256,1)]
 
-    print("\n> Creating BGR Bar Graph ...")
-    fig1,axes1 = plt.subplots(nrows = 3,ncols = 1)
+    #print(f"> There are: \n └  {sum(cloudBlues)} cloud datapoints\n └  {sum(skyBlues)} sky datapoints")
+
+    debug(f"\n> Creating {colour_tag} Bar Histogram ...")
+    fig1,axes1 = plt.subplots(nrows = 3, ncols = 1)
     axes1 = axes1.flatten()
 
-    axes1[0].bar(bins, skyBlues, color = 'blue',alpha= 0.3,label = 'Sky Blues')
-    axes1[0].bar(bins, cloudBlues, color = 'purple',alpha = 0.3,label = 'Cloud Blues')
-    axes1[0].set_xlabel('BGR Blues (0 - 255)')
+    axes1[0].bar(x_s[:,0], x_s[:,1], color = 'red', alpha= 0.3, label = f'Sky {components[0]}')
+    axes1[0].bar(x_c[:,0], x_c[:,1], color = 'orange',alpha = 0.3,label = f'Cloud {components[0]}')
+    axes1[0].set_xlabel(f'{colour_tag} {components[0]} (0 - 255)')
     axes1[0].set_ylabel('frequency')
     axes1[0].legend(loc="upper left")
-    del skyBlues,cloudBlues
+    del x_s, x_c
 
-    axes1[1].bar(bins, cloudGreens, color = 'green',alpha= 0.3,label = 'Cloud Greens')
-    axes1[1].bar(bins, skyGreens, color = 'yellow',alpha = 0.3,label = 'Sky Greens')
-    axes1[1].set_xlabel('BGR Greens (0 - 255)')
+    axes1[1].bar(y_s[:,0], y_s[:,1], color = 'green', alpha= 0.3, label = f'Cloud {components[1]}')
+    axes1[1].bar(y_c[:,0], y_c[:,1], color = 'yellow', alpha = 0.3, label = f'Sky {components[1]}')
+    axes1[1].set_xlabel(f'{colour_tag} {components[1]} (0 - 255)')
     axes1[1].set_ylabel('frequency')
     axes1[1].legend(loc="upper left")
-    del cloudGreens,skyGreens
+    del y_s, y_c
 
-    axes1[2].bar( bins, cloudReds,color = 'red',alpha= 0.3,label = 'Cloud Reds')
-    axes1[2].bar(bins, skyReds, color = 'purple',alpha = 0.3,label = 'Sky Reds')
-    axes1[2].set_xlabel('BGR Reds(0 - 255)')
+    axes1[2].bar( z_s[:,0], z_s[:,1], color = 'blue', alpha= 0.3, label = f'Cloud {components[2]}')
+    axes1[2].bar(z_c[:,0], z_c[:,1], color = 'purple', alpha = 0.3, label = f'Sky {components[2]}')
+    axes1[2].set_xlabel(f'{colour_tag} {components[2]} (0 - 255)')
     axes1[2].set_ylabel('frequency')
     axes1[2].legend(loc="upper left")
-    del cloudReds,skyReds
+    del z_s, z_c
+    
     fig1.tight_layout()
-    plt.title("BGR Colour Frequency")
-    plt.savefig(bgrGraphsavePath)
-    fig1.clf()
+    plt.title(f"{colour_tag} Colour Frequency")
+    plt.savefig(f"{root_graph_folder}/new_hist_{camera}_{colour_tag}.png")
+    plt.clf()
     plt.close("all")
-    gc.collect()
-    print(" └ BGR Bar Graph created.")
-    del fig1
-    gc.collect()
-
-    #----------------------------------------------------------------------------------------------------#
-    #----------------------------------------------------------------------------------------------------#
-
-    print(" \n> Creating HSV Graph ...")
-    fig2,axes2 = plt.subplots(nrows = 3,ncols = 1)
-    axes2 = axes2.flatten()
-
-    axes2[0].bar(bins, cloudHues, color = 'purple',alpha = 0.3,label = 'Cloud Hues')
-    axes2[0].bar(bins, skyHues, color = 'blue',alpha= 0.3,label = 'Sky Hues')
-    axes2[0].set_xlabel('HSV Hues (0 - 255)')
-    axes2[0].set_ylabel('frequency')
-    axes2[0].legend(loc="upper left")
-    del skyHues,cloudHues
-
-    axes2[1].bar(bins, cloudSats, color = 'green',alpha= 0.3,label = 'Cloud Saturation')
-    axes2[1].bar(bins, skySats, color = 'yellow',alpha = 0.3,label = 'Sky Saturation')
-    axes2[1].set_xlabel('HSV Saturation (0 - 255)')
-    axes2[1].set_ylabel('frequency')
-    axes2[1].legend(loc="upper left")
-    del skySats,cloudSats
-
-    axes2[2].bar(bins, cloudValues, color = 'red',alpha= 0.3,label = 'Cloud Value')
-    axes2[2].bar(bins, skyValues, color = 'purple',alpha = 0.3,label = 'Sky Value')
-    axes2[2].set_xlabel('HSV Value (0 - 255)')
-    axes2[2].set_ylabel('frequency')
-    axes2[2].legend(loc="upper left")
-    del skyValues,cloudValues
-
-    fig2.tight_layout()
-    plt.title("HSV Colour Frequency")
-    plt.savefig(hsvGraphsavePath)
-    fig2.clf()
-    plt.close("all")
-
-    print(" └ HSV Graph created.")
-    del fig2
-    gc.collect()
-
-#---------------------------------------------------------------------------------------------------------#
-#---------------------------------------------------------------------------------------------------------#
-
-"""
-Make sure filenames are synced before running
-"""
-def filesync(Blocked, Reference):
-    for (_, _, referenceImages), (_, _, blockedImages) in zip(os.walk(Reference), os.walk(Blocked)):
-        for refImage, blockedImage in zip(referenceImages, blockedImages):
-            if refImage != blockedImage:
-                print("Image desync!")
-                return False
-
-    print("Files Synced")
-    return True
-
-#---------------------------------------------------------------------------------------------------------#
-#---------------------------------------------------------------------------------------------------------#
-
-def main(Blocked, Reference, Graphs):
-
-    bins = [*range(0,256,1)]
+    collect()
+    print(f" └ {colour_tag} Bar Graph created.")
+    collect()
     
-    cloudBGR = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
-    skyBGR = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
-    cloudHSV = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
-    skyHSV = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
-    cloudYBR = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
-    skyHSYBR = np.array([np.array([0 for n in range(0,256)]) for i in range(3)])
-   
-
-    for (refroot, _, referenceImages), (blockroot, _, blockedImages) in zip(os.walk(Reference), os.walk(Blocked)):
-        for refImage, blockedImage in zip(referenceImages, blockedImages):
-            refPath = os.path.join(refroot, refImage)
-            blockPath = os.path.join(blockroot, blockedImage)
-            print(f"> Processing: {refImage}", end='\r')
-            cloudBGR, skyBGR, cloudHSV, skyHSV = read(blockPath, refPath, cloudBGR, skyBGR, cloudHSV, skyHSV)
-    print("\n")
-
-    #----------------------------------------------------------------------------------------------------#
-    #----------------------------------------------------------------------------------------------------#
-
-    """
-    Now we create our BGR Bar Graph
-    """
-    distributionBarGraphGenerator(cloudBGR, skyBGR, cloudHSV, skyHSV , Graphs, bins)
     
-    #----------------------------------------------------------------------------------------------------#
-    #----------------------------------------------------------------------------------------------------#
+def __main(colour_index: int) -> None:
+    
+    # PCA performed for RGB, HSV or YCbCr.
+    __plot(sky_images_folder, cloud_images_folder, colour_index)
+
+    debug(f"Process {colour_index} done.")
+    
 
 if __name__ == '__main__':
-
     start = datetime.now()
-    Blocked = r'images/blocked_dslr'
-    Reference = r'images/reference_dslr'
-    Graphs = r"Graphs"
-
-    if filesync(Blocked, Reference):
-        main(Blocked, Reference, Graphs)
     
+    # create a process pool
+    with ProcessPoolExecutor(max_workers=4) as executor:
+        _ = executor.map(__main, range(3))
     end = datetime.now()
     runtime = end-start
-    print(f'\n> Runtime : {runtime} \n')
-
-#--------------------------------------------------------------------------------------------------------#
-#--------------------------------------------------------------------------------------------------------#
+    debug(f'\n> Runtime : {runtime} \n')

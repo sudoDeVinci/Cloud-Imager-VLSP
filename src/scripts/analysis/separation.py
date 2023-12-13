@@ -1,6 +1,10 @@
 from config import *
 
 def __separate(b_img: Mat, r_img: Mat, count:str) -> None:
+    """
+    Separate a single image of the sky into two images,
+    One of the clouds and one of the rest of the sky.
+    """
 
     b_img = cv2.resize(b_img,(400, 300))
     r_img = cv2.resize(r_img,(400, 300))
@@ -67,7 +71,7 @@ def separate_datasets(blocked_image_folder: str, reference_image_folder: str) ->
 
 def filesync(blc:str, ref:str, cld:str, sky:str) -> bool:
     """
-    Make sure filenames are synced before running
+    Make sure filenames are synced before running.
     """
     for (_, _, b_imgs), (_, _, r_imgs),(_, _, c_imgs),(_, _, s_imgs) in zip (os.walk(blc),os.walk(ref),os.walk(cld),os.walk(sky)):
         for b_img, r_img, c_img, s_img in zip(b_imgs, r_imgs, c_imgs, s_imgs):

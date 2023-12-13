@@ -1,8 +1,10 @@
+import os
+import cv2
 import numpy as np
 import numpy.typing
+from gc import collect
 from datetime import datetime
-import cv2
-import os
+
 
 # For typing
 Mat = numpy.typing.NDArray[np.uint8]
