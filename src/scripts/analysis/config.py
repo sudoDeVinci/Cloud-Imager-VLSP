@@ -12,12 +12,20 @@ Mat = numpy.typing.NDArray[np.uint8]
 camera = "dslr"
 
 # Global paths
-root_image_folder = 'images'
-blocked_images_folder = f"{root_image_folder}/blocked_{camera}"
-reference_images_folder = f"{root_image_folder}/reference_{camera}"
-cloud_images_folder = f"{root_image_folder}/cloud_{camera}"
-sky_images_folder = f"{root_image_folder}/sky_{camera}"
-root_graph_folder = 'Graphs'
+
+def mkdir(folder:str) -> str:
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    return folder
+
+
+root_image_folder = mkdir('images')
+blocked_images_folder = mkdir(f"{root_image_folder}/blocked_{camera}")
+reference_images_folder = mkdir(f"{root_image_folder}/reference_{camera}")
+cloud_images_folder = mkdir(f"{root_image_folder}/cloud_{camera}")
+sky_images_folder = mkdir(f"{root_image_folder}/sky_{camera}")
+root_graph_folder = mkdir('Graphs')
+
 
 # If debug is True, our debug lines throughtout the code will print. Otherwise, do nothing
 DEBUG:bool = True

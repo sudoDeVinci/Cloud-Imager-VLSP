@@ -8,6 +8,10 @@ from config import *
 from extract import process_images, get_tags
 
 
+sub_graph_dir = f"PCA/{camera}"
+
+
+
 def pca(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     """
     Graph the Principle components. 
@@ -85,7 +89,7 @@ def pca(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     plt.title('PCA')
     plt.xlabel('PC1')
     plt.ylabel('PC2')
-    plt.savefig(f"{root_graph_folder}/new_pca_{camera}_{colour_tag}.png")
+    plt.savefig(f"{root_graph_folder}/{sub_graph_dir}/new_pca_{camera}_{colour_tag}.png")
     plt.clf
 
     collect()      
@@ -101,6 +105,7 @@ def main(colour_index: int) -> None:
 
 if __name__ == '__main__':
     start = datetime.now()
+    mkdir(f"{root_graph_folder}/{sub_graph_dir}")
     workers = 3
     
     # create a process pool

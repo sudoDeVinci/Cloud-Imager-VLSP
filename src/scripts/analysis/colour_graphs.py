@@ -6,6 +6,10 @@ from config import *
 from extract import process_images, raw_images, get_tags
 
 
+sub_graph_dir = f"hist/{camera}"
+
+
+
 def __count(xyz_sk:np.array) -> np.array:
     """
     Return a frequency table of the integers in an input array
@@ -52,7 +56,7 @@ def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     
     debug(">> " + str(x_cloud_freq[0]))
     
-    distributionBarGraphGenerator([x_cloud_freq, x_sky_freq], [y_cloud_freq, y_sky_freq], [z_cloud_freq, z_sky_freq], components, colour_tag, f"{root_graph_folder}/new_hist_{camera}_{colour_tag}.png")
+    distributionBarGraphGenerator([x_cloud_freq, x_sky_freq], [y_cloud_freq, y_sky_freq], [z_cloud_freq, z_sky_freq], components, colour_tag, f"{root_graph_folder}/{sub_graph_dir}/new_hist_{camera}_{colour_tag}.png")
     del x_cloud_freq, y_cloud_freq, z_cloud_freq
     del x_sky_freq, y_sky_freq, z_sky_freq
     collect()
@@ -77,7 +81,7 @@ def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     
     debug(">> " + str(x_cloud_freq[0]))
     
-    distributionBarGraphGenerator([x_cloud_freq, x_sky_freq], [y_cloud_freq, y_sky_freq], [z_cloud_freq, z_sky_freq], components, colour_tag, f"{root_graph_folder}/new_hist_{camera}_{colour_tag}_centered.png")
+    distributionBarGraphGenerator([x_cloud_freq, x_sky_freq], [y_cloud_freq, y_sky_freq], [z_cloud_freq, z_sky_freq], components, colour_tag, f"{root_graph_folder}/{sub_graph_dir}/new_hist_{camera}_{colour_tag}_centered.png")
     del x_cloud_freq, y_cloud_freq, z_cloud_freq
     del x_sky_freq, y_sky_freq, z_sky_freq
     collect()
@@ -150,6 +154,7 @@ def __main(colour_index: int) -> None:
 
 if __name__ == '__main__':
     start = datetime.now()
+    mkdir(f"{root_graph_folder}/{sub_graph_dir}")
 
     workers = 3
     
