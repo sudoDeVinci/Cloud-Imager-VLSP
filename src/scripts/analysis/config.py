@@ -19,7 +19,7 @@ def mkdir(folder:str) -> str:
     return folder
 
 
-root_image_folder = mkdir('images')
+root_image_folder = 'images'
 blocked_images_folder = mkdir(f"{root_image_folder}/blocked_{camera}")
 reference_images_folder = mkdir(f"{root_image_folder}/reference_{camera}")
 cloud_images_folder = mkdir(f"{root_image_folder}/cloud_{camera}")
