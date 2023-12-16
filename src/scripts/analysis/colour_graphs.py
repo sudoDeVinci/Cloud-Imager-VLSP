@@ -3,64 +3,93 @@ from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
 
 from config import *
-from extract import raw_images
+from extract import process_images, raw_images, get_tags
 
 
 def __count(xyz_sk:np.array) -> np.array:
     """
+    Return a frequency table of the integers in an input array
     """
     unique, counts = np.unique(xyz_sk, return_counts=True)
     freq = np.asarray((unique, counts)).T
     return freq
-    
-    
+
 
 
 def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
- 
-    components:list[3]
-    # The colour tag is a tag used to show the corresponding graphs whihc channels were used.
-    colour_tag:str
+    """
+    Plot
+    """
+    # The colour tag is a tag used to show the corresponding graphs which channels were used.
+    #debug("getting tags")
 
-    match colour_index:
-        case 0:
-            components = ['red', 'green', 'blue']
-            colour_tag = 'rgb'
-        case 1:
-            components = ['hue','saturation','value']
-            colour_tag = 'hsv'
-        case 2:
-            components = ['brightness','Chroma Blue','Chroma Red']
-            colour_tag = 'YCbCr'
-        case _:
-            components = ['red', 'green', 'blue']
-            colour_tag = 'rgb'
-    
-    
+    temp = get_tags(colour_index)
+
+    #debug(temp)
+
+    components = temp[0] 
+    colour_tag = temp[1]
+    del temp
+
+    #debug(colour_tag)
+
     # Process images
     data_sky = raw_images(sky_folder, colour_index)
     data_cloud = raw_images(cloud_folder, colour_index)
+
     
     x_cloud_freq = __count(np.array(data_cloud[:, 0]))
     y_cloud_freq = __count(np.array(data_cloud[:, 1]))
     z_cloud_freq = __count(np.array(data_cloud[:, 2]))
+
+    del data_cloud
     
     x_sky_freq = __count(np.array(data_sky[:, 0]))
     y_sky_freq = __count(np.array(data_sky[:, 1]))
     z_sky_freq = __count(np.array(data_sky[:, 2]))
     
-    del data_cloud, data_sky
+    del data_sky
     
-    debug(x_cloud_freq[0])
+    debug(">> " + str(x_cloud_freq[0]))
     
-    distributionBarGraphGenerator([x_cloud_freq, x_sky_freq], [y_cloud_freq, y_sky_freq], [z_cloud_freq, z_sky_freq], components, colour_tag)
+    distributionBarGraphGenerator([x_cloud_freq, x_sky_freq], [y_cloud_freq, y_sky_freq], [z_cloud_freq, z_sky_freq], components, colour_tag, f"{root_graph_folder}/new_hist_{camera}_{colour_tag}.png")
+    del x_cloud_freq, y_cloud_freq, z_cloud_freq
+    del x_sky_freq, y_sky_freq, z_sky_freq
+    collect()
+
+
+    # Process images
+    data_sky = process_images(sky_folder, colour_index)
+    data_cloud = process_images(cloud_folder, colour_index)
+
     
+    x_cloud_freq = __count(np.array(data_cloud[:, 0]))
+    y_cloud_freq = __count(np.array(data_cloud[:, 1]))
+    z_cloud_freq = __count(np.array(data_cloud[:, 2]))
+
+    del data_cloud
+    
+    x_sky_freq = __count(np.array(data_sky[:, 0]))
+    y_sky_freq = __count(np.array(data_sky[:, 1]))
+    z_sky_freq = __count(np.array(data_sky[:, 2]))
+    
+    del data_sky
+    
+    debug(">> " + str(x_cloud_freq[0]))
+    
+    distributionBarGraphGenerator([x_cloud_freq, x_sky_freq], [y_cloud_freq, y_sky_freq], [z_cloud_freq, z_sky_freq], components, colour_tag, f"{root_graph_folder}/new_hist_{camera}_{colour_tag}_centered.png")
+    del x_cloud_freq, y_cloud_freq, z_cloud_freq
+    del x_sky_freq, y_sky_freq, z_sky_freq
+    collect()
 
 
 
-def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour_tag: str):
+
+
+def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour_tag: str, savepath:str):
     """
-    Generate BGR and HSV Bar Graphs
+    Generate a Histogram Showing the distribution of Cloud versus sky pixels as it pertains to 
+    their (3) colour channels.
     """
     
     x_c = x[0]
@@ -101,28 +130,32 @@ def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour
     
     fig1.tight_layout()
     plt.title(f"{colour_tag} Colour Frequency")
-    plt.savefig(f"{root_graph_folder}/new_hist_{camera}_{colour_tag}.png")
+    plt.savefig(savepath)
     plt.clf()
     plt.close("all")
     collect()
     print(f" └ {colour_tag} Bar Graph created.")
-    collect()
     
     
 def __main(colour_index: int) -> None:
     
     # PCA performed for RGB, HSV or YCbCr.
-    __plot(sky_images_folder, cloud_images_folder, colour_index)
+    try:
+        __plot(sky_images_folder, cloud_images_folder, colour_index)
+    except Exception as e:
+        debug(e)
 
     debug(f"Process {colour_index} done.")
     
 
 if __name__ == '__main__':
     start = datetime.now()
+
+    workers = 3
     
     # create a process pool
-    with ProcessPoolExecutor(max_workers=4) as executor:
-        _ = executor.map(__main, range(3))
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        _ = executor.map(__main, range(workers))
     end = datetime.now()
     runtime = end-start
     debug(f'\n> Runtime : {runtime} \n')

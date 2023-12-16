@@ -4,34 +4,28 @@ from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
 
 from config import *
-from extract import raw_images
+from extract import raw_images, get_tags
 
 
 def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
- 
-    components:list[3]
-    # The colour tag is a tag used to show the corresponding graphs whihc channels were used.
-    colour_tag:str
+    """
+    Plot the 3D point cloud of the selected colour channels for the image samples.
+    """
+    temp = get_tags(colour_index)
 
-    match colour_index:
-        case 0:
-            components = ['red', 'green', 'blue']
-            colour_tag = 'rgb'
-        case 1:
-            components = ['hue','saturation','value']
-            colour_tag = 'hsv'
-        case 2:
-            components = ['brightness','Chroma Blue','Chroma Red']
-            colour_tag = 'YCbCr'
-        case _:
-            components = ['red', 'green', 'blue']
-            colour_tag = 'rgb'
+    #debug(temp)
+
+    components = temp[0] 
+    colour_tag = temp[1]
+    del temp
+
+    #debug(colour_tag)
     
     # Process images
     data_sky = raw_images(sky_folder, colour_index)
     data_cloud = raw_images(cloud_folder, colour_index)
     
-    fig = plt.figure()
+    _ = plt.figure()
  
     # syntax for 3-D projection
     ax = plt.axes(projection ='3d')
@@ -43,8 +37,8 @@ def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     ax.set_xlabel(f'{components[0]}', fontsize=12)
     ax.set_ylabel(f'{components[1]}', fontsize=12)
     ax.set_zlabel(f'{components[2]}', fontsize=12)
-    plt.show()
-    #plt.savefig(f"{root_graph_folder}/new_3D_{camera}_{colour_tag}.png")
+    # plt.show()
+    plt.savefig(f"{root_graph_folder}/new_3D_{camera}_{colour_tag}.png")
     plt.clf
     collect()
     
@@ -58,11 +52,11 @@ def __main(colour_index: int) -> None:
 
 if __name__ == '__main__':
     start = datetime.now()
-    empty = False
+    workers = 3
     
     # create a process pool
-    with ProcessPoolExecutor(max_workers=4) as executor:
-        _ = executor.map(__main, range(1))
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        _ = executor.map(__main, range(workers))
     end = datetime.now()
     runtime = end-start
     debug(f'\n> Runtime : {runtime} \n')
