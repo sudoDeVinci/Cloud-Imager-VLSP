@@ -207,7 +207,7 @@ These show the frequency graphs for the colour channels of the 60 images of the 
 
 DSLR BGR Bar Graph            |  DSLR HSV Bar Graph
 :-------------------------:|:-------------------------:
-![Reference Image](Graphs/old/BGRBarGraph.png)  |  ![Blocked Image](Graphs/old/HSVBarGraph.png)
+![Reference Image](Graphs/new_hist_dslr_rgb.png)  |  ![Blocked Image](Graphs/new_hist_dslr_hsv.png)
 
 <br>
 
@@ -223,7 +223,7 @@ These show the frequency graphs for the colour channels of the 20 images of the 
 
 OV2640 BGR Bar Graph            |  OV2640 HSV Bar Graph
 :-------------------------:|:-------------------------:
-![Reference Image](Graphs/old/BGRBarGraph-esp.png)  |  ![Blocked Image](Graphs/old/HSVBarGraph-esp.png)
+![Reference Image](Graphs/new_hist_ov2640_rgb.png)  |  ![Blocked Image](Graphs/new_hist_ov2640_hsv.png)
 
 <br>
 
@@ -276,14 +276,14 @@ Once a matrix of principle components (colour channels) and their per variance v
 
 DSLR PCA BGR ScatterPLot            |  DSLR PCA HSV Scatterplot
 :-------------------------:|:-------------------------:
-![BGR PCA ScatterPlot for High Res Images](Graphs/old/BGRPcaGraph.png "BGR PCA ScatterPlot for High Res Images")  |  ![HSV PCA ScatterPlot for High Res Images](Graphs/old/HSVPcaGraph.png "HSV PCA ScatterPlot for High Res Images")
+![BGR PCA ScatterPlot for High Res Images](Graphs/new_pca_dslr_rgb.png "BGR PCA ScatterPlot for High Res Images")  |  ![HSV PCA ScatterPlot for High Res Images](Graphs/new_pca_dslr_hsv.png "HSV PCA ScatterPlot for High Res Images")
 
 #### PCA ScatterPlot for OV2640
 <br>
 
 OV2640 PCA BGR ScatterPLot            |  OV2640 PCA HSV Scatterplot
 :-------------------------:|:-------------------------:
-![BGR PCA ScatterPlot for ov2640](Graphs/old/BGRPcaGraph-esp.png "BGR PCA ScatterPlot for ov2640")  |  ![HSV PCA ScatterPlot for ov2640](Graphs/old/HSVPcaGraph-esp.png "HSV PCA ScatterPlot for ov2640")
+![BGR PCA ScatterPlot for ov2640](Graphs/new_pca_ov2640_rgb.png "BGR PCA ScatterPlot for ov2640")  |  ![HSV PCA ScatterPlot for ov2640](Graphs/new_pca_ov2640_hsv.png "HSV PCA ScatterPlot for ov2640")
 
 
 ### Final Comments

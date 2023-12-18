@@ -43,8 +43,9 @@ def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     ax.set_xlabel(f'{components[0]}', fontsize=12)
     ax.set_ylabel(f'{components[1]}', fontsize=12)
     ax.set_zlabel(f'{components[2]}', fontsize=12)
-    plt.show()
-    #plt.savefig(f"{root_graph_folder}/new_3D_{camera}_{colour_tag}.png")
+    ax.view_init(45, 180)
+    #plt.show()
+    plt.savefig(f"{root_graph_folder}/new_3D_{camera}_{colour_tag}.png")
     plt.clf
     collect()
     
@@ -57,12 +58,13 @@ def __main(colour_index: int) -> None:
     
 
 if __name__ == '__main__':
+    workers = 3
     start = datetime.now()
     empty = False
     
     # create a process pool
-    with ProcessPoolExecutor(max_workers=4) as executor:
-        _ = executor.map(__main, range(1))
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        _ = executor.map(__main, range(workers))
     end = datetime.now()
     runtime = end-start
     debug(f'\n> Runtime : {runtime} \n')
