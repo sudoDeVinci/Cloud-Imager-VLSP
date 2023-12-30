@@ -4,15 +4,20 @@ import numpy as np
 import numpy.typing
 from gc import collect
 from datetime import datetime
+from enum import Enum
 
 # For typing
 Mat = numpy.typing.NDArray[np.uint8]
 
 # Camera model for current visualization
-camera = "dslr"
+class camera_models(Enum):
+    OV2640 = "ov2640"
+    OV5640 = "ov5640"
+    DSLR = "dslr"
+
+camera:str = camera_models['OV2640'].value
 
 # Global paths
-
 def mkdir(folder:str) -> str:
     if not os.path.exists(folder):
         os.makedirs(folder)

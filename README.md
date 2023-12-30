@@ -1,4 +1,5 @@
-# Mesh Network for Cloud Detection, Tracking and Categorization
+# Cost-Focused Weather Tracking
+### (Cloud Categorization & Tracking)  
 
 - By: Tadj Cazaubon (tc222gf)
 
@@ -207,7 +208,7 @@ These show the frequency graphs for the colour channels of the 60 images of the 
 
 DSLR BGR Bar Graph            |  DSLR HSV Bar Graph
 :-------------------------:|:-------------------------:
-![Reference Image](Graphs/new_hist_dslr_rgb.png)  |  ![Blocked Image](Graphs/new_hist_dslr_hsv.png)
+![Reference Image](Graphs/hist/dslr/new_hist_dslr_RGB.png)  |  ![Blocked Image](Graphs/hist/dslr/new_hist_dslr_HSV.png)
 
 <br>
 
@@ -223,7 +224,7 @@ These show the frequency graphs for the colour channels of the 20 images of the 
 
 OV2640 BGR Bar Graph            |  OV2640 HSV Bar Graph
 :-------------------------:|:-------------------------:
-![Reference Image](Graphs/new_hist_ov2640_rgb.png)  |  ![Blocked Image](Graphs/new_hist_ov2640_hsv.png)
+![Reference Image](Graphs/hist/ov2640/new_hist_ov2640_RGB.png)  |  ![Blocked Image](Graphs//hist/ov2640/new_hist_ov2640_HSV.png)
 
 <br>
 
@@ -241,9 +242,11 @@ Once the percentage variance of each colour channel in differentiating cloud and
 
 These show the screeplots for the colour channels of the 60 higher resolution images of the sky, colour channels separated as principle components to check the variance percentage in differentiating sky versus cloud pixels.
 
+**[CURRENTLY UNLABELLED.]**
+
 DSLR BGR Scree Plot            |  DSLR HSV Scree Plot
 :-------------------------:|:-------------------------:
-![Reference Image](Graphs/old/BGRScree.png)  |  ![Blocked Image](Graphs/old/HSVScree.png)
+![Reference Image](Graphs/PCA/dslr/new_scree_dslr_RGB.png)  |  ![Blocked Image](Graphs/PCA/dslr/new_scree_dslr_HSV.png)
 
 <br>
 
@@ -258,7 +261,7 @@ These show the screeplots for the colour channels of the 20 images of the sky ta
 
 OV2640 BGR Scree Plot            |  OV2640 HSV Scree Plot
 :-------------------------:|:-------------------------:
-![Reference Image](Graphs/old/BGRScree-esp.png)  |  ![Blocked Image](Graphs/old/HSVScree-esp.png)
+![Reference Image](Graphs/PCA/ov2640/new_scree_ov2640_RGB.png)  |  ![Blocked Image](Graphs/PCA/ov2640/new_scree_ov2640_HSV.png)
 
 <br>
 
@@ -276,14 +279,14 @@ Once a matrix of principle components (colour channels) and their per variance v
 
 DSLR PCA BGR ScatterPLot            |  DSLR PCA HSV Scatterplot
 :-------------------------:|:-------------------------:
-![BGR PCA ScatterPlot for High Res Images](Graphs/new_pca_dslr_rgb.png "BGR PCA ScatterPlot for High Res Images")  |  ![HSV PCA ScatterPlot for High Res Images](Graphs/new_pca_dslr_hsv.png "HSV PCA ScatterPlot for High Res Images")
+![BGR PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_RGB.png "BGR PCA ScatterPlot for High Res Images")  |  ![HSV PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_HSV.png "HSV PCA ScatterPlot for High Res Images")
 
 #### PCA ScatterPlot for OV2640
 <br>
 
 OV2640 PCA BGR ScatterPLot            |  OV2640 PCA HSV Scatterplot
 :-------------------------:|:-------------------------:
-![BGR PCA ScatterPlot for ov2640](Graphs/new_pca_ov2640_rgb.png "BGR PCA ScatterPlot for ov2640")  |  ![HSV PCA ScatterPlot for ov2640](Graphs/new_pca_ov2640_hsv.png "HSV PCA ScatterPlot for ov2640")
+![BGR PCA ScatterPlot for ov2640](Graphs/PCA/ov2640/new_pca_ov2640_RGB.png "BGR PCA ScatterPlot for ov2640")  |  ![HSV PCA ScatterPlot for ov2640](Graphs/PCA/ov2640/new_pca_ov2640_HSV.png "HSV PCA ScatterPlot for ov2640")
 
 
 ### Final Comments
