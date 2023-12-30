@@ -108,9 +108,10 @@ def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour
     #print(f"> There are: \n └  {sum(cloudBlues)} cloud datapoints\n └  {sum(skyBlues)} sky datapoints")
 
     debug(f"\n> Creating {colour_tag} Bar Histogram ...")
-    fig1,axes1 = plt.subplots(nrows = 3, ncols = 1)
+    fig,axes1 = plt.subplots(nrows = 3, ncols = 1)
     axes1 = axes1.flatten()
 
+    axes1[0].set_title(f"{colour_tag} Colour Frequency", loc='center')
     axes1[0].bar(x_s[:,0], x_s[:,1], color = 'red', alpha= 0.3, label = f'Sky {components[0]}')
     axes1[0].bar(x_c[:,0], x_c[:,1], color = 'orange',alpha = 0.3,label = f'Cloud {components[0]}')
     axes1[0].set_xlabel(f'{colour_tag} {components[0]} (0 - 255)')
@@ -132,17 +133,16 @@ def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour
     axes1[2].legend(loc="upper left")
     del z_s, z_c
     
-    fig1.tight_layout()
-    plt.title(f"{colour_tag} Colour Frequency")
+    fig.tight_layout(pad=1)
+    
     plt.savefig(savepath)
     plt.clf()
-    plt.close("all")
     collect()
     print(f" └ {colour_tag} Bar Graph created.")
     
     
 def __main(colour_index: int) -> None:
-    
+    r
     # PCA performed for RGB, HSV or YCbCr.
     try:
         __plot(sky_images_folder, cloud_images_folder, colour_index)

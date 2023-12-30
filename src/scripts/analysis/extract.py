@@ -63,23 +63,9 @@ def process_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
             continue
     
         im = Image.open(os.path.join(folder_path, filename))
-        keyword = "RGB"
         tag = get_tags(colour_index)[1]
 
-        match colour_index:
-
-            case 0:
-               __process = __process_RGB
-
-            case 1:
-                __process = __process_HSV
-
-            case 2:
-                __process = __process_YBR
-            
-            case _:
-               __process = __process_RGB
-
+        __process = get_func(colour_index)
 
         if tag != 'RGB':
             im = im.convert(tag)
@@ -104,23 +90,9 @@ def raw_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
             continue
     
         im = Image.open(os.path.join(folder_path, filename))
-        keyword = "RGB"
         tag = get_tags(colour_index)[1]
 
-        match colour_index:
-
-            case 0:
-               __process = __process_RGB
-
-            case 1:
-                __process = __process_HSV
-
-            case 2:
-                __process = __process_YBR
-            
-            case _:
-               __process = __process_RGB
-
+        __process = get_func(colour_index)
 
         if tag != 'RGB':
             im = im.convert(tag)
@@ -132,6 +104,11 @@ def raw_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
     return np.vstack(data)
 
 def raw_largest_separations(folder_path:str):
+    """_summary_
+
+    Args:
+        folder_path (str): _description_
+    """
     data = []
     for filename in os.listdir(folder_path):
         if (not filename.endswith(".png")):
@@ -148,4 +125,29 @@ def raw_largest_separations(folder_path:str):
         image = im.convert('YCbCr')
         image = np.array(im)
         non_black_data = __process_YBR(im)
+
+
+def get_func(colour_index: int):
+    """_summary_
+
+    Args:
+        colour_index (int): _description_
+
+    Returns:
+        function: _description_
+    """
+    match colour_index:
+
+            case 0:
+                return __process_RGB
+
+            case 1:
+                return __process_HSV
+
+            case 2:
+                return __process_YBR
+            
+            case _:
+                return __process_RGB
+            
     
