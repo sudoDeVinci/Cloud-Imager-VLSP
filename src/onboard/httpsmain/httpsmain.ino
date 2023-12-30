@@ -31,7 +31,7 @@ void setup() {
   /**
    * Read the profile config for the device network struct. 
    */
-  const char* profile = "server.cfg";
+  const char* profile = "home.cfg";
   readProfile(SD_MMC, profile, network);// TODO: do something cause the profile reading failed.
 
   network.CLIENT = &client;
@@ -73,6 +73,8 @@ void loop() {
   if(!fb) {
     debugln("Camera capture failed");
     sensors.status.CAM = false;
+  } else {
+    esp_camera_fb_return(fb);
   }
 
   /**
@@ -87,6 +89,13 @@ void loop() {
   /**
   * If camera is up, send and release image buffer. 
   */
+  fb = esp_camera_fb_get();
+  esp_camera_fb_return(fb);
+  fb = esp_camera_fb_get();
+  esp_camera_fb_return(fb);
+  fb = esp_camera_fb_get();
+  esp_camera_fb_return(fb);
+  fb = esp_camera_fb_get();
   if(sensors.status.CAM) sendImage(network.CLIENT, fb, network.HOST, timestamp);
   esp_camera_fb_return(fb);
   delay(50);
