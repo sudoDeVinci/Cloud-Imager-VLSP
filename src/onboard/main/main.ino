@@ -5,26 +5,26 @@ WiFiClientSecure client;
 
 const char* home_cert = R"(
 -----BEGIN CERTIFICATE-----
-MIIDkjCCAnqgAwIBAgIEZWv4nTANBgkqhkiG9w0BAQsFADCBijELMAkGA1UEBhMC
-U0UxFzAVBgNVBAgMDktyb25vYmVyZ3MgTGFuMQ4wDAYDVQQHDAVWYXhqbzEhMB8G
-A1UECgwYVmF4am8gTGlubmUgU2NpZW5jZSBQYXJrMRcwFQYDVQQLDA5Jbm5vdmF0
-aW9uIExhYjEWMBQGA1UEAwwNVGFkaiBDYXphdWJvbjAeFw0yMzEyMDMwMzQwMTNa
-Fw0yNDEyMDIwMzQwMTNaMIGKMQswCQYDVQQGEwJTRTEXMBUGA1UECAwOS3Jvbm9i
-ZXJncyBMYW4xDjAMBgNVBAcMBVZheGpvMSEwHwYDVQQKDBhWYXhqbyBMaW5uZSBT
-Y2llbmNlIFBhcmsxFzAVBgNVBAsMDklubm92YXRpb24gTGFiMRYwFAYDVQQDDA1U
-YWRqIENhemF1Ym9uMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzoQA
-tHnLsUTdizNqWhVQveMwIo4EHsKrgYzwdBv3oL6F+xVKN5fJWJOkYJvaaze/+XQf
-gBdMSy/0TL+1hEnsWHTDsc50oHx+jEPI6YgY4npRtsH0PZsLxDLVAKnY0djztlZf
-YZFumTaSV/rDS6KFPBuOowbH60PMI7Ija620q/GGC3Nps4murojO/4ToAfZgKpWz
-lFIkTaVF/NuiIGMsn7CHbPDBqH1tcyxIIa9kOO19EJtD1ywPHJuz40xz7pcUTBXf
-wj6sm3PvLwdh0A16uKMyo2d3rT1UlnNMu9EDd9pQFFajSd6EQpngoQvigYEJVH2A
-8Umf9VzuhsZl3jPXhwIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQBSDd49cwOX1lRi
-3GCP8P5vRl9BIPdmzD3/tw1vNBdjFMDXPLLNMvFi7Ot/FPOR6nEDXsbJvRtXhMlg
-qLgjJkT4kkP5qzMbnSNC2LvSXP1rhwrvjeuIuOefUKp3kHFm8DIeCjDfr8d47K9Y
-guDjcBEjcL3XWtM8f206FVw+QKAbi4YE5qx/RoDqkGG5EgSzcDMHbOmhm3m/ZhkI
-GWNWogZ/ienXI0AUh5b7lQBCoyKb1DK1eNVq+5ZhhREugynsdpO0n32pGsEo7Pvk
-81kQzjZeUZ4g5SFCqtkPf9GzgkpbGhTBsiUUS+zTWve+G2AdQB60px2VeBhuKq/k
-DKrOWu12
+MIIDtDCCApygAwIBAgIEZS0cNjANBgkqhkiG9w0BAQsFADCBmzELMAkGA1UEBhMC
+U0UxEDAOBgNVBAgMB1bDpHhqw7YxFzAVBgNVBAcMDktyb25vYmVyZ3MgTGFuMRcw
+FQYDVQQKDA5Jbm5vdmF0aW9uIExhYjEjMCEGA1UECwwaVsOkeGrDtiBMaW5uZSBT
+Y2llbmNlIFBhcmsxIzAhBgNVBAMMGlbDpHhqw7YgTGlubmUgU2NpZW5jZSBQYXJr
+MB4XDTIzMTAxNjExMTkxOFoXDTI0MTAxNTExMTkxOFowgZsxCzAJBgNVBAYTAlNF
+MRAwDgYDVQQIDAdWw6R4asO2MRcwFQYDVQQHDA5Lcm9ub2JlcmdzIExhbjEXMBUG
+A1UECgwOSW5ub3ZhdGlvbiBMYWIxIzAhBgNVBAsMGlbDpHhqw7YgTGlubmUgU2Np
+ZW5jZSBQYXJrMSMwIQYDVQQDDBpWw6R4asO2IExpbm5lIFNjaWVuY2UgUGFyazCC
+ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOmPRgG5VT38HxMl1cGOWthe
+yvX+/CBR1Eby9gw4pa/pmcBsmTCMHS4tSUJ7FBoxpo9SAEYibwqbUSUxW+AxD31L
+r1qRWLI/eVgum1XZq0DKmBy9B+4DV3o31RAcd0Z+/YmSg+1BnqldZMNoXR3kTRJG
+WZAH2utiOXeuTLwXmlbKfo/pPtjWMH2qw3zx52HjoagsLkJOsmPZmUXLXrSw/0lT
+FQ5rVkeAnXeqHJhwQQ5j+8jHyD3UfSIafEo/28MtUFfBIdC1vTARk+dvzLBlCnMd
+6M9fLn7ayDCJKypEI9c2exGI2/R8u+rY9NwOW721UWH2A4JsVFDfsSM3f3mVDnsC
+AwEAATANBgkqhkiG9w0BAQsFAAOCAQEAKu5Ygv/H7nCIwLOh3MANtjnM/1EjRqit
+r4f5SYpwOSXd4up/DdHEZkaPI9qFC59kvk3tLO/df9K8lIcgK3Cc4wP+5PRu4w+l
+4ANBJg2ZrEsTcczSNmpNv4Fuwh/deh4K31pdYKdZuebvcvuvDj0FLD68LnIyHUKR
+L/SZCQyiPGgJNJRxh2nOD+9NOVm7Mmy5T04o+Z7zMffEZ10GpzdeFQPXsjBR+SfF
+chqEjejTXO5fioYKZ3+r8dszFyaG9VIK7nG/Ptq8j85HGCdBBFsseh3eL/ctPJJv
+cH1vJGvHyQqRldaEKHy+ByIfZWirWkOq+6IFGmaPD557iEVFItMHHA==
 -----END CERTIFICATE-----)";
 
 const char* shitbox_cert = R"(
@@ -57,6 +57,10 @@ void setup() {
   Serial.println("Setting up.");
 
   sdmmcInit();
+  createDir(SD_MMC, "/certs");
+  createDir(SD_MMC, "/servers");
+  createDir(SD_MMC, "/aps");
+  createDir(SD_MMC, "/profiles");
 
   writeFile(SD_MMC, "/certs/server.cer", shitbox_cert);
   writeFile(SD_MMC, "/servers/server.cfg","HOST=192.168.8.110\nCERT=/certs/server.cer");
@@ -65,7 +69,7 @@ void setup() {
 
 
   writeFile(SD_MMC, "/certs/home.cer", home_cert);
-  writeFile(SD_MMC, "/servers/home.cfg","HOST=192.168.0.105\nCERT=/certs/home.cer");
+  writeFile(SD_MMC, "/servers/home.cfg","HOST=192.168.0.101\nCERT=/certs/home.cer");
   writeFile(SD_MMC, "/aps/home.cfg", "SSID=\"Asimov-2.4GHZ\"\nPASS=\"Asimov42\"\nDNS=8.8.8.8");
   writeFile(SD_MMC, "/profiles/home.cfg", "SERVER=\"home.cfg\"\nAP=\"home.cfg\"");
   
