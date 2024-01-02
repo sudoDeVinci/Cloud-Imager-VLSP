@@ -179,8 +179,8 @@ int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, String 
 String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macAddress, String timestamp) {
 
   String mimeType = MIMEStr[static_cast<int>(type)];
-
-  int end = strlen("\r\n");
+  String clfr = "\r\n";
+  int end = clrf.length();
 
   int headerLength = HeaderStr[0].length() + end +
                      HeaderStr[1].length() + HOST.toString().length() + end +
@@ -194,13 +194,13 @@ String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macA
   String header;
   header.reserve(headerLength+1);
 
-  header += HeaderStr[0]+"\r\n";
-  header += HeaderStr[1] + HOST.toString() + "\r\n";
-  header += HeaderStr[2] + mimeType +"\r\n";
-  header += HeaderStr[3] + "\r\n";
-  header += HeaderStr[4] + String(bodyLength) + "\r\n";
-  header += HeaderStr[5] + macAddress + "\r\n";
-  header += HeaderStr[6] + timestamp + "\r\n";
+  header.concat(HeaderStr[0] + clrf);
+  header.concat(HeaderStr[1] + HOST.toString() + clrf);
+  header.concat(HeaderStr[2] + mimeType + clrf);
+  header.concat(HeaderStr[3] + clrf);
+  header.concat(HeaderStr[4] + String(bodyLength) + clrf);
+  header.concat(HeaderStr[5] + macAddress + clrf);
+  header.concat(HeaderStr[6] + timestamp + clrf);
   
   return header;
 }
