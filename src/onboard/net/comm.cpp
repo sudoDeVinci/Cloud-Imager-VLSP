@@ -387,27 +387,26 @@ String getResponse(WiFiClientSecure *client) {
   
 
   // Wait for the server to respond
-    String response = "";
-    int contentLength = -1; // Initialize to -1 to detect if the header is present
+  String response = "";
+  int contentLength = -1; // Initialize to -1 to detect if the header is present
 
-    while (client.connected() || client.available()) {
-      if (client.available()) {
-        char c = client.read();
-        response += c;
+  while (client.connected() || client.available()) {
+    if (client.available()) {
+      char c = client.read();
+      response += c;
 
-        // Check for the Content-Length header
-        if (response.endsWith("\r\n\r\n")) {
-          int index = response.indexOf("Content-Length: ");
-          if (index != -1) {
-            contentLength = response.substring(index + 16).toInt();
-            response.reserve(contentLength); // Pre-allocate memory for the response
-          }
-          break;
+      // Check for the Content-Length header
+      if (response.endsWith("\r\n\r\n")) {
+        int index = response.indexOf("Content-Length: ");
+        if (index != -1) {
+          contentLength = response.substring(index + 16).toInt();
+          response.reserve(contentLength+response.length()); // Pre-allocate memory for the response
         }
+        break;
       }
     }
-  
-  
+  }
+
   // Continue reading data until the expected content length is reached
   while (client.connected() || (client.available() && response.length() < contentLength)) {
     char c = client.read();
