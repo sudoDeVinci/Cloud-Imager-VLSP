@@ -1,6 +1,4 @@
-# Cloud Detection/Categorization via Visual Colour Space
-#                                   OR
-# A Mesh Network To Track Clouds
+# Cost-Focused Weather Tracking (Cloud Categorization & Tracking) 
 
 <br>
 
