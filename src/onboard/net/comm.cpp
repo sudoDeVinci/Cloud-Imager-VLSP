@@ -416,3 +416,24 @@ String getResponse(WiFiClientSecure *client) {
 
   return response;
 }
+
+/**
+ * Send TEST packet.
+ */
+int sendTest(WiFiClientSecure *client, IPAddress HOST, String timestamp) {
+  debugln("\n[TEST]");
+  String body = "TEST\r\n";
+
+  String header = generateHeader(MIMEType::APP_FORM, body.length(), HOST, WiFi.macAddress(), timestamp);
+  if (header == "None") return 1;
+
+  debugln(header);
+  debugln(body);
+  debugln();
+
+  if (connect(client, HOST, static_cast<uint16_t>(Ports::TESTPORT)) == 1) return 1;
+
+  int status;
+  status = send(client, header, body);
+  return status;
+}

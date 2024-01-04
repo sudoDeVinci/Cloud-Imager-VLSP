@@ -19,7 +19,8 @@ enum class Ports: uint16_t {
     REGISTERPORT = 8081,
     SENSORSPORT = 8082,
     IMAGEPORT = 8083,
-    UPDATEPORT = 8084 
+    UPDATEPORT = 8084, 
+    TESTPORT = 1312
 };
 
 /**
@@ -68,30 +69,25 @@ int wifiSetup(WiFiClientSecure *client, const char* SSID, const char* PASS, Sens
  */
 int connect(WiFiClientSecure *client, IPAddress HOST, uint16_t PORT);
 
-
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
 int sendReadings(WiFiClientSecure *client, String* readings, int length, IPAddress HOST, String timestamp);
-
 
 /**
  * Send statuses of weather sensors to HOST on specified PORT. 
  */
 int sendStatuses(WiFiClientSecure *client, Sensors::Status *stat, IPAddress HOST, String timestamp);
 
-
 /**
  * Send Image buffer to HOST on specified PORT.
 */
 int sendImage(WiFiClientSecure *client, camera_fb_t *fb, IPAddress HOST, String timestamp);
 
-
 /**
  * Generate a header for a given HTTPS packet.
  */
 String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macAddress, String timestamp);
-
 
 /**
  * Generate a header for a given HTTPS packet.
@@ -112,12 +108,10 @@ String getTime(tm *timeinfo, time_t *now, int timer);
  */
 void readCertificateFile(fs::FS &fs, const char *certPath, const char* &certContent);
 
-
 /**
  * Try to load the config file for a network AP.
  */
 bool readServerConf(fs::FS &fs, const char *path, Network &network);
-
 
 /**
  * Try to load the config file for a network AP.
@@ -134,6 +128,14 @@ bool readProfile(fs::FS &fs, const char *path, Network &network);
  */
 void OTAUpdate(Network network, String firmware_version);
 
+/**
+ * Get a response from the currently connected host. 
+ */
 String getResponse(WiFiClientSecure *client);
+
+/**
+ * Send TEST packet.
+ */
+int sendTest(WiFiClientSecure *client, IPAddress HOST, String timestamp);
 
 #endif
