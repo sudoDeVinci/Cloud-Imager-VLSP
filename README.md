@@ -114,9 +114,37 @@ struct Network {
     IPAddress HOST;
     IPAddress GATEWAY;
     IPAddress DNS;
-    WiFiClientSecure *CLIENT;
+    HTTPClient *HTTP;
+    WiFiClient *CLIENT;
     tm TIMEINFO;
     time_t NOW;
+
+    /**
+     * MIME types for the different types of packets.
+     */
+    struct MIMEType {
+        const String IMAGE_JPG = "image/jpeg";
+        const String APP_FORM = "application/x-www-form-urlencoded";
+    } mimetypes;
+
+    /**
+     * Routes on the Server. 
+     */
+    struct Route {
+        const char* IMAGE = "/images";
+        const char* REGISTER = "/register";
+        const char* READING = "/reading";
+        const char* STATUS = "/status";
+        const char* UPDATE = "/update";
+        const char* UPGRADE = "/upgrade";
+        const char* TEST = "/test";
+    } routes;
+
+    struct Header {
+        const String CONTENT_TYPE = "Content-Type";
+        const String MAC_ADDRESS = "MAC-Address";
+        const String TIMESTAMP = "timestamp"; 
+    } headers;
 };
 ```
 
@@ -124,40 +152,6 @@ struct Network {
 
 I use pointers so that I can have a majority of these functions in separate cpp files to separate responsibility. Sensor related functionality is in [sensors.cpp](src/onboard/httpsmain/sensors.cpp), and networking related functionality is in [comm.cpp](src/onboard/httpsmain/comm.cpp). 
 Pointers are also useful so that the structures containing them can be kept within a global scope, but mutated within methods. I find this helps keep memory management simple.
-
-#### Notes on Memory
-To try to squeeze out the largest amount of space possible for images, memory management is important. This however is weighed against the fact that many of the libraries use Strings. Due to the sequential nature of execution, not many strings must be held in memory at any given time, however, their use can cause fragmentation of the heap overtime. This is addressed mostly using reserve() when creating strings and letting those same strings go out of scope from their creation. If a string is used in the main loop, it must be directly freed.
-
-```cpp
-String generateHeader(MIMEType type, int bodyLength, IPAddress HOST, String macAddress, String timestamp) {
-
-  String mimeType = MIMEStr[static_cast<int>(type)];
-
-  int end = strlen("\r\n");
-
-  int headerLength = HeaderStr[0].length() + end +
-                     HeaderStr[1].length() + HOST.toString().length() + end +
-                     HeaderStr[2].length() + mimeType.length() + end + 
-                     HeaderStr[3].length() + end + 
-                     HeaderStr[4].length() + String(bodyLength).length() + end +
-                     HeaderStr[5].length() + macAddress.length() + end +
-                     HeaderStr[6].length() + timestamp.length();
-
-
-  String header;
-  header.reserve(headerLength+1);
-
-  header += HeaderStr[0]+"\r\n";
-  header += HeaderStr[1] + HOST.toString() + "\r\n";
-  header += HeaderStr[2] + mimeType +"\r\n";
-  header += HeaderStr[3] + "\r\n";
-  header += HeaderStr[4] + String(bodyLength) + "\r\n";
-  header += HeaderStr[5] + macAddress + "\r\n";
-  header += HeaderStr[6] + timestamp + "\r\n";
-  
-  return header;
-}
-```
 
 <br>
 

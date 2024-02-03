@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
-
 from config import *
 from extract import process_images, raw_images, get_tags
 

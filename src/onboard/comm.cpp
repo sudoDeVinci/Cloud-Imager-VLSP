@@ -174,6 +174,8 @@ void getResponse(HTTPClient *HTTP, int httpCode) {
         debugf("[HTTP] POST... code: %d\n", httpCode);
         if (httpCode == HTTP_CODE_OK) debug(HTTP -> getString());
   } else debugf("[HTTP] POST... failed, error: %s\n", HTTP -> errorToString(httpCode).c_str());
+
+  debugln();
 }
 
 /**
@@ -215,14 +217,16 @@ void sendStats(Network *network, Sensors::Status *stat, const String& timestamp)
     debugln("\n[STATUS]");
     const String PATH = String(network->routes.STATUS);
     IPAddress host = network->HOST;
-
-    network -> HTTP -> begin(host.toString(), 8080, PATH);
     
-    const String body = "sht="  + String(stat -> SHT) +
+    const String body = "?sht="  + String(stat -> SHT) +
                         "&bmp=" + String(stat -> BMP) +
                         "&cam=" + String(stat -> CAM);
 
-    send(network, timestamp, body);
+    network -> HTTP -> begin(host.toString(), 8080, String(PATH + body));
+
+    debugln(body);
+
+    //send(network, timestamp, body);
     network -> HTTP -> end();
 
 }
@@ -235,14 +239,16 @@ void sendReadings(Network *network, String* thpd, const String& timestamp) {
     const String PATH = String(network->routes.READING);
     IPAddress host = network -> HOST;
 
-    network -> HTTP -> begin(host.toString(), 8080, PATH);
-
-    const String body = "temperature=" + String(thpd[0]) + 
+    const String body = "?temperature=" + String(thpd[0]) + 
                  "&humidity=" + String(thpd[1]) + 
                  "&pressure=" + String(thpd[2]) + 
                  "&dewpoint=" + String(thpd[3]);
+
+    network -> HTTP -> begin(host.toString(), 8080, String(PATH + body));
+
+    debugln(body);
     
-    send(network, timestamp, body);
+    //send(network, timestamp, body);
     network -> HTTP -> end();
 }
 
@@ -268,7 +274,7 @@ void OTAUpdate(Network *network, String firmware_version) {
     IPAddress host = network -> HOST;
 
     // Start the OTA update process
-    t_httpUpdate_return ret = ESPhttpUpdate.update(String("http://192.168.0.102:8080/update"), firmware_version);
+    t_httpUpdate_return ret = ESPhttpUpdate.update(String("http://192.168.0.100:8080/update/"), firmware_version);
     switch (ret) {
       case HTTP_UPDATE_FAILED:
         debugf("HTTP_UPDATE_FAILED Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());

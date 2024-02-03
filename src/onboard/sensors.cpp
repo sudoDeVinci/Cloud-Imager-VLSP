@@ -74,7 +74,7 @@ void cameraSetup(Sensors::Status *stat) {
   config.pixel_format = PIXFORMAT_JPEG;
   config.grab_mode = CAMERA_GRAB_LATEST; // Needs to be "CAMERA_GRAB_LATEST" for camera to capture.
   config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.jpeg_quality = 10;
+  config.jpeg_quality = 15;
   config.fb_count = 1;
 
   /** if PSRAM keep res and jpeg quality.
@@ -118,7 +118,7 @@ void cameraSetup(Sensors::Status *stat) {
   s->set_dcw(s, 1);            // 0 = disable , 1 = enable
   s->set_colorbar(s, 0);       // 0 = disable , 1 = enable
 
-  delay(1000);
+  delay(100);
 
   /**
    * Attempt to capture an image with the given settings.
@@ -131,6 +131,7 @@ void cameraSetup(Sensors::Status *stat) {
     stat -> CAM = false;
     esp_err_t deinitErr = cameraTeardown();
     if (deinitErr != ESP_OK) debugf("Camera de-init failed with error 0x%x", deinitErr);
+    debugln();
     esp_camera_fb_return(fb);
     return;
   } else {
@@ -153,7 +154,7 @@ esp_err_t cameraTeardown() {
     } else {
         debugf("Camera deinitialized successfully\n");
     }
-
+    debugln();
     return err;
 }
 

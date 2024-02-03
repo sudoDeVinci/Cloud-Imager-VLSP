@@ -31,7 +31,7 @@ void setup() {
   /**
    * Read the profile config for the device network struct. 
    */
-  const char* profile = "win_laptop.cfg";
+  const char* profile = "server.cfg";
   readProfile(SD_MMC, profile, network);// TODO: do something cause the profile reading failed.
 
   network.HTTP = &http;
@@ -71,6 +71,7 @@ void loop() {
   * Send readings from the other sensors.
   */
   String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
+  delay(50);
   sendReadings(&network, readings, timestamp);
   delete[] readings;
   delay(50);

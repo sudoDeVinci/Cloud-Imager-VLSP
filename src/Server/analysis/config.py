@@ -15,7 +15,7 @@ class camera_models(Enum):
     OV5640 = "ov5640"
     DSLR = "dslr"
 
-camera:str = camera_models['OV2640'].value
+camera:str = camera_models['DSLR'].value
 
 # Global paths
 def mkdir(folder:str) -> str:

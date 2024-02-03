@@ -47,7 +47,7 @@ def update() -> Response:
         
         firmware_version = conf_dict['version']
         
-        debug(f"Got data from {mac} \nBoard Firmware Version: {board_ver}\n Updated Firmware Version: {firmware_version}")
+        #debug(f"Got data from {mac} \nBoard Firmware Version: {board_ver}\n Updated Firmware Version: {firmware_version}")
 
          
         if need_update(board_ver) :
@@ -110,6 +110,11 @@ def status() -> Response:
         mac = request.headers.get('MAC-Address')
         debug(f"Got data from {mac} @ {timestamp}")
 
+        # Should have a MAC filter.
+        
+        #debug(request.get_json())
+        #debug(request.get_data())
+
         sht = request.args.get('sht')
         bmp = request.args.get('bmp')
         cam = request.args.get('cam')
@@ -148,7 +153,7 @@ def images() -> Response:
         return jsonify({"message": "Image saved successfully", "filename": filename}), 200
 
     except Exception as e:
-        debug(e)
+        print(e)
         return jsonify({"error": str(e)}), 500
     
     finally:
@@ -159,9 +164,10 @@ def images() -> Response:
 if __name__ == '__main__':
     try:
         Manager.connect(True)
-        if (not DeviceService.exists("34:85:18:40:CD:8C")): DeviceService.add("34:85:18:40:CD:8C", "Home-ESP", "ESP32S3", "OV5640", 173, 56.853470, 14.824620);
-        #DeviceService.update("34:85:18:40:CD:8C", "Home-ESP")
+        if (not DeviceService.exists("34:85:18:40:CD:8C")): DeviceService.add("34:85:18:40:CD:8C", "Home-ESP", "ESP32S3", "OV5640", 173, 56.853470, 14.824620)
+        if (not DeviceService.exists("34:85:18:41:EB:78")): DeviceService.add("34:85:18:41:EB:78", "Work-ESP", "ESP32S3", "OV5640", 173, 56.853470, 14.824620)
     except Exception as e:
         debug(e)
-    app.run(host='0.0.0.0', port=8080, debug=False)
+    
+    app.run(host='0.0.0.0', port=8080, debug=True)
     #app.run(host='0.0.0.0', port=8080, debug=True, ssl_context=('win_laptop.cer', 'win_laptop.pem'))

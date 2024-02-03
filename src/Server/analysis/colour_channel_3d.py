@@ -42,7 +42,7 @@ def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     ax.set_xlabel(f'{components[0]}', fontsize=12)
     ax.set_ylabel(f'{components[1]}', fontsize=12)
     ax.set_zlabel(f'{components[2]}', fontsize=12)
-    ax.view_init(45, 180)
+    ax.view_init(45, -45)
     #plt.show()
     plt.savefig(f"{root_graph_folder}/new_3D_{camera}_{colour_tag}.png")
     plt.clf
