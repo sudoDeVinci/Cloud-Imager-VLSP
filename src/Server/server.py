@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify, Response, send_from_directory, send_file
+from flask import Flask, request, jsonify, Response, send_from_directory, send_file, make_response
 import os
+from io import BytesIO
 from analysis.config import debug
 from db.Management import Manager
 from db.Services import *
@@ -33,6 +34,8 @@ def update() -> Response:
     *  X-esp32-mode=sketch,
     *  Cache-control=no-cache
     """
+
+    global ROOT
     try:
         # Get the timestamp from the "timestamp" header
         mac = request.headers.get('X-esp32-sta-mac')
@@ -40,26 +43,35 @@ def update() -> Response:
         board_sha256 = request.headers.get("X-esp32-sketch-sha256")
 
         # Filter unwated Mac addresses
-        #if mac_filter(mac):  return jsonify({"message": "No Current updates"}), 304
+        if mac_filter(mac):  return jsonify({"message": "No Current updates"}), 304
 
         conf_dict = load_config()
         FIRMWARE_FILE = conf_dict['path']
         
         firmware_version = conf_dict['version']
         
-        #debug(f"Got data from {mac} \nBoard Firmware Version: {board_ver}\n Updated Firmware Version: {firmware_version}")
+        debug(f"Got update request from {mac} \nBoard Firmware Version: {board_ver}\n Updated Firmware Version: {firmware_version}")
 
+        debug(f"ROOT IS {ROOT}")
+        if not os.path.exists(ROOT + FIRMWARE_FILE):
+            debug(f"Firmware file not found at {ROOT + FIRMWARE_FILE}")
+            return jsonify({"message":"File Not Found"}), 404
          
         if need_update(board_ver) :
-            send_file(FIRMWARE_FILE, as_attachment=True)
+            debug(f"Firmware file @ {FIRMWARE_FILE}")
+            length = os.path.getsize(ROOT + FIRMWARE_FILE)
+            response = make_response(send_file(ROOT + FIRMWARE_FILE, mimetype='application/octet-stream'), 200)
+            debug(f"Attempting to send firmware of size {length} bytes")
+            return response
         else:
             return jsonify({"message": "No Current updates"}), 304
     
     except Exception as e:
+        debug(e)
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/reading", methods = ['POST'])
+@app.route("/reading", methods = ['GET']) 
 def reading() -> Response:
     """
     Handler for the /reading route on the server.
@@ -69,6 +81,9 @@ def reading() -> Response:
         timestamp = request.headers.get('timestamp')
         mac = request.headers.get('MAC-Address')
         if not timestamp: return jsonify({"error": "Timestamp header is missing"}), 400
+        # Filter unwated Mac addresses
+        if mac_filter(mac):  return jsonify({"error": "Unauthorized"}), 401
+        
         debug(f"Got data from {mac} @ {timestamp}")
 
         temp = request.args.get('temperature')
@@ -84,7 +99,7 @@ def reading() -> Response:
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/status", methods = ['POST'])
+@app.route("/status", methods = ['GET'])
 def status() -> Response:
     """
     Handler for the /status on the server.
@@ -109,6 +124,8 @@ def status() -> Response:
         if not timestamp: return jsonify({"error": "Timestamp header is missing"}), 400
         mac = request.headers.get('MAC-Address')
         debug(f"Got data from {mac} @ {timestamp}")
+        # Filter unwated Mac addresses
+        if mac_filter(mac):  return jsonify({"error": "Unauthorized"}), 401
 
         # Should have a MAC filter.
         
@@ -138,6 +155,8 @@ def images() -> Response:
         debug(f"Got data from {mac} @ {timestamp}")
         
         if not timestamp: return jsonify({"error": "Timestamp header is missing"}), 400
+        # Filter unwated Mac addresses
+        if mac_filter(mac):  return jsonify({"error": "Unauthorized"}), 401
         
         image_raw_bytes = request.get_data()  #get the whole body
 
@@ -157,15 +176,18 @@ def images() -> Response:
         return jsonify({"error": str(e)}), 500
     
     finally:
-        return jsonify({"message": "Nothing else"}), 500
+        return jsonify({"message": "Thanks for the image!"}), 200
 
 
 
 if __name__ == '__main__':
     try:
         Manager.connect(True)
+        ROOT = os.getcwd() + "\\src\\Server"
+        debug(f"Top most dir: {ROOT}")
         if (not DeviceService.exists("34:85:18:40:CD:8C")): DeviceService.add("34:85:18:40:CD:8C", "Home-ESP", "ESP32S3", "OV5640", 173, 56.853470, 14.824620)
         if (not DeviceService.exists("34:85:18:41:EB:78")): DeviceService.add("34:85:18:41:EB:78", "Work-ESP", "ESP32S3", "OV5640", 173, 56.853470, 14.824620)
+        if (not DeviceService.exists("34:85:18:41:59:14")): DeviceService.add("34:85:18:41:59:14", "ESP001", "ESP32S3", "OV5640", 173, 56.853470, 14.824620)
     except Exception as e:
         debug(e)
     
