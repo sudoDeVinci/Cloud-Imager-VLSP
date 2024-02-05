@@ -9,7 +9,6 @@ FIRMWARE_CONF:str = "firmware_cfg.toml"
 
 
 def mac_filter(mac:str) -> bool:
-    debug("MAC FILTERED")
     return not DeviceService.exists(mac)
 
 def pad_array(padding:int, arr:List[str]):

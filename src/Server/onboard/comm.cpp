@@ -222,7 +222,7 @@ void sendStats(Network *network, Sensors::Status *stat, const String& timestamp)
                         "&bmp=" + String(stat -> BMP) +
                         "&cam=" + String(stat -> CAM);
 
-    network -> HTTP -> begin(host.toString(), static_cast<int>(Ports::DEF), String(PATH + "?" + values));
+    network -> HTTP -> begin(host.toString(), static_cast<int>(Port::DEF), String(PATH + "?" + values));
 
     debugln(values);
 
@@ -244,7 +244,7 @@ void sendReadings(Network *network, String* thpd, const String& timestamp) {
                  "&pressure=" + String(thpd[2]) + 
                  "&dewpoint=" + String(thpd[3]);
 
-    network -> HTTP -> begin(host.toString(), static_cast<int>(Ports::DEF), String(PATH + "?" + values));
+    network -> HTTP -> begin(host.toString(), static_cast<int>(Port::DEF), String(PATH + "?" + values));
 
     debugln(values);
     
@@ -261,7 +261,7 @@ void sendImage(Network *network, camera_fb_t *fb, const String& timestamp) {
     const String PATH = String(network->routes.IMAGE);
     IPAddress host = network -> HOST;
 
-    network -> HTTP -> begin(host.toString(), static_cast<int>(Ports::DEF), PATH);
+    network -> HTTP -> begin(host.toString(), static_cast<int>(Port::DEF), PATH);
 
     send(network, timestamp, fb);
     network -> HTTP -> end();
@@ -276,7 +276,7 @@ void OTAUpdate(Network *network, String firmware_version) {
     WiFiClient* client = network -> CLIENT;
 
     // Start the OTA update process
-    t_httpUpdate_return ret = httpUpdate.update(*client, host.toString(), static_cast<int>(Ports::DEF), network->routes.UPDATE, firmware_version);
+    t_httpUpdate_return ret = httpUpdate.update(*client, host.toString(), static_cast<int>(Port::DEF), network->routes.UPDATE, firmware_version);
     switch (ret) {
       case HTTP_UPDATE_FAILED:
         debugf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());

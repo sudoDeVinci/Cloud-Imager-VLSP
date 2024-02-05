@@ -86,13 +86,16 @@ def reading() -> Response:
         
         debug(f"Got data from {mac} @ {timestamp}")
 
-        temp = request.args.get('temperature')
-        hum = request.args.get('humidity')
-        pres = request.args.get('pressure')
-        dew = request.args.get('dewpoint')
+        t = request.args.get('temperature')
+        h = request.args.get('humidity')
+        p = request.args.get('pressure')
+        d = request.args.get('dewpoint')
 
-        debug(f"temp = {temp}\nhumidity = {hum}\npressure = {pres}\ndewpoint = {dew}")
-        
+        debug(f"temp = {t}\nhumidity = {h}\npressure = {p}\ndewpoint = {d}")
+
+        # If image arrived before the 
+        if not ReadingService.exists(mac, timestamp): ReadingService.add(mac, t, h, p, d, timestamp)
+        else: ReadingService.update_readings(mac, t, h, p, d, timestamp)
         return jsonify({"message": "Thanks for the readings"}), 200
     
     except Exception as e:
@@ -127,20 +130,19 @@ def status() -> Response:
         # Filter unwated Mac addresses
         if mac_filter(mac):  return jsonify({"error": "Unauthorized"}), 401
 
-        # Should have a MAC filter.
-        
-        #debug(request.get_json())
-        #debug(request.get_data())
-
         sht = request.args.get('sht')
         bmp = request.args.get('bmp')
         cam = request.args.get('cam')
 
         debug(f"SHT = {sht}\nBMP = {bmp}\nCAM = {cam}")
+
+        if not StatusService.exists(mac): StatusService.add(mac, timestamp, sht, bmp, cam)
+        else: StatusService.update(mac, timestamp, sht, bmp, cam)
         
         return jsonify({"message": "Thanks for the stats"}), 200
     
     except Exception as e:
+        debug(e)
         return jsonify({"error": str(e)}), 500
 
 
@@ -169,6 +171,9 @@ def images() -> Response:
         with open(image_path, 'wb') as f:
             f.write(image_raw_bytes)
 
+        if not ReadingService.exists(mac, timestamp): ReadingService.add(mac, None, None, None, None, timestamp, image_path)
+        else: ReadingService.update_path(mac, timestamp, image_path)
+
         return jsonify({"message": "Image saved successfully", "filename": filename}), 200
 
     except Exception as e:
@@ -182,12 +187,12 @@ def images() -> Response:
 
 if __name__ == '__main__':
     try:
-        Manager.connect(True)
+        Manager.connect(False)
         ROOT = os.getcwd() + "\\src\\Server"
         debug(f"Top most dir: {ROOT}")
-        if (not DeviceService.exists("34:85:18:40:CD:8C")): DeviceService.add("34:85:18:40:CD:8C", "Home-ESP", "ESP32S3", "OV5640", 173, 56.853470, 14.824620)
-        if (not DeviceService.exists("34:85:18:41:EB:78")): DeviceService.add("34:85:18:41:EB:78", "Work-ESP", "ESP32S3", "OV5640", 173, 56.853470, 14.824620)
-        if (not DeviceService.exists("34:85:18:41:59:14")): DeviceService.add("34:85:18:41:59:14", "ESP001", "ESP32S3", "OV5640", 173, 56.853470, 14.824620)
+        if (not DeviceService.exists("34:85:18:40:CD:8C")): DeviceService.add("34:85:18:40:CD:8C", "Home-ESP", "ESP32S3", "OV5640", 173.00, 56.853470, 14.824620)
+        if (not DeviceService.exists("34:85:18:41:EB:78")): DeviceService.add("34:85:18:41:EB:78", "Work-ESP", "ESP32S3", "OV5640", 173.00, 56.853470, 14.824620)
+        if (not DeviceService.exists("34:85:18:41:59:14")): DeviceService.add("34:85:18:41:59:14", "ESP001", "ESP32S3", "OV5640", 173.00, 56.853470, 14.824620)
     except Exception as e:
         debug(e)
     

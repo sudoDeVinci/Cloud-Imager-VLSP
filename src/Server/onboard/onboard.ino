@@ -1,6 +1,6 @@
 #include "comm.h"
 
-#define FIRMWARE_VERSION "0.0.0.1"
+#define FIRMWARE_VERSION "0.0.0.3"
 
 /**
  * My beautiful globals

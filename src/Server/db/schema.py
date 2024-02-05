@@ -18,9 +18,9 @@ def apply(mydb:mysql.MySQLConnection):
             name VARCHAR(20) NOT NULL,
             device_model VARCHAR(10) NOT NULL,
             camera_model VARCHAR(10) NOT NULL,
-            altitude DOUBLE(10,6) NOT NULL,
-            latitude DOUBLE(10,6) NOT NULL,
-            longitude DOUBLE(10,6) NOT NULL
+            altitude FLOAT(10) NOT NULL,
+            latitude FLOAT(10) NOT NULL,
+            longitude FLOAT(10) NOT NULL
         );
     """)
 
@@ -28,10 +28,10 @@ def apply(mydb:mysql.MySQLConnection):
     CREATE TABLE IF NOT EXISTS Readings(
         timestamp DATETIME,
         MAC VARCHAR(20),
-        temperature DOUBLE(10, 4) NOT NULL,
-        relative_humidity DOUBLE(10,4) NOT NULL,
-        pressure DOUBLE(10, 4) NOT NULL,
-        dewpoint DOUBLE(10, 4) NOT NULL,
+        temperature FLOAT(10),
+        relative_humidity FLOAT(10),
+        pressure FLOAT(10),
+        dewpoint FLOAT(10),
         filepath VARCHAR(100),
         PRIMARY KEY (MAC, timestamp),
         FOREIGN KEY (MAC) REFERENCES Devices(MAC)

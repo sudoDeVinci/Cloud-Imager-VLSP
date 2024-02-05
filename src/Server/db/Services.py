@@ -105,7 +105,7 @@ class DeviceService(Service):
 
             conn.commit()
 
-        except mysql.connector.Error as e:
+        except mysql.Error as e:
             debug(f"Couldn't insert device record -> {e}")
 
         finally:
@@ -211,7 +211,7 @@ class ReadingService:
     @staticmethod
     def add(MAC:str, temp:float, hum:float, pres:float, dew:float, timestamp:str, filepath:str = "") -> None:
         conn = Manager.get_conn()
-        insert_string = "INSERT INTO Devices VALUES(%s, %s, %s, %s, %s, %s, %s);"
+        insert_string = "INSERT INTO Readings VALUES(%s, %s, %s, %s, %s, %s, %s);"
         try:
             cursor = conn.cursor()
             cursor.execute(
@@ -227,7 +227,7 @@ class ReadingService:
             if cursor: cursor.close()
 
     @staticmethod
-    def update(MAC:str, timestamp:str, filepath:str = ""):
+    def update_path(MAC:str, timestamp:str, filepath:str):
         conn = Manager.get_conn()
         update_string = "UPDATE Readings SET filepath=%s WHERE MAC=%s AND timestamp=%s;"
 
@@ -235,6 +235,25 @@ class ReadingService:
             cursor = conn.cursor()
             cursor.execute(
                 update_string, (filepath, MAC, timestamp)
+            )
+
+            conn.commit()
+        
+        except mysql.Error as e:
+            debug(f"Couldn't update sensor reading record -> {e}")
+
+        finally:
+            if cursor: cursor.close()
+    
+    @staticmethod
+    def update_readings(MAC:str, temp:float, hum:float, pres:float, dew:float, timestamp:str):
+        conn = Manager.get_conn()
+        update_string = "UPDATE Readings SET temperature=%s, relative_humidity=%s,pressure=%s,dewpoint=%s WHERE MAC=%s AND timestamp=%s;"
+
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                update_string, (temp, hum, pres, dew, MAC, timestamp)
             )
 
             conn.commit()
@@ -325,9 +344,9 @@ class StatusService:
         return status
 
     @staticmethod
-    def add(MAC:str, timestamp:str, sht:bool, bmp:bool, cam:bool, wifi:bool) -> None:
+    def add(MAC:str, timestamp:str, sht:bool, bmp:bool, cam:bool, wifi:bool = True) -> None:
         conn = Manager.get_conn()
-        insert_string = "INSERT INTO Devices VALUES(%s, %s, %s, %s, %s, %s);"
+        insert_string = "INSERT INTO Status VALUES(%s, %s, %s, %s, %s, %s);"
         try:
             cursor = conn.cursor()
             cursor.execute(
@@ -343,7 +362,7 @@ class StatusService:
             if cursor: cursor.close()
 
     @staticmethod
-    def update(MAC:str, timestamp:str, sht:bool, bmp:bool, cam:bool, wifi:bool = True):
+    def update(MAC:str, timestamp:str, sht:bool, bmp:bool, cam:bool, wifi:bool = True) -> None:
         conn = Manager.get_conn()
         update_string = "UPDATE Status SET SHT=%s, BMP=%s, CAM=%s, WIFI=%s, timestamp=%s WHERE MAC=%s;"
 
@@ -362,7 +381,7 @@ class StatusService:
             if cursor: cursor.close()
 
     @staticmethod
-    def exists(MAC:str, timetsamp:str) -> bool:
+    def exists(MAC:str) -> bool:
         query_string = "SELECT * FROM Status WHERE MAC=%s LIMIT 1;"
         stats:bool = False
 

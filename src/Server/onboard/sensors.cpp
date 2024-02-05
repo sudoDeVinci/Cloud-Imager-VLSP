@@ -70,11 +70,11 @@ void cameraSetup(Sensors::Status *stat) {
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = CAMERA_CLK;
-  config.frame_size = FRAMESIZE_FHD;
+  config.frame_size = FRAMESIZE_QXGA;
   config.pixel_format = PIXFORMAT_JPEG;
   config.grab_mode = CAMERA_GRAB_LATEST; // Needs to be "CAMERA_GRAB_LATEST" for camera to capture.
   config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.jpeg_quality = 15;
+  config.jpeg_quality = 10;
   config.fb_count = 1;
 
   /** if PSRAM keep res and jpeg quality.
@@ -95,9 +95,9 @@ void cameraSetup(Sensors::Status *stat) {
   }
 
   sensor_t * s = esp_camera_sensor_get();
-  s->set_brightness(s, 1);     // -2 to 2
-  s->set_contrast(s, 0);       // -2 to 2
-  s->set_saturation(s, 0);     // -2 to 2
+  s->set_brightness(s, 0);     // -2 to 2
+  s->set_contrast(s, 2);       // -2 to 2
+  s->set_saturation(s, 1);     // -2 to 2
   //->set_special_effect(s, 2); // 0 to 6 (0 - No Effect, 1 - Negative, 2 - Grayscale, 3 - Red Tint, 4 - Green Tint, 5 - Blue Tint, 6 - Sepia)
   s->set_whitebal(s, 1);       // 0 = disable , 1 = enable
   s->set_awb_gain(s, 1);       // 0 = disable , 1 = enable
