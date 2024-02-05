@@ -3,33 +3,44 @@
 
 - By: Tadj Cazaubon (tc222gf)
 
+## TLDR;
+Quick yet accurate Weather prediction is imperative for certain industries to now only survive, but simply exist. An important factor of these is the ability to track, categorize and predict movements of clouds within a given area. Current data is not meant for real-time application on a local area level. The  proposal is the construction of a number of 'weather stations' which take atmospheric readings and images of the sky above them to accurately track cloud cover.
+
+## Background
+More location-accurate, real-time weather tracking and prediction is an endeavor with wide-reaching application. These include:
+The ability of the average person to better prepare for local weather conditions in their day-today.
+More refined weather condition description, such as duration and area of effect for storage units and warehouses.
+The ability for solar panel owners to more accurately estimate power output using knowledge of cloud-cover.
+
+These sorts of forecasts are usually made using satellite data. This would be from sources such as the MISR Level 2 Cloud product from NASA, showing cloud-motion vectors accurate to 17.6km [2], or the EUMETSAT MTG 3rd Gen. satellite array with a purported resolution of approx. 1km. [10] This data cannot be used for local weather forecasting however, as cloud-cover obscures the view of the land, as well as cloud-heights and environmental readings for overcast areas being unknowable. 
+
+Cloud-height, visibility, humidity are usually measured on the ground via devices such as ceilometers. This however costs an average of approx. USD $ 30,000 [3] and covers approximately 8 km^2 [12]. Ground-based techniques which utilize a visual component usually do so via the use of calibrated camera arrays performing triangulation (B.Lyu, Y.Chen et al 2021)[13], sometimes going further to separate cloud fields from the sky background to describe cloud cover in terms of both horizontal size and velocity vectors(P.Crispel, G.Roberts 2018)[14]. Techniques which do not make use of a visual component utilize environmental readings such as dewpoint and relative humidity to then calculate the Lifted Condensation Level (LCL). This is “the height at which an air parcel would saturate if lifted adiabatically” [9] and can be used as a stand-in for the base-height of a cloud in a given area. This approach may be able to rival ceilometers in accuracy of +-5m depending on the sensor accuracy [9]. 
+
+ A hybrid approach of 3D approximation of cloud positions may be possible with ‘lower-end’ consumer hardware through determination of cloud height via the LCL. 3D reconstruction through camera calibration via the intrinsic/extrinsic distortion matrices are not novel concepts. Many popular image and computer-vision libraries such as OpenCV have methods for finding these properties [15]. The use of a single fixed-point sky-imager to accurately describe the height, position, and velocity vectors of clouds however, is novel.
+Implementation of IoT weather stations which transmit sensor data and sky images over either GSM or Wi-Fi to a central server as well is not novel, being done in (Puja Sharma, Shiva Prakash, 2021). The density of information gathered from a single image at hobbyist cost however, is. The ability to geo-reference ground-based sky images with less data than multi-camera techniques:
+Enables systems hobbyists to create and use more accurate weather data.
+Generates a higher density of data per unit cost in deployment of IoT weather monitoring systems on a local level. 
+
+## Related work
+Finding cloud height and positional data through sky imaging is done usually with multi-camera arrays via triangulation [13][14]. In B.Lyu, Y.Chen et al 2021 [13], the main output is multiple cloud height points. Separation of cloud areas from sky is not done, unlike in P.Crispel & G.Roberts 2018 [14] where cloud area separation is done through visible spectrum filtering, similar to Long et al [22], however, using HSV rather than RGB. We similarly propose obtaining cloud height, however, with only a singular camera, and finding a singular cloud base height value directly above the sensor rather than multiple, using atmospheric calculations to derive cloud height estimates as in  Romps, D. 2017 [9]. Unlike those mentioned however, this height estimate is used by us in obtaining cloud size through 3D reconstruction, rather than through the scale-invariant feature transform (SIFT) used in B.Lyu, Y.Chen et al 2021 [13] and P.Crispel & G.Roberts 2018 [14].  We also propose finding cloud ‘pixels’ in sky images with an approach similar to Long et al [22], filtering by the color ratio of pixel groups, though we propose using multiple color spectrums rather than just RGB; namely RGB, HSV and YCbCr, as well as more modern image pre and post-processing techniques. The cost associated with sky imagers has always been high, though there have been attempts in the past to create inexpensive, miniaturized solutions. Dev et al [23] is a popular example, with Jain et al [5][24] dropping costs further in the area of US$300 per unit capturing 4k images using consumer hardware and compact, 3D printed materials. Our solution drops this cost further, though using 1080p images, whilst retaining the small stature. 
+
 ## Proposal
+Both a miniaturization and hybridization of existing techniques of cloud feature description must take place. There now exist ceilometer weather stations with reasonable accuracy such as the MWS-M625 from Intellisense which measures at 19 x 14 x 14 cm fitting many high precision instruments, including a 360 deg high-resolution sky imager [20]. Though inexpensive solutions have been shown such as Dev et al [23] in 2016 in creating whole-sky imagers which cost US$2,500 per unit, as well as Jain et al [5][24] in 2021 and 2022 respectively with costs close to US$300, we believe it possible to drop this further, whilst using less data than either.
 
+The lack of hybridization in related works means that the density of information per image is more sparse than possible if a combination of environmental and visual methods are used.
+We propose to: 
 
-Quick yet accurate Weather prediction is imperative for certain industries to now only survive,
-but simply exist. An important factor of these is the ability to track, categorize and predict
-movements of clouds within a given area.
+- [x] Create weather station(s) able to collect and send weather data within expected sensor accuracy.
+- [x] Create/host a server which is able to accept multiple connections from these stations and process and store the incoming data.
+- [x] Undistort the sky images. This is done by obtaining the intrinsic and extrinsic matrices of the stations prior to their deployment. 
+- [ ] Calculate the LCL (Lifted Condensation Level) via the environmental readings given, according to the method outlined in Romps. D (2017).
+- [ ] Identify the clouds in the scene via either statistical analysis or simple object detection. 
+    
+    a. This also then allows identification of the size of the cloud given the focal length and FOV of the camera module.
+    
+    - [ ] Set up a weather station at the Växjö Kronoberg Airport.
 
-The main tool in determining cloud characteristics is a ceiolmeter, which uses a laser/light source to determine a cloud's base or ceiling height. A Ceilometer usually can also measure aerosol concentration in air [1]. The downside is that ceilometers have a relatively small area of measurement directly
-above the unit (~8km2) which would not be an issue, however, as of 2020 they can cost around USD $30 000 per unit [3].
-There exists however, high quality satellite data made available by NASA. The new MISR Level 2 Cloud product contains height-resolved, cloud motion vectors at 17.6 km resolution; cloud top heights at 1.1 km resolution; and cross-track cloud motion components at 1.1 km resolution [2]. Now this data is made available to be used by software engineers to visualize as needed. The issue? This data is not meant for real-time application on a local area level. These products are made for global application, collecting data only on the sunlit side of earth over the course of 9 days [4]. A better solution for the local-area level must be thought of then, to better predict cloud movement and category.
-<br>
-The formal proposal made to VLSP can be viewed in the [Proposal](proposal.pdf)
-<br>
-Due to the amorphous and feature-sparse nature of Clouds, tracking them via conventional image processing techniques such as via contours, frame-to-frame motion tracking and identifiable features allowing for conventional NN training is surprisingly difficult.
-However, I believe:
-
-1. Accurately tracking/identifying clouds may be as simple as identifying them via a statistical analysis of their colour values across multiple colour spaces.
-
-2. Cloud categorization may be done via a combination of atmospheric readings, as well as the colour analysis. 
-
-3. With the cloud base height, location and frame to frame motion of a cloud available to us, we can assign velocity vectors to cloud structures, along with the area of   effect for their shadows on the ground.
-
-<br>
-
-My proposal is the construction of a number of 'weather stations' which take atmospheric readings and images of the sky above them. The data is sent back to a central server and analysed. 
-
-The following is an attempt to put into practice the most current research to create a mesh network of these weather staions which can detect, track, and categorize clouds.
+- [ ] Compare the accuracy of the readings, as well as cloud heights against the data of the Växjö Airport. These are available via the METAR Api, and viewable at https://metar-taf.com/ESMX.
 
 ## Setup
 
@@ -42,28 +53,8 @@ An Esp32-S3 with an OV5640 DVP camera module is pointed at the sky at a location
 4. An image of the sky is taken with the OV5640.
 5. The image and readings are sent to a collections server for analysis.
 
-This server portion can found [Here](https://github.com/sudoDeVinci/CloudMeshVLSPDB).
-
-### Pi Pico W / Secondary Pi Pico
-A Pi Pico W is connected to the ESP32 over UART, as well as the same WiFi access point the ESP32 is connected to. The pico:
-
-1. Send interrupt signals to the pico to receive UART data strings.
-2. Relay system status messages.
-3. Reset the device in case of faulty update.
-4. Change system config files on the ESP32  SD card.
-
 
 ## How
-
-Microcontrollers are programmed using Arduino Studio.
-I mostly use VScode for programming. 
-
-* Earlier within the project I used either  micropython and python for all components. I languages switched due to speed, memory and compatibility concerns.
-
-[Server components](src/server_components/) are made in Java, and [microcontrollers](src/onboard/) are programmed in C. Graphing components for now are stil made in python for simplicity, but I plan to write these in JavaCV to integrate them within [Server components](src/server_components/).
-
-Sometimes however, I use [adafruit ampy](https://learn.adafruit.com/micropython-basics-load-files-and-run-code/install-ampy) for interfacing with the boards due to needing more complex operations, such as the [utility](/utility/) scripts. This was mainly used before the switch, but readers may find use in these.
-Many of the utility board functions are alternatively available through esp-IDF, but setup and use of it are memory intensive and complex. My development machine (2C4T Celeron J4125 w/ 8GB DDR4) simply cant take it.
 
 ### ESP32-S3
 
@@ -73,14 +64,21 @@ The ESP32-S3-OTG Dev board by Freenove was chosen because of:
 3. Increased flash memory.
 4. OTG capability.
 
+Microcontrollers are programmed using Arduino Studio.
+I mostly use VScode for programming. 
+
+* Earlier within the project I used either McroPython and Python for all components. I languages switched due to speed, memory and compatibility concerns.
+
+The [Falsk server](src/Server/server.py), [DB ORM](src/Server/db/) and and [analysis tools](src/Server/analysis/) are written in python for ease of use. 
+
 #### Reading from sensors
-To read from the SHT31-D, we use the Adafruit_SHT31 library. 
-To read from the BMP390, we use the Adafruit_BMP3XX libray.
+To read from the SHT31-D, we use the [Adafruit_SHT31](https://github.com/adafruit/Adafruit_SHT31) library. 
+To read from the BMP390, we use the [Adafruit_BMP3XX](https://github.com/adafruit/Adafruit_BMP3XX) libray.
 We will be connecting these on the same serial bus to the esp, as they occupy different addresses (0x44 and 0x77 respectively). We use pins not occupied by the cameras on internal serial operations (41 and 42). We use the Wire library to make an instance with these as our SDA and SCL for Serial Bus 0.
 
 * Remember to have 3.3kΩ pull-up resistors (at least 2KΩ seems to work fine).
 
-To make things easier, I store pointers to alot of my sensors and networking related objects in structs.
+To make things easier, I store pointers to alot of my sensors and networking related objects in structs. I imagine this helps access times as these are stored in continguous memory, acting as sort of jump tables.
 
 <br>
 
@@ -98,7 +96,7 @@ struct Sensors {
         bool SHT = false;
         bool BMP = false;
         bool WIFI = false;
-    }status;
+    } status;
 };
 ```
 
@@ -150,28 +148,58 @@ struct Network {
 
 <br>
 
-I use pointers so that I can have a majority of these functions in separate cpp files to separate responsibility. Sensor related functionality is in [sensors.cpp](src/onboard/httpsmain/sensors.cpp), and networking related functionality is in [comm.cpp](src/onboard/httpsmain/comm.cpp). 
-Pointers are also useful so that the structures containing them can be kept within a global scope, but mutated within methods. I find this helps keep memory management simple.
+I use pointers so that I can have a majority of these functions in separate cpp files to separate responsibility. Sensor related functionality is in [sensors.cpp](src/Server/onboard/sensors.cpp), and networking related functionality is in [comm.cpp](src/Server/onboard/comm.cpp). 
+Pointers are also useful so that the structures containing them can be kept within a global scope, but mutated within methods. I find this helps keep memory management simple. 
 
 <br>
 
-### Notes on Power
+### Sending Sensor Data
 
-|State|ESP32-S3|Pi Pico W|
-|-----|--------|---------|
-|Antenna Off| | 0.20 A|
-|Antennae On| 0.30 A| |
-|Wi-Fi Connected| 0.30 A : 1.40 W| |
-|Light Sleep|0.14 A : 0.651 W| |
-|Deep Sleep| | 0.13 A|
+Statuses, readings and images are sent via different functions in comm.cpp. The layout of each function is the same. The readings and statuses are both sent in the URL of GET requests. Once that's sent, we print the return code and end the connection. Low-level details are taken care of by the HTTPClient library.
 
-<br>
+```cpp
+void sendStats(Network *network, Sensors::Status *stat, const String& timestamp) {
+    const String PATH = String(network->routes.STATUS);
+    IPAddress host = network->HOST;
+    
+    const String values = "sht="  + String(stat -> SHT) +
+                          "&bmp=" + String(stat -> BMP) +
+                          "&cam=" + String(stat -> CAM);
 
-I choose manual packet construction over JSON, as I need to both be able to add new headers like the timestamp and MacAdress, but also use the WiFiClientSecure Library for communication.
+    network -> HTTP -> begin(host.toString(), static_cast<int>(Ports::DEFAULT), String(PATH + "?" + values));
+    send(network, timestamp);
+    network -> HTTP -> end();
+}
+```
+
+Headers are modified within the send() function in comm.cpp. Both readings and statuses are sent this way.
+```cpp
+void send(Network *network, const String& timestamp) {
+    network -> HTTP -> setConnectTimeout(READ_TIMEOUT);
+    network -> HTTP -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.APP_FORM);
+    network -> HTTP -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
+    network -> HTTP -> addHeader(network -> headers.TIMESTAMP, timestamp);
+
+    int httpCode = network -> HTTP -> GET();
+
+    getResponse(network -> HTTP, httpCode); 
+}
+```
+
+This function is overloaded to send the image buffer from the camera as a POST request.
+```cpp
+void send(Network *network, const String& timestamp, camera_fb_t *fb) {
+    ...
+    network -> HTTP -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.IMAGE_JPG);
+    ...
+    int httpCode = network -> HTTP -> POST(fb -> buf, fb -> len);
+    ...  
+}
+```
 
 ## Analysis
 
-### Image Quality Requirements
+Images samples have been taken with both an OV2640 and an OV5640. These are compared with multiple shots from various DSLR cameras, taken as frames from timelapses.  
 
 #### OV5640
 Not Yet Available.
@@ -271,14 +299,14 @@ Once a matrix of principle components (colour channels) and their per variance v
 #### PCA ScatterPlot for High Res Images
 <br>
 
-DSLR PCA BGR ScatterPLot            |  DSLR PCA HSV Scatterplot
+DSLR PCA BGR ScatterPlot            |  DSLR PCA HSV Scatterplot
 :-------------------------:|:-------------------------:
 ![BGR PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_RGB.png "BGR PCA ScatterPlot for High Res Images")  |  ![HSV PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_HSV.png "HSV PCA ScatterPlot for High Res Images")
 
 #### PCA ScatterPlot for OV2640
 <br>
 
-OV2640 PCA BGR ScatterPLot            |  OV2640 PCA HSV Scatterplot
+OV2640 PCA BGR ScatterPlot            |  OV2640 PCA HSV Scatterplot
 :-------------------------:|:-------------------------:
 ![BGR PCA ScatterPlot for ov2640](Graphs/PCA/ov2640/new_pca_ov2640_RGB.png "BGR PCA ScatterPlot for ov2640")  |  ![HSV PCA ScatterPlot for ov2640](Graphs/PCA/ov2640/new_pca_ov2640_HSV.png "HSV PCA ScatterPlot for ov2640")
 
@@ -287,24 +315,51 @@ OV2640 PCA BGR ScatterPLot            |  OV2640 PCA HSV Scatterplot
 
 - It can be seen that sky and cloud regions can be separated somewhat via visible colour space, and this separation simplified via singular value decomposition. The OV2640 however, can be seen to not be suitable for this application however; though following the statistical trends of the higher resolution images, it lacks the image quality/colour fidelity needed for this application.
 
-## References
-
 [1] The National Oceanic and Atmospheric Administration. 16 November 2012. p. 60.
 
-[2] K. Mueller, M. Garay, C. Moroney, V. Jovanovic (2012). MISR 17.6 KM GRIDDED CLOUD
-MOTION VECTORS: OVERVIEW AND ASSESSMENT, Jet Propulsion Laboratory, 4800 Oak
-Grove, Pasadena, California.
+[2] MISR 17.6 KM GRIDDED CLOUD MOTION VECTORS: OVERVIEW AND ASSESSMENT, Jet Propulsion Laboratory, 4800 Oak Grove, Pasadena, California, K. Mueller, M. Garay, C. Moroney, V. Jovanovic (2012).
 
-[3] F .Rocadenbosch, R. Barragán , S.J. Frasier ,J. Waldinger, D.D. Turner , R.L. Tanamachi, D.T. Dawson (2020) Ceilometer-Based Rain-Rate Estimation: A Case-Study Comparison With S-Band Radar and Disdrometer Retrievals in the Context of VORTEX-SE
+[3]  Ceilometer-Based Rain-Rate Estimation: A Case-Study Comparison With S-Band Radar and Disdrometer Retrievals in the Context of VORTEX-SE, F .Rocadenbosch, R. Barragán , S.J. Frasier ,J. Waldinger, D.D. Turner , R.L. Tanamachi, D.T. Dawson (2020) Available: here (Accessed May 19, 2023)
 
-[4] “Misr: Spatial resolution,” NASA, https://misr.jpl.nasa.gov/mission/misr-instrument/spatial-resolution/ (accessed May 19, 2023).
+[4] “Misr: Spatial resolution,” NASA, Available: here (Accessed May 19, 2023).
 
-[5] “tlcl_rh_bolton,” Tlcl_rh_bolton,
-https://www.ncl.ucar.edu/Document/Functions/Contributed/tlcl_rh_bolton.shtml (accessed May 21, 2023) (Extras)
+[5] An Extremely-Low Cost Ground-Based Whole Sky Imager, Jain, Mayank & Gollini, Isabella & Bertolotto, Michela & McArdle, Gavin & Dev, Soumyabrata. July 2021. Available: here
 
-[6] Muñoz, Erith & Mundaray, Rafael & Falcon, Nelson. (2015). A Simplified Analytical Method to Calculate the Lifting Condensation Level from a Skew-T Log-P Chart. Avances en Ciencias e
-Ingenieria. 7. C124-C129 (Extras)
+[6] A Simplified Analytical Method to Calculate the Lifting Condensation Level from a Skew-T Log-P Chart. Avances en Ciencias e Ingenieria. 7. C124-C129 (Extras), Muñoz, Erith & Mundaray, Rafael & Falcon, Nelson, 2015.
 
-[7] Wmo, “Cumulonimbus,” International Cloud Atlas, https://cloudatlas.wmo.int/en/observation-of-clouds-from-aircraft-descriptions-cumulonimbus.html (accessed May 21, 2023)
+[7] Wmo, “Cumulonimbus,” International Cloud Atlas. Available: here (accessed May 21, 2023)
 
-[8] Lawrence, M. (2005). The Relationship between Relative Humidity and the Dewpoint Temperature in Moist Air: A Simple Conversion and Applications. Bulletin of the American Meteorological Society 86(2) pp. 225-234. Available at: https://journals.ametsoc.org/view/journals/bams/86/2/bams-86-2-225.xml [Accessed 5 Sep 2023]
+[8] The Relationship between Relative Humidity and the Dewpoint Temperature in Moist Air: A Simple Conversion and Applications. Bulletin of the American Meteorological Society 86(2) pp. 225-234, Lawrence, M. (2005). Available at: here (Accessed 5 Sep 2023)
+
+[9] Exact Expression for the Lifting Condensation Level. Journal of the Atmospheric Sciences 74(12) pp. 3891-3900, Romps, D. (2017). Available: here (Accessed 26 Jan 2024). 
+
+[10] Meteosat Third Generation, EUMETSTAT, Jan 2021, Available: here
+
+[11] The SEVIRI Instrument, J. Schmid, January 2000, Available: here
+
+[12] CL31 Ceilometer for Cloud Height Detection, Vaisala, 2009 Available: here
+
+[13] Estimating Geo‐Referenced Cloud‐Base Height With Whole‐Sky Imagers. Earth and Space Science, Lyu, Baolei & Chen, Yang & Guan, Yuqiu & Gao, Tianlei & Liu, Jun. August 2021. Available: here
+
+[14]  All-sky photogrammetry techniques to georeference a cloud field. Atmospheric Measurement Techniques, Crispel, Pierre & Roberts, Gregory , January 2018. Available: here
+
+[15] Camera Calibration and 3D Reconstruction, OpenCV - Open Source Computer Vision, 31 Jan 2024. Available: here
+
+[16] DIY Weather Station With ESP32, AutoDesk Instructables, Giovanni Aggiustatutto, Available:  here
+
+[17] ESP32 Weather Station with Weather Forecast, Wireless Sensors and Air Quality Measurement, Harald Kreuzer, 29 June 2023, Available: here
+
+[18] Create A Simple ESP32 Weather Station With BME280, LastMinuteEngineers, Available: here
+
+[19] Complete DIY Raspberry Pi Weather Station With Software, AutoDesk Instructables, spacemanlabs, Available: here
+
+[20] MWS-M625,  Intellisense Systems, Inc, 21041 S. Western Ave, Torrance, CA 90501. Available: here
+
+[21] Real Time Weather Monitoring using IoT, Puja Sharma, Shiva Prakash, ITM Web of Conferences 40(3):01006, August 2021, Available: here
+
+[22]  Retrieving Cloud Characteristics from Ground-Based Daytime Color All-Sky Images. Journal of Atmospheric and Oceanic Technology, Long, Charles & Sabburg, J. & Calbó, Josep & Pages, David. (2006). - J ATMOS OCEAN TECHNOL. 23. 10.1175/JTECH1875.1.
+Available: here
+
+[23]  WAHRSIS: A low-cost high-resolution whole sky imager with near-infrared capabilities. Proceedings of SPIE - The International Society for Optical Engineering, Dev, Soumyabrata & Savoy, Florian & Lee, Yee Hui & Winkler, Stefan. May 2014, Available: here
+
+[24] LAMSkyCam: A Low-cost and Miniature Ground-based Sky Camera. HardwareX, Jain, Mayank & Sengar, Vishal & Gollini, Isabella & Bertolotto, Michela & McArdle, Gavin & Dev, Soumyabrata. August 2022 Available: here
