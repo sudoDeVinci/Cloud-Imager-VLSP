@@ -69,6 +69,8 @@ I mostly use VScode for programming.
 
 * Earlier within the project I used either McroPython and Python for all components. I languages switched due to speed, memory and compatibility concerns.
 
+
+
 The [Flask server](src/Server/server.py), [DB ORM](src/Server/db/) and and [analysis tools](src/Server/analysis/) are written in python for ease of use. 
 
 #### Reading from sensors
