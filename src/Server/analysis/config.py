@@ -8,7 +8,7 @@ from enum import Enum
 
 # For typing
 Mat = numpy.typing.NDArray[np.uint8]
-NDArray = numpy.typing.NDArray[Any]
+NDArray = numpy.typing.NDArray[any]
 
 # Camera model for current visualization
 class camera_models(Enum):

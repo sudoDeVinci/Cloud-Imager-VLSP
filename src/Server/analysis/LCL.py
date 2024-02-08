@@ -62,74 +62,81 @@ def lcl(p,T,rh=None,rhl=None,rhs=None,return_ldl=False,return_min_lcl_ldl=False)
     - return_min_lcl_ldl is an optional logical flag.  If true, the minimum of the LCL and LDL is returned.
     """
 
-    pv = None
-
-
-    # Return either lcl or ldl
     if return_ldl and return_min_lcl_ldl:
-      debug('return_ldl and return_min_lcl_ldl cannot both be true')
-
+        debug('return_ldl and return_min_lcl_ldl cannot both be true')
 
     if (rh is None) and (rhl is None) and (rhs is None):
         debug('Error in lcl: Exactly one of rh, rhl, and rhs must be specified')
         return -1
-    
-    if rh is not None: 
-        # The variable rh is assumed to be 
-        # with respect to liquid if T > Ttrip and 
-        # with respect to solid if T < Ttrip
+
+    if rh is not None:
         pv = rh * __pvstarl(T) if T > Ttrip else rh * __pvstars(T)
         rhl = pv / __pvstarl(T)
         rhs = pv / __pvstars(T)
-
     elif rhl is not None:
         pv = rhl * __pvstarl(T)
         rhs = pv / __pvstars(T)
         rh = rhl if T > Ttrip else rhs
-
     elif rhs is not None:
         pv = rhs * __pvstars(T)
         rhl = pv / __pvstarl(T)
         rh = rhl if T > Ttrip else rhs
-    
-    if pv > p: 
+
+    if pv > p:
         debug('Error in lcl: pv greater than p')
         return -2
 
-    # Calculate lcl_liquid and lcl_solid
-    qv = rgasa*pv / (rgasv*p + (rgasa-rgasv)*pv)
-    rgasm = (1-qv)*rgasa + qv*rgasv
-    cpm = (1-qv)*cpa + qv*cpv
-    if rh == 0: return cpm*T/ggr
+    qv = rgasa * pv / (rgasv * p + (rgasa - rgasv) * pv)
+    rgasm = (1 - qv) * rgasa + qv * rgasv
+    cpm = (1 - qv) * cpa + qv * cpv
+    if rh == 0:
+        return cpm * T / ggr
 
-    aL = -(cpv-cvl)/rgasv + cpm/rgasm
-    bL = -(E0v-(cvv-cvl)*Ttrip)/(rgasv*T)
-    cL = pv/__pvstarl(T)*exp(-(E0v-(cvv-cvl)*Ttrip)/(rgasv*T))
-    aS = -(cpv-cvs)/rgasv + cpm/rgasm
-    bS = -(E0v+E0s-(cvv-cvs)*Ttrip)/(rgasv*T)
-    cS = pv/__pvstars(T)*exp(-(E0v+E0s-(cvv-cvs)*Ttrip)/(rgasv*T))
-    lcl = cpm*T/ggr*( 1 - bL/(aL*lambertw(bL/aL*cL**(1/aL),-1).real) )
-    ldl = cpm*T/ggr*( 1 - bS/(aS*lambertw(bS/aS*cS**(1/aS),-1).real) )
+    aL = -(cpv - cvl) / rgasv + cpm / rgasm
+    bL = -(E0v - (cvv - cvl) * Ttrip) / (rgasv * T)
+    cL = pv / __pvstarl(T) * exp(-(E0v - (cvv - cvl) * Ttrip) / (rgasv * T))
+    aS = -(cpv - cvs) / rgasv + cpm / rgasm
+    bS = -(E0v + E0s - (cvv - cvs) * Ttrip) / (rgasv * T)
+    cS = pv / __pvstars(T) * exp(-(E0v + E0s - (cvv - cvs) * Ttrip) / (rgasv * T))
+    
+    lcl = cpm * T / ggr * (1 - bL / (aL * lambertw(bL / aL * cL ** (1 / aL), -1).real))
+    ldl = cpm * T / ggr * (1 - bS / (aS * lambertw(bS / aS * cS ** (1 / aS), -1).real))
 
-    if return_ldl: return ldl
-    elif return_min_lcl_ldl: return min(lcl, ldl)
+    if return_ldl:
+        return ldl
+    elif return_min_lcl_ldl:
+        return min(lcl, ldl)
     
     return lcl
 
 
-def __test() -> None:
-    if abs(lcl(1e5,300,rhl=.5,return_ldl=False)/( 1433.844139279)-1) < 1e-10 and \
+def __within_bound() -> bool:
+    out = abs(lcl(1e5,300,rhl=.5,return_ldl=False)/( 1433.844139279)-1) < 1e-10 and \
     abs(lcl(1e5,300,rhs=.5,return_ldl=False)/( 923.2222457185)-1) < 1e-10 and \
     abs(lcl(1e5,200,rhl=.5,return_ldl=False)/( 542.8017712435)-1) < 1e-10 and \
     abs(lcl(1e5,200,rhs=.5,return_ldl=False)/( 1061.585301941)-1) < 1e-10 and \
     abs(lcl(1e5,300,rhl=.5,return_ldl=True )/( 1639.249726127)-1) < 1e-10 and \
     abs(lcl(1e5,300,rhs=.5,return_ldl=True )/( 1217.336637217)-1) < 1e-10 and \
     abs(lcl(1e5,200,rhl=.5,return_ldl=True )/(-8.609834216556)-1) < 1e-10 and \
-    abs(lcl(1e5,200,rhs=.5,return_ldl=True )/( 508.6366558898)-1) < 1e-10:
-        print('Success')
-    else:
-        print('Failure')
+    abs(lcl(1e5,200,rhs=.5,return_ldl=True )/( 508.6366558898)-1) < 1e-10
+        
+    if out: debug('Success') 
+    else: debug("Failure")
+    return out
+
+
+def __error_ranges() -> None:
+    debug(abs(lcl(1e5,300,rhl=.5,return_ldl=False) - 1433.844139279))
+    debug(abs(lcl(1e5,300,rhs=.5,return_ldl=False) - 923.2222457185))
+    debug(abs(lcl(1e5,200,rhl=.5,return_ldl=False) - 542.8017712435))
+    debug(abs(lcl(1e5,200,rhs=.5,return_ldl=False) - 1061.585301941))
+    debug(abs(lcl(1e5,300,rhl=.5,return_ldl=True ) - 1639.249726127))
+    debug(abs(lcl(1e5,300,rhs=.5,return_ldl=True ) - 1217.336637217))
+    debug(abs(lcl(1e5,200,rhl=.5,return_ldl=True ) - -8.609834216556))
+    debug(abs(lcl(1e5,200,rhs=.5,return_ldl=True ) - 508.6366558898))
+
+
 
 if __name__ == "__main__":
-    __test()
-    #debug(lcl(1e5,200,rhs=.5,return_ldl=True ))
+    __within_bound()
+    __error_ranges()
