@@ -1,5 +1,6 @@
 from PIL import Image
 from config import *
+from typing import Callable
 
 def get_tags(colour_index:int) -> list[list[str, str, str], str]:
     """
@@ -24,7 +25,7 @@ def get_tags(colour_index:int) -> list[list[str, str, str], str]:
         
     return out
 
-def __process_RGB(image: np.array) -> np.array:
+def __process_RGB(image: NDArray) -> NDArray:
     """
     Extract the non-black pixels from a colour-masked image in RGB format.
     """
@@ -33,7 +34,7 @@ def __process_RGB(image: np.array) -> np.array:
     non_black_data = np.column_stack((red[non_black_indices], green[non_black_indices], blue[non_black_indices]))
     return non_black_data
 
-def __process_HSV(image: np.array) -> np.array:
+def __process_HSV(image: NDArray) -> NDArray:
     """
     Extract the non-black pixels from a colour-masked image in HSV format.
     """
@@ -42,7 +43,7 @@ def __process_HSV(image: np.array) -> np.array:
     non_black_data = np.column_stack((h[non_black_indices], s[non_black_indices], v[non_black_indices]))
     return non_black_data
 
-def __process_YBR(image: np.array) -> np.array:
+def __process_YBR(image: NDArray) -> NDArray:
     """
     Extract the non-black pixels from a colour-masked image in YcBcR format.
     """
@@ -51,7 +52,7 @@ def __process_YBR(image: np.array) -> np.array:
     non_black_data = np.column_stack((Y[non_black_indices], b[non_black_indices], r[non_black_indices]))
     return non_black_data
 
-def process_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
+def process_images(folder_path:str, colour_index: int = 0) -> NDArray:
     """
     Iterate through the binary images of either cloud or sky. Filter through them after converting them to specified colour format via colour_index.
     default or 0: RGB, 1: HSV, 2: YCbCr
@@ -79,7 +80,7 @@ def process_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
         data.append(non_black_data)
     return np.vstack(data)
 
-def raw_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
+def raw_images(folder_path:str, colour_index: int = 0) -> NDArray:
     """
     Iterate through the binary images of either cloud or sky. Filter through them after converting them to specified colour format via colour_index.
     default or 0: RGB, 1: HSV, 2: YCbCr
@@ -103,9 +104,8 @@ def raw_images(folder_path:str, colour_index: int = 0) -> np.ndarray:
         
     return np.vstack(data)
 
-def raw_largest_separations(folder_path:str):
-    """_summary_
-
+def raw_largest_separations(folder_path:str) -> None:
+    """
     Args:
         folder_path (str): _description_
     """
@@ -127,7 +127,7 @@ def raw_largest_separations(folder_path:str):
         non_black_data = __process_YBR(im)
 
 
-def get_func(colour_index: int):
+def get_func(colour_index: int) -> Callable[[NDArray], NDArray]:
     """_summary_
 
     Args:

@@ -52,7 +52,7 @@ def update() -> Response:
         
         debug(f"Got update request from {mac} \nBoard Firmware Version: {board_ver}\n Updated Firmware Version: {firmware_version}")
 
-        debug(f"ROOT IS {ROOT}")
+        #debug(f"ROOT IS {ROOT}")
         if not os.path.exists(ROOT + FIRMWARE_FILE):
             debug(f"Firmware file not found at {ROOT + FIRMWARE_FILE}")
             return jsonify({"message":"File Not Found"}), 404
@@ -187,7 +187,7 @@ def images() -> Response:
 
 if __name__ == '__main__':
     try:
-        Manager.connect(False)
+        Manager.connect(True)
         ROOT = os.getcwd() + "\\src\\Server"
         debug(f"Top most dir: {ROOT}")
         if (not DeviceService.exists("34:85:18:40:CD:8C")): DeviceService.add("34:85:18:40:CD:8C", "Home-ESP", "ESP32S3", "OV5640", 173.00, 56.853470, 14.824620)

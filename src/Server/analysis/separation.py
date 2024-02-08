@@ -1,6 +1,6 @@
 from config import *
 
-def __separate(b_img: Mat, r_img: Mat, count:str) -> None:
+def __separate(b_img: Mat, r_img: Mat, count:str) -> list[Mat, Mat]:
     """
     Separate a single image of the sky into two images,
     One of the clouds and one of the rest of the sky.

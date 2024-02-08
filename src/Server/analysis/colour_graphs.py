@@ -9,7 +9,7 @@ sub_graph_dir = f"hist/{camera}"
 
 
 
-def __count(xyz_sk:np.array) -> np.array:
+def __count(xyz_sk: NDArray) -> NDArray:
     """
     Return a frequency table of the integers in an input array
     """
@@ -89,7 +89,7 @@ def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
 
 
 
-def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour_tag: str, savepath:str):
+def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour_tag: str, savepath:str) -> None:
     """
     Generate a Histogram Showing the distribution of Cloud versus sky pixels as it pertains to 
     their (3) colour channels.

@@ -10,15 +10,24 @@ void deepSleepMins(float mins) {
 }
 
 /**
+ * Toggle thr heter for the sht31D.
+ */
+void toggleHeater(Sensors::Status *stat, Adafruit_SHT31 *sht) {
+  if(stat -> SHT) sht -> heater(!(sht -> isHeaterEnabled));
+}
+
+/**
  * Setup the SHT31-D and return the sensor object.
  */
-void shtSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_SHT31 *sht) {
+void shtSetup(Sensors::Status *stat, Adafruit_SHT31 *sht) {
   if (!sht -> begin()) {
     stat -> SHT = false;
     debugln("Couldn't find SHT31");
   } else {
     stat -> SHT = true;
     debugln("SHT31 found!");
+    toggleHeater(stat, sht);
+
   }
 }
 
@@ -37,8 +46,8 @@ void bmpSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_BMP3XX *bmp) {
      * Set up oversampling and filter initialization
      */
     bmp -> setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
-    bmp -> setPressureOversampling(BMP3_OVERSAMPLING_4X);
-    bmp -> setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
+    bmp -> setPressureOversampling(BMP3_OVERSAMPLING_32X);
+    bmp -> setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_15);
     bmp -> setOutputDataRate(BMP3_ODR_50_HZ);
   }
 }
@@ -95,9 +104,9 @@ void cameraSetup(Sensors::Status *stat) {
   }
 
   sensor_t * s = esp_camera_sensor_get();
-  s->set_brightness(s, 0);     // -2 to 2
-  s->set_contrast(s, 2);       // -2 to 2
-  s->set_saturation(s, 1);     // -2 to 2
+  s->set_brightness(s, -1);     // -2 to 2
+  s->set_contrast(s, 1);       // -2 to 2
+  s->set_saturation(s, 0);     // -2 to 2
   //->set_special_effect(s, 2); // 0 to 6 (0 - No Effect, 1 - Negative, 2 - Grayscale, 3 - Red Tint, 4 - Green Tint, 5 - Blue Tint, 6 - Sepia)
   s->set_whitebal(s, 1);       // 0 = disable , 1 = enable
   s->set_awb_gain(s, 1);       // 0 = disable , 1 = enable

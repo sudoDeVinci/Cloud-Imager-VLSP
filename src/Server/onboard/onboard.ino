@@ -1,6 +1,6 @@
 #include "comm.h"
 
-#define FIRMWARE_VERSION "0.0.0.3"
+#define FIRMWARE_VERSION "0.0.1.0"
 
 /**
  * My beautiful globals
@@ -38,7 +38,6 @@ void setup() {
   network.CLIENT = &client;
   
   wifiSetup(network.SSID, network.PASS, &sensors.status);
-  //network.CLIENT -> setInsecure();
 
   const char* ntpServer = "pool.ntp.org";
   const char* timezone = "CET-1-CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00";
@@ -49,11 +48,9 @@ void setup() {
   
   sht = Adafruit_SHT31(sensors.wire);
   sensors.SHT = sht;
-  shtSetup(sensors.wire, &sensors.status, &sensors.SHT);
+  shtSetup(&sensors.status, &sensors.SHT);
   sensors.BMP = bmp;
   bmpSetup(sensors.wire, &sensors.status, &sensors.BMP);
-  //esp_err_t deinitErr = cameraTeardown();
-  //if (deinitErr != ESP_OK) debugf("Camera init failed with error 0x%x", deinitErr);
   cameraSetup(&sensors.status);
 }
 
@@ -79,7 +76,7 @@ void loop() {
 
   /**
   * If camera is up, send and release image buffer. 
-  */
+  
   
   if(sensors.status.CAM) {
     camera_fb_t * fb = NULL;
@@ -90,12 +87,14 @@ void loop() {
     if (deinitErr != ESP_OK) debugf("Camera init failed with error 0x%x", deinitErr);
   } 
 
-  delay(50);
+  */
 
+  delay(50);
+  toggleHeater(&sensors.status, &sensors.SHT);
   OTAUpdate(&network, FIRMWARE_VERSION);
   delay(50);
 
   debugln("Going to sleep!...");
   delay(50);
-  deepSleepMins(5);
+  deepSleepMins(1);
 }

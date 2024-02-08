@@ -18,7 +18,7 @@
 
 #define MAGNUS_A 17.625
 #define MAGNUS_B 243.04
-#define SEALEVELPRESSURE_HPA (1020.6)
+#define SEALEVELPRESSURE_HPA (999.000)
 #define CAMERA_CLK 5000000
 #define CAMERA_MODEL_ESP32S3_EYE
 #define UNDEFINED -69420.00
@@ -50,7 +50,7 @@ void deepSleepMins(float mins);
 /**
  * Setup the SHT31-D and return the sensor object.
  */
-void shtSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_SHT31 *sht);
+void shtSetup(Sensors::Status *stat, Adafruit_SHT31 *sht);
 
 /**
  * Setup and calibrate the BMP390. Return the sensor object.
