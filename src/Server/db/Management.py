@@ -79,7 +79,7 @@ class Manager:
                 'user': conf.get('user'),
                 'port': conf.get('port'),
                 'pass': conf.get('pass')}
-        
+
 
     @staticmethod
     def apply_schema(should_drop_schema):

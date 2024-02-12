@@ -126,14 +126,15 @@ def __within_bound() -> bool:
 
 
 def __error_ranges() -> None:
-    debug(abs(lcl(1e5,300,rhl=.5,return_ldl=False) - 1433.844139279))
-    debug(abs(lcl(1e5,300,rhs=.5,return_ldl=False) - 923.2222457185))
-    debug(abs(lcl(1e5,200,rhl=.5,return_ldl=False) - 542.8017712435))
-    debug(abs(lcl(1e5,200,rhs=.5,return_ldl=False) - 1061.585301941))
-    debug(abs(lcl(1e5,300,rhl=.5,return_ldl=True ) - 1639.249726127))
-    debug(abs(lcl(1e5,300,rhs=.5,return_ldl=True ) - 1217.336637217))
-    debug(abs(lcl(1e5,200,rhl=.5,return_ldl=True ) - -8.609834216556))
-    debug(abs(lcl(1e5,200,rhs=.5,return_ldl=True ) - 508.6366558898))
+    debug("Error range differences: ")
+    debug(f"{abs(lcl(1e5,300,rhl=.5,return_ldl=False) - 1433.844139279):0,.13f}")
+    debug(f"{abs(lcl(1e5,300,rhs=.5,return_ldl=False) - 923.2222457185):0,.13f}")
+    debug(f"{abs(lcl(1e5,200,rhl=.5,return_ldl=False) - 542.8017712435):0,.13f}")
+    debug(f"{abs(lcl(1e5,200,rhs=.5,return_ldl=False) - 1061.585301941):0,.13f}")
+    debug(f"{abs(lcl(1e5,300,rhl=.5,return_ldl=True ) - 1639.249726127):0,.13f}")
+    debug(f"{abs(lcl(1e5,300,rhs=.5,return_ldl=True ) - 1217.336637217):0,.13f}")
+    debug(f"{abs(lcl(1e5,200,rhl=.5,return_ldl=True ) - -8.609834216556):0,.13f}")
+    debug(f"{abs(lcl(1e5,200,rhs=.5,return_ldl=True ) - 508.6366558898):0,.13f}")
 
 
 
