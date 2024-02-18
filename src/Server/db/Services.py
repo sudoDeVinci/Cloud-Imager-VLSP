@@ -2,7 +2,6 @@ import mysql.connector as mysql
 from db.Entities import *
 from db.Management import Manager
 from analysis.config import debug
-from typing import List
 from abc import ABC
 
 

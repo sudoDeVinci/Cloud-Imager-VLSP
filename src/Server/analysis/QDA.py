@@ -15,6 +15,7 @@ sub_dir = f"QDA/{camera}"
 def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
   pass
 
+
 def __main(colour_index: int) -> None:
     
     # PCA performed for RGB, HSV or YCbCr.

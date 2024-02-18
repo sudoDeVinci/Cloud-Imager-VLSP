@@ -5,6 +5,7 @@ import numpy.typing
 from gc import collect
 from datetime import datetime
 from enum import Enum
+from typing import List
 
 
 # For typing, these are inexact because out memory layout differences between Mat and UMat
@@ -40,7 +41,6 @@ root_graph_folder = mkdir('Graphs')
 calibration_folder = "calibration"
 calibration_images = mkdir(f"{calibration_folder}/images")
 camera_matrices = mkdir(f"{calibration_folder}/matrices")
-camera_distance_coefficients = mkdir(f"{calibration_folder}/distances")
 undistorted_calibration_images = mkdir(f"{calibration_folder}/undistorted")
 distorted_calibration_images = mkdir(f"{calibration_folder}/distorted")
 calibration_config = "calibration_cfg.toml"
@@ -53,3 +53,42 @@ def out01(x:str) -> None:
 def out02(x:str) -> None:
     pass
 debug = out01 if DEBUG else out02
+
+
+# Functions for reading and writing from toml files.
+# Most/all of the config files use toml format for simplicity.
+def write_toml(data:dict, path:str) -> None:
+    try:
+        with open(path, "w") as f:
+            toml.dump(data, f)
+    except Exception as e:
+        debug(f"Error writing to TOML file: {e}")
+
+def load_toml(file_path:str) -> dict | None:
+    toml_data = None
+    try:
+        with open(file_path, 'r') as file:
+            toml_data = toml.load(file)
+            if not toml_data: return None
+    except FileNotFoundError:
+        debug(f"Error: File '{file_path}' not found.")
+        return None
+    except toml.TomlDecodeError as e:
+        debug(f"Error decoding TOML file: {e}")
+        return None
+
+    return toml_data
+
+# Load a pickled resource
+def __load_pkl_resource(folder:str, name:str) -> Mat:
+    """
+    Attempt to load pickled resource <name> from <folder>.
+    """
+    try:
+        with open(f"{folder}/{name}", "rb" ) as file:
+            out = pickle.load(file)
+    except FileNotFoundError:
+        debug(f"Error: File '{file_path}' not found.")
+        return None
+
+    return out

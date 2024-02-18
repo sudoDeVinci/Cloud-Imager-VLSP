@@ -45,8 +45,7 @@ def calibrate():
 
     cv2.destroyAllWindows()
     return (objpoints, imgpoints, frameSize)
-
-
+    
 
 
 def undistort(objpoints, imgpoints, frameSize):
