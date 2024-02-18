@@ -1,6 +1,6 @@
 #include "comm.h"
 
-#define FIRMWARE_VERSION "0.0.1.0"
+#define FIRMWARE_VERSION "0.0.2.0"
 
 /**
  * My beautiful globals
@@ -76,7 +76,7 @@ void loop() {
 
   /**
   * If camera is up, send and release image buffer. 
-  
+  */
   
   if(sensors.status.CAM) {
     camera_fb_t * fb = NULL;
@@ -87,7 +87,7 @@ void loop() {
     if (deinitErr != ESP_OK) debugf("Camera init failed with error 0x%x", deinitErr);
   } 
 
-  */
+  
 
   delay(50);
   toggleHeater(&sensors.status, &sensors.SHT);
