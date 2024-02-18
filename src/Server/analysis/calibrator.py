@@ -3,8 +3,6 @@ import glob
 import pickle
 
 
-
-
 def calibrate():
     ################ FIND CHESSBOARD CORNERS - OBJECT POINTS AND IMAGE POINTS #############################
 
@@ -113,7 +111,7 @@ def undistort(cameraMatrix, dist):
     
     # Undistort with Remapping
     mapx, mapy = cv2.initUndistortRectifyMap(cameraMatrix, dist, None, newCameraMatrix, (w,h), 5)
-    dst = cv2.remap(img, mapx, mapy, cv.INTER_LINEAR)
+    dst = cv2.remap(img, mapx, mapy, cv2.INTER_LINEAR)
     
     # crop the image
     #x, y, w, h = roi

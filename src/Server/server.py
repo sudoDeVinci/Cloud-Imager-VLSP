@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Response, send_from_directory, send_file, make_response
+from flask import *
 import os
 from io import BytesIO
 from analysis.config import debug
@@ -8,10 +8,34 @@ from Handlers import *
 
 app = Flask(__name__)
 
+global ROOT
 # Define the directory to save images
 # Ensure the upload directory exists
 IMAGE_UPLOAD_DIR = "uploads"
 os.makedirs(IMAGE_UPLOAD_DIR, exist_ok=True)
+
+@app.route('/')
+def index():
+    return render_template("index.html")
+
+@app.route('/trucks.mp3')
+def trucks():
+    ROOT = os.getcwd() + "\\src\\Server"
+    response = make_response(send_file(ROOT + "\\" + "templates" + "\\"+ "trucks.mp3", mimetype='audio/mpeg'), 200)
+    return response
+
+@app.route('/fazbear.gif')
+def faz():
+    ROOT = os.getcwd() + "\\src\\Server"
+    response = make_response(send_file(ROOT + "\\" + "templates" + "\\"+ "fazbear.gif", mimetype='image/gif'), 200)
+    return response
+
+
+@app.route('/favicon.ico')
+def favicon():
+    ROOT = os.getcwd() + "\\src\\Server"
+    response = make_response(send_file(ROOT + "\\" + "templates" + "\\"+ "favicon.ico", mimetype='image/vnd.microsoft.icon'), 200)
+    return response
 
 
 @app.route("/update")
@@ -186,9 +210,9 @@ def images() -> Response:
 
 
 if __name__ == '__main__':
+    ROOT = os.getcwd() + "\\src\\Server"
     try:
         Manager.connect(True)
-        ROOT = os.getcwd() + "\\src\\Server"
         debug(f"Top most dir: {ROOT}")
         if (not DeviceService.exists("34:85:18:40:CD:8C")): DeviceService.add("34:85:18:40:CD:8C", "Home-ESP", "ESP32S3", "OV5640", 173.00, 56.853470, 14.824620)
         if (not DeviceService.exists("34:85:18:41:EB:78")): DeviceService.add("34:85:18:41:EB:78", "Work-ESP", "ESP32S3", "OV5640", 173.00, 56.853470, 14.824620)

@@ -5,27 +5,35 @@ import numpy.typing
 from gc import collect
 from datetime import datetime
 from enum import Enum
-from typing import List
-
-
-# For typing, these are inexact because out memory layout differences between Mat and UMat
-Mat = numpy.typing.NDArray[np.uint8]
-NDArray = numpy.typing.NDArray[any]
+from typing import List, Sequence, Tuple
+import tomllib as toml
 
 
 # Camera model for current visualization
-class camera_models(Enum):
+class camera_model(Enum):
     OV2640 = "ov2640"
     OV5640 = "ov5640"
     DSLR = "dslr"
+camera:str = camera_model['DSLR'].value
 
-camera:str = camera_models['DSLR'].value
+
+# For typing, these are inexact because out memory layout differences such as between Mat and UMat
+Mat = numpy.typing.NDArray[np.uint8]
+Matlike = cv2.typing.MatLike
+NDArray = numpy.typing.NDArray[any]
+
 
 
 # Ensure path exists then return it.
 def mkdir(folder:str) -> str:
     if not os.path.exists(folder): os.makedirs(folder)
     return folder
+
+
+
+# Database related folders
+db_schema_folder = mkdir('schemas')
+
 
 
 # Various Image folders
@@ -37,6 +45,7 @@ sky_images_folder = mkdir(f"{root_image_folder}/sky_{camera}")
 root_graph_folder = mkdir('Graphs')
 
 
+
 # Calibration image paths and settings  
 calibration_folder = "calibration"
 calibration_images = mkdir(f"{calibration_folder}/images")
@@ -44,6 +53,7 @@ camera_matrices = mkdir(f"{calibration_folder}/matrices")
 undistorted_calibration_images = mkdir(f"{calibration_folder}/undistorted")
 distorted_calibration_images = mkdir(f"{calibration_folder}/distorted")
 calibration_config = "calibration_cfg.toml"
+
 
 
 # If debug is True, print. Otherwise, do nothing.
@@ -64,6 +74,7 @@ def write_toml(data:dict, path:str) -> None:
     except Exception as e:
         debug(f"Error writing to TOML file: {e}")
 
+
 def load_toml(file_path:str) -> dict | None:
     toml_data = None
     try:
@@ -79,8 +90,10 @@ def load_toml(file_path:str) -> dict | None:
 
     return toml_data
 
+
 # Load a pickled resource
 def __load_pkl_resource(folder:str, name:str) -> Mat:
+    import pickle
     """
     Attempt to load pickled resource <name> from <folder>.
     """
@@ -88,7 +101,7 @@ def __load_pkl_resource(folder:str, name:str) -> Mat:
         with open(f"{folder}/{name}", "rb" ) as file:
             out = pickle.load(file)
     except FileNotFoundError:
-        debug(f"Error: File '{file_path}' not found.")
+        debug(f"Error: File '{folder}/{name}' not found.")
         return None
 
     return out

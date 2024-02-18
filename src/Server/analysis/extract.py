@@ -52,7 +52,7 @@ def __process_YBR(image: NDArray) -> NDArray:
     non_black_data = np.column_stack((Y[non_black_indices], b[non_black_indices], r[non_black_indices]))
     return non_black_data
 
-def process_images(folder_path:str, colour_index: int = 0) -> NDArray:
+def centered_images(folder_path:str, colour_index: int = 0) -> NDArray:
     """
     Iterate through the binary images of either cloud or sky. Filter through them after converting them to specified colour format via colour_index.
     default or 0: RGB, 1: HSV, 2: YCbCr
@@ -119,12 +119,11 @@ def raw_largest_separations(folder_path:str) -> None:
         non_black_data = __process_RGB(im)
 
         im_hsv = im.convert('HSV')
-        image = np.array(im)
-        non_black_data = __process_HSV(im)
+        non_black_data = __process_HSV(np.array(im_hsv))
 
-        image = im.convert('YCbCr')
-        image = np.array(im)
-        non_black_data = __process_YBR(im)
+        im_ycb = im.convert('YCbCr')
+        image = np.array(im_ycb)
+        non_black_data = __process_YBR(image)
 
 
 def get_func(colour_index: int) -> Callable[[NDArray], NDArray]:

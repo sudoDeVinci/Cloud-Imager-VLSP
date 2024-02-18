@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
 from config import *
-from extract import process_images, raw_images, get_tags
+from extract import centered_images, raw_images, get_tags
+
 
 
 sub_graph_dir = f"hist/{camera}"
@@ -16,8 +17,6 @@ def __count(xyz_sk: NDArray) -> NDArray:
     unique, counts = np.unique(xyz_sk, return_counts=True)
     freq = np.asarray((unique, counts)).T
     return freq
-
-
 
 def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     """
@@ -62,8 +61,8 @@ def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
 
 
     # Process images
-    data_sky = process_images(sky_folder, colour_index)
-    data_cloud = process_images(cloud_folder, colour_index)
+    data_sky = centered_images(sky_folder, colour_index)
+    data_cloud = centered_images(cloud_folder, colour_index)
 
     
     x_cloud_freq = __count(np.array(data_cloud[:, 0]))

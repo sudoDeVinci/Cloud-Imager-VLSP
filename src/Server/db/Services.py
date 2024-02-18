@@ -3,6 +3,7 @@ from db.Entities import *
 from db.Management import Manager
 from analysis.config import debug
 from abc import ABC
+from analysis.config import *
 
 
 class Service(ABC):

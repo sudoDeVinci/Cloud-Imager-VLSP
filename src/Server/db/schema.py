@@ -24,6 +24,7 @@ def apply(mydb:mysql.MySQLConnection):
         );
     """)
 
+    # Create readings table
     myCursor.execute("""
     CREATE TABLE IF NOT EXISTS Readings(
         timestamp DATETIME,
