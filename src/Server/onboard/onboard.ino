@@ -69,6 +69,7 @@ void loop() {
   */
   String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
   delay(50);
+  printReadings(readings);
   sendReadings(&network, readings, timestamp);
   delete[] readings;
   delay(50);
@@ -90,7 +91,6 @@ void loop() {
   
 
   delay(50);
-  toggleHeater(&sensors.status, &sensors.SHT);
   OTAUpdate(&network, FIRMWARE_VERSION);
   delay(50);
 
