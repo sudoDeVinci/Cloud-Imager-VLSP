@@ -82,6 +82,12 @@ void loop() {
   if(sensors.status.CAM) {
     camera_fb_t * fb = NULL;
     fb = esp_camera_fb_get();
+    esp_camera_fb_return(fb);
+    fb = esp_camera_fb_get();
+    esp_camera_fb_return(fb);
+    fb = esp_camera_fb_get();
+    esp_camera_fb_return(fb);
+    fb = esp_camera_fb_get();
     sendImage(&network, fb, timestamp);
     esp_camera_fb_return(fb);
     esp_err_t deinitErr = cameraTeardown();

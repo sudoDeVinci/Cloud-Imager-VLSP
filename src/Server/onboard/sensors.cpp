@@ -13,7 +13,7 @@ void deepSleepMins(float mins) {
  * Toggle thr heter for the sht31D.
  */
 void toggleHeater(Sensors::Status *stat, Adafruit_SHT31 *sht) {
-  if(stat -> SHT) sht -> heater(!(sht -> isHeaterEnabled));
+  if(stat -> SHT) sht -> heater(!(sht -> isHeaterEnabled()));
 }
 
 /**
@@ -22,12 +22,11 @@ void toggleHeater(Sensors::Status *stat, Adafruit_SHT31 *sht) {
 void shtSetup(Sensors::Status *stat, Adafruit_SHT31 *sht) {
   if (!sht -> begin()) {
     stat -> SHT = false;
+    if (sht -> isHeaterEnabled()) toggleHeater(stat, sht);
     debugln("Couldn't find SHT31");
   } else {
     stat -> SHT = true;
     debugln("SHT31 found!");
-    toggleHeater(stat, sht);
-
   }
 }
 
@@ -79,7 +78,7 @@ void cameraSetup(Sensors::Status *stat) {
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = CAMERA_CLK;
-  config.frame_size = FRAMESIZE_QXGA;
+  config.frame_size = FRAMESIZE_QHD;
   config.pixel_format = PIXFORMAT_JPEG;
   config.grab_mode = CAMERA_GRAB_LATEST; // Needs to be "CAMERA_GRAB_LATEST" for camera to capture.
   config.fb_location = CAMERA_FB_IN_PSRAM;
@@ -171,21 +170,35 @@ esp_err_t cameraTeardown() {
  * Read the humidity and temperature from the SHT-31D.
  */
 void read(Adafruit_SHT31 *sht, float *out) {
-    float h = sht -> readHumidity();
-    float t = sht -> readTemperature();
+    float h, t;
+    for (int s = 0; s < SAMPLES; s++) {
+      h = sht -> readHumidity();
+      t = sht -> readTemperature();
+      delay(50);
+    }
     if(!isnan(h)) out[0] = h;
     if(!isnan(t)) out[1] = t;
 }
 
 /**
- * Read the pressure and altitude from the BMP390 in and hPa and meters.
+ * Read the pressure and altitude from the BMP390 in and Pa and meters.
  */
 void read(Adafruit_BMP3XX *bmp, double *out) {
+  double pres;
+  float alt;
+  double altitude;
+
   if (! bmp -> performReading()) return;
-  double pres = bmp -> pressure;
+
+  for (int s = 0; s < SAMPLES; s++) {
+    pres = bmp -> pressure;
+    alt = bmp -> readAltitude(SEALEVELPRESSURE_HPA);
+    delay(50);
+  }
+
+  altitude = static_cast<double>(alt);
+
   if(!isnan(pres)) out[0] = pres;
-  float alt = bmp -> readAltitude(SEALEVELPRESSURE_HPA);
-  double altitude = static_cast<double>(alt);
   if(!isnan(altitude)) out[1] = altitude;
 }
 
@@ -225,7 +238,7 @@ String* readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp
 void printReadings(String* readings) {
   debug(readings[0] + " deg C | ");
   debug(readings[1] + " % | ");
-  debug(readings[2] + " hPa | ");
+  debug(readings[2] + " Pa | ");
   debug(readings[3] + " deg C | ");
   debugln();
 }
