@@ -54,14 +54,32 @@
         }
         
     </style>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            function updateSystemInfo() {
+                $.getJSON("/system-info", function(data){
+                    $("#memory-usage").text("Memory Usage: " + data.memory_usage + " MB");
+                    $("#cpu-usage").text("CPU Usage: " + data.cpu_usage + "%");
+                });
+            }
+
+            // Update system info every 5 seconds
+            setInterval(updateSystemInfo, 3000);
+
+            // Initial update
+            updateSystemInfo();
+        });
+    </script>
 </head>
 <body>
     <div class="container">
         <a href="https://www.youtube.com/watch?v=WchseC9aKTU" target="_blank">
             <img id = "slop" src = "favicon.ico" alt = "slop" width = "150">
         </a>
-        <h1>Welcome to Cool Website</h1>
-        <p>This is a cool website index page.</p>
+        <h1>Super Cool Monitoring Page</h1>
+        <p>This is the super cool index page.</p>
         <p>Check out our <a href="favicon.ico" target = "_blank">cool features</a>.</p>
         <a href="https://kinopsiaproductions.neocities.org/" target="_blank">
             <img id = "fazbear" src = "fazbear.gif" alt = "slop" width = "150">
@@ -71,6 +89,10 @@
             <source src="trucks.mp3" type="audio/mpeg">
             Your browser does not support the audio element.
         </audio>
+        <br>
+        <h2>Usage Info</h1>
+        <p id="memory-usage">Memory Usage: {{ memory_usage }} MB</p>
+        <p id="cpu-usage">CPU Usage: {{ cpu_usage }}%</p>
     </div>
 </body>
 </html>

@@ -5,6 +5,7 @@ from analysis.config import debug
 from db.Management import Manager
 from db.Services import *
 from Handlers import *
+import psutil
 
 app = Flask(__name__)
 
@@ -17,6 +18,14 @@ os.makedirs(IMAGE_UPLOAD_DIR, exist_ok=True)
 @app.route('/')
 def index():
     return render_template("index.html")
+
+# Route to get memory and CPU usage
+@app.route('/system-info')
+def system_info():
+    pid = os.getpid()
+    memory_usage = f"{psutil.Process(pid).memory_info().rss / (1024 ** 2):.2f}"  # in MB
+    cpu_usage = f"{psutil.cpu_percent():.2f}"
+    return jsonify(memory_usage=memory_usage, cpu_usage=cpu_usage)
 
 @app.route('/trucks.mp3')
 def trucks():

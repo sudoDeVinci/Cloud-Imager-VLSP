@@ -69,6 +69,7 @@ void loop() {
   */
   String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
   delay(50);
+  printReadings(readings);
   sendReadings(&network, readings, timestamp);
   delete[] readings;
   delay(50);
@@ -81,6 +82,12 @@ void loop() {
   if(sensors.status.CAM) {
     camera_fb_t * fb = NULL;
     fb = esp_camera_fb_get();
+    esp_camera_fb_return(fb);
+    fb = esp_camera_fb_get();
+    esp_camera_fb_return(fb);
+    fb = esp_camera_fb_get();
+    esp_camera_fb_return(fb);
+    fb = esp_camera_fb_get();
     sendImage(&network, fb, timestamp);
     esp_camera_fb_return(fb);
     esp_err_t deinitErr = cameraTeardown();
@@ -90,7 +97,6 @@ void loop() {
   
 
   delay(50);
-  toggleHeater(&sensors.status, &sensors.SHT);
   OTAUpdate(&network, FIRMWARE_VERSION);
   delay(50);
 
