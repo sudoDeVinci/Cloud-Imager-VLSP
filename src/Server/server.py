@@ -221,4 +221,5 @@ if __name__ == '__main__':
         debug(e)
     
     app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=8085, debug=True)
     #app.run(host='0.0.0.0', port=8080, debug=True, ssl_context=('win_laptop.cer', 'win_laptop.pem'))

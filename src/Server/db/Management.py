@@ -44,13 +44,12 @@ class Manager:
                 password = passw,
                 host = hostname)
 
-            debug("successfully connected to the database")
-
             Manager.apply_schema(drop_schema)
 
             cursor = Manager.__conn.cursor()
             cursor.execute("USE weather")
             cursor.close()
+            debug("successfully connected to the database")
 
         except mysql.Error as e:
             Manager.__conn = None
@@ -82,7 +81,7 @@ class Manager:
 
 
     @staticmethod
-    def apply_schema(should_drop_schema):
+    def apply_schema(should_drop_schema:bool):
         """
         Apply the schema to the Database.
         """
