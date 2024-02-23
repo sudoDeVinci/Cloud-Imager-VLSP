@@ -33,7 +33,7 @@ We propose to:
 - [x] Create weather station(s) able to collect and send weather data within expected sensor accuracy.
 - [x] Create/host a server which is able to accept multiple connections from these stations and process and store the incoming data.
 - [x] Undistort the sky images. This is done by obtaining the intrinsic and extrinsic matrices of the stations prior to their deployment. 
-- [ ] Calculate the LCL (Lifted Condensation Level) via the environmental readings given, according to the method outlined in Romps. D (2017).
+- [x] Calculate the LCL (Lifted Condensation Level) via the environmental readings given, according to the method outlined in Romps. D (2017).
 - [ ] Identify the clouds in the scene via either statistical analysis or simple object detection. 
     
     a. This also then allows identification of the size of the cloud given the focal length and FOV of the camera module.
@@ -71,7 +71,7 @@ I mostly use VScode for programming.
 
 
 
-The [Flask server](src/Server/server.py), [DB ORM](src/Server/db/) and and [analysis tools](src/Server/analysis/) are written in python for ease of use. 
+The [Flask server](src/Server/server.py) and [analysis tools](src/Server/analysis/) are written in python for ease of use. 
 
 #### Reading from sensors
 To read from the SHT31-D, we use the [Adafruit_SHT31](https://github.com/adafruit/Adafruit_SHT31) library. 
@@ -132,12 +132,9 @@ struct Network {
      */
     struct Route {
         const char* IMAGE = "/images";
-        const char* REGISTER = "/register";
         const char* READING = "/reading";
         const char* STATUS = "/status";
         const char* UPDATE = "/update";
-        const char* UPGRADE = "/upgrade";
-        const char* TEST = "/test";
     } routes;
 
     struct Header {
@@ -203,14 +200,20 @@ void send(Network *network, const String& timestamp, camera_fb_t *fb) {
 
 Images samples have been taken with both an OV2640 and an OV5640. These are compared with multiple shots from various DSLR cameras, taken as frames from timelapses.  
 
-#### OV5640
-Not Yet Available.
-<br>
-
-#### OV2460
+### OV2460
 While colour space based operations are fairly easy on high quality images, the OV2460 is not high quality. Contrast is low, over/under-exposure are almost ensured and ISO changes are not only drastic but cause unwanted light filtering and other strange behaviour:
 
 <img src = 'images/reference_ov2640/Image20.png' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
+
+<br>
+
+### OV5640
+The OV5640 seems more suited to this application due to it's 5MP shooting capability and higher dynamic range. Contrast, color accuracy, and exposure can be handled dynamically and are stepped up/down smoothly. This seems to also be bared out in our data.
+
+<img src = 'images/reference_ov5640/2024-02-23-11-17-16.jpg' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
+<br>
+
+
 
 ### Colourspace Frequency Histogram
 
@@ -230,9 +233,9 @@ NOTE: The divisons in the bar graphs is an artifact from saving the graphs as pn
 
 These show the frequency graphs for the colour channels of the 60 images of the sky, separated into regions of sky and cloud.
 
-DSLR BGR Bar Graph            |  DSLR HSV Bar Graph
-:-------------------------:|:-------------------------:
-![Reference Image](Graphs/hist/dslr/new_hist_dslr_RGB.png)  |  ![Blocked Image](Graphs/hist/dslr/new_hist_dslr_HSV.png)
+DSLR BGR Bar Graph                                          |  DSLR HSV Bar Graph                                       |  DSLR YcbCr Bar Graph
+:----------------------------------------------------------:|:---------------------------------------------------------:|:---------------------------------------------------------:
+![RGB graph](Graphs/hist/dslr/new_hist_dslr_RGB.png)        |  ![HSV graph](Graphs/hist/dslr/new_hist_dslr_HSV.png)     | ![YcbCr graph](Graphs/hist/dslr/new_hist_dslr_YcbCr.png)
 
 <br>
 
@@ -246,9 +249,9 @@ Above we see that for the most part, only the Saturation channel would be useful
 
 These show the frequency graphs for the colour channels of the 20 images of the sky taken with the OV2640, separated into regions of sky and cloud. 
 
-OV2640 BGR Bar Graph            |  OV2640 HSV Bar Graph
-:-------------------------:|:-------------------------:
-![Reference Image](Graphs/hist/ov2640/new_hist_ov2640_RGB.png)  |  ![Blocked Image](Graphs//hist/ov2640/new_hist_ov2640_HSV.png)
+OV2640 BGR Bar Graph                                          |  OV2640 HSV Bar Graph                                       |  OV2640 YcbCr Bar Graph
+:----------------------------------------------------------:|:---------------------------------------------------------:|:---------------------------------------------------------:
+![RGB graph](Graphs/hist/ov2640/new_hist_ov2640_RGB.png)        |  ![HSV graph](Graphs/hist/ov2640/new_hist_ov2640_HSV.png)     | ![YcbCr graph](Graphs/hist/ov2640/new_hist_ov2640_YcbCr.png)
 
 <br>
 
