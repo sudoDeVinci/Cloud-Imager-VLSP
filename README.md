@@ -235,7 +235,7 @@ These show the frequency graphs for the colour channels of the 60 images of the 
 
 DSLR BGR Bar Graph                                          |  DSLR HSV Bar Graph                                       |  DSLR YcbCr Bar Graph
 :----------------------------------------------------------:|:---------------------------------------------------------:|:---------------------------------------------------------:
-![RGB graph](Graphs/hist/dslr/new_hist_dslr_RGB.png)        |  ![HSV graph](Graphs/hist/dslr/new_hist_dslr_HSV.png)     | ![YcbCr graph](Graphs/hist/dslr/new_hist_dslr_YcbCr.png)
+![RGB graph](Graphs/hist/dslr/new_hist_dslr_RGB.png)        |  ![HSV graph](Graphs/hist/dslr/new_hist_dslr_HSV.png)     | ![YcbCr graph](Graphs/hist/dslr/new_hist_dslr_YCbCr.png)
 
 <br>
 
@@ -251,7 +251,7 @@ These show the frequency graphs for the colour channels of the 20 images of the 
 
 OV2640 BGR Bar Graph                                          |  OV2640 HSV Bar Graph                                       |  OV2640 YcbCr Bar Graph
 :----------------------------------------------------------:|:---------------------------------------------------------:|:---------------------------------------------------------:
-![RGB graph](Graphs/hist/ov2640/new_hist_ov2640_RGB.png)        |  ![HSV graph](Graphs/hist/ov2640/new_hist_ov2640_HSV.png)     | ![YcbCr graph](Graphs/hist/ov2640/new_hist_ov2640_YcbCr.png)
+![RGB graph](Graphs/hist/ov2640/new_hist_ov2640_RGB.png)        |  ![HSV graph](Graphs/hist/ov2640/new_hist_ov2640_HSV.png)     | ![YcbCr graph](Graphs/hist/ov2640/new_hist_ov2640_YCbCr.png)
 
 <br>
 
