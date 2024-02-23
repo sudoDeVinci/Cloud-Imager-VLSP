@@ -201,12 +201,13 @@ void send(Network *network, const String& timestamp, camera_fb_t *fb) {
 Images samples have been taken with both an OV2640 and an OV5640. These are compared with multiple shots from various DSLR cameras, taken as frames from timelapses.  
 
 
-Camera Model | <div style="width:800px">Desc.</div>
+Camera Model | <div style="width:800px">Image Sample</div>
 :--------------------------------------:|:-----------------------------------:|
 OV2640 | <img src = 'images/reference_ov2640/Image20.png' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
-OV5640 | <img src = 'images/reference_ov5640/2024-02-23-11-17-16.jpg' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
+OV5640 | <img src = 'images/reference_ov5640/2024-02-23-11-17-16.jpg' alt="Example OV5640 Image" style="height: 300px; width:400px;"/>
+DSLR | <img src = 'images/reference_dslr/Image20.png' alt="Example DSLR Image" style="height: 300px; width:400px;"/>
 
-
+<br>
 
 While colour space based operations are fairly easy on high quality images, the OV2460 is not high quality. Contrast is low, over/under-exposure are almost ensured and ISO changes are not only drastic but cause unwanted light filtering and other strange behaviour.
 The OV5640 seems more suited to this application due to it's 5MP shooting capability and higher dynamic range. Contrast, color accuracy, and exposure can be handled dynamically and are stepped up/down smoothly. This seems to also be bared out in our data.
@@ -222,8 +223,21 @@ Reference Image            |  Blocked Image
 :-------------------------:|:-------------------------:
 ![Reference Image](images/reference_dslr/Image17.png)  |  ![Blocked Image](images/blocked_dslr/Image17.png)
 
+<br>
+
 The Blocked out images are coloured such that clouds are coloured red and the sky is coloured black. Small borders around clouds are left as to not capture the noise of whispy cloud edges.
-This is used to create two binary images and subsequent masked images of the reference image, one for the clouds and one for the sky in the scene. These are split, iterated over and their colour values recorded. These values are then graphed and can viewed below.
+This is used to create two binary images and subsequent masked images of the reference image, one for the clouds and one for the sky in the scene.
+
+<br>
+
+Cloud Masked Image          |  Sky Masked Image
+:-------------------------:|:-------------------------:
+![Reference Image](images/cloud_dslr/Image17.png)  |  ![Blocked Image](images/sky_dslr/Image17.png)
+
+<br>
+
+
+These are split, iterated over and their colour values recorded. These values are then graphed and can viewed below.
 NOTE: The divisons in the bar graphs is an artifact from saving the graphs as pngs, as the pdf versions do not contain these.
 
 #### Frequency Chart for High Res Images
