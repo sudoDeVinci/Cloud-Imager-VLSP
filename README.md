@@ -202,7 +202,7 @@ Images samples have been taken with both an OV2640 and an OV5640. These are comp
 
 
 
-Desc. | <div style="width:400px">property</div> 
+<div style="width:100px">property</div>  | <div style="width:600px">property</div> 
 :--------------------------------------:|:-----------------------------------:|
 While colour space based operations are fairly easy on high quality images, the OV2460 is not high quality. Contrast is low, over/under-exposure are almost ensured and ISO changes are not only drastic but cause unwanted light filtering and other strange behaviour | <img src = 'images/reference_ov2640/Image20.png' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
 The OV5640 seems more suited to this application due to it's 5MP shooting capability and higher dynamic range. Contrast, color accuracy, and exposure can be handled dynamically and are stepped up/down smoothly. This seems to also be bared out in our data. | <img src = 'images/reference_ov5640/2024-02-23-11-17-16.jpg' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
