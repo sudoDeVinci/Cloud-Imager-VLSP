@@ -304,9 +304,13 @@ Once a matrix of principle components (colour channels) and their per variance v
 #### PCA ScatterPlot for High Res Images
 <br>
 
-DSLR PCA BGR ScatterPlot            |  DSLR PCA HSV Scatterplot
-:-------------------------:|:-------------------------:
-![BGR PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_RGB.png "BGR PCA ScatterPlot for High Res Images")  |  ![HSV PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_HSV.png "HSV PCA ScatterPlot for High Res Images")
+Desc. | Graph
+:--------------------------------------:|:-----------------------------------:|
+DSLR PCA BGR ScatterPlot   | ![BGR PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_RGB.png "BGR PCA ScatterPlot for High Res Images")
+DSLR PCA HSV Scatterplot   | ![HSV PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_HSV.png "HSV PCA ScatterPlot for High Res Images")
+DSLR PCA YcBcR Scatterplot | ![YcBcR PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_YCbCr.png "HSV PCA ScatterPlot for High Res Images") 
+
+<br>
 
 #### PCA ScatterPlot for OV2640
 <br>
