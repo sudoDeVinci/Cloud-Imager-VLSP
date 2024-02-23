@@ -200,20 +200,14 @@ void send(Network *network, const String& timestamp, camera_fb_t *fb) {
 
 Images samples have been taken with both an OV2640 and an OV5640. These are compared with multiple shots from various DSLR cameras, taken as frames from timelapses.  
 
-### OV2460
-While colour space based operations are fairly easy on high quality images, the OV2460 is not high quality. Contrast is low, over/under-exposure are almost ensured and ISO changes are not only drastic but cause unwanted light filtering and other strange behaviour:
 
-<img src = 'images/reference_ov2640/Image20.png' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
+
+Desc. | <div style="width:400px">property</div> 
+:--------------------------------------:|:-----------------------------------:|
+While colour space based operations are fairly easy on high quality images, the OV2460 is not high quality. Contrast is low, over/under-exposure are almost ensured and ISO changes are not only drastic but cause unwanted light filtering and other strange behaviour | <img src = 'images/reference_ov2640/Image20.png' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
+The OV5640 seems more suited to this application due to it's 5MP shooting capability and higher dynamic range. Contrast, color accuracy, and exposure can be handled dynamically and are stepped up/down smoothly. This seems to also be bared out in our data. | <img src = 'images/reference_ov5640/2024-02-23-11-17-16.jpg' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
 
 <br>
-
-### OV5640
-The OV5640 seems more suited to this application due to it's 5MP shooting capability and higher dynamic range. Contrast, color accuracy, and exposure can be handled dynamically and are stepped up/down smoothly. This seems to also be bared out in our data.
-
-<img src = 'images/reference_ov5640/2024-02-23-11-17-16.jpg' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
-<br>
-
-
 
 ### Colourspace Frequency Histogram
 
@@ -313,11 +307,14 @@ DSLR PCA YcBcR Scatterplot | ![YcBcR PCA ScatterPlot for High Res Images](Graphs
 <br>
 
 #### PCA ScatterPlot for OV2640
+
 <br>
 
-OV2640 PCA BGR ScatterPlot            |  OV2640 PCA HSV Scatterplot
-:-------------------------:|:-------------------------:
-![BGR PCA ScatterPlot for ov2640](Graphs/PCA/ov2640/new_pca_ov2640_RGB.png "BGR PCA ScatterPlot for ov2640")  |  ![HSV PCA ScatterPlot for ov2640](Graphs/PCA/ov2640/new_pca_ov2640_HSV.png "HSV PCA ScatterPlot for ov2640")
+Desc. | Graph
+:--------------------------------------:|:-----------------------------------:|
+OV2640 PCA BGR ScatterPlot   | ![BGR PCA ScatterPlot for High Res Images](Graphs/PCA/ov2640/new_pca_ov2640_RGB.png "BGR PCA ScatterPlot for High Res Images")
+OV2640 PCA HSV Scatterplot   | ![HSV PCA ScatterPlot for High Res Images](Graphs/PCA/ov2640/new_pca_ov2640_HSV.png "HSV PCA ScatterPlot for High Res Images")
+OV2640 PCA YcBcR Scatterplot | ![YcBcR PCA ScatterPlot for High Res Images](Graphs/PCA/ov2640/new_pca_ov2640_YCbCr.png "HSV PCA ScatterPlot for High Res Images")
 
 
 ### Final Comments
