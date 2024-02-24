@@ -30,7 +30,7 @@ def __process_RGB(image: NDArray) -> NDArray:
     Extract the non-black pixels from a colour-masked image in RGB format.
     """
     red, green, blue = image[:,:,0], image[:,:,1], image[:,:,2]
-    non_black_indices = np.where((red != 0) | (green != 0) | (blue != 0))
+    non_black_indices = np.where((0 < red) & (red < 255) & (0 < green) & (green < 255) & (0 < blue) & (blue < 255))
     non_black_data = np.column_stack((red[non_black_indices], green[non_black_indices], blue[non_black_indices]))
     return non_black_data
 
@@ -39,7 +39,7 @@ def __process_HSV(image: NDArray) -> NDArray:
     Extract the non-black pixels from a colour-masked image in HSV format.
     """
     h, s, v = image[:,:,0], image[:,:,1], image[:,:,2]
-    non_black_indices = np.where((v != 0))
+    non_black_indices = np.where((0 < v) & (v < 250))
     non_black_data = np.column_stack((h[non_black_indices], s[non_black_indices], v[non_black_indices]))
     return non_black_data
 
@@ -48,7 +48,7 @@ def __process_YBR(image: NDArray) -> NDArray:
     Extract the non-black pixels from a colour-masked image in YcBcR format.
     """
     Y, b, r = image[:,:,0], image[:,:,1], image[:,:,2]
-    non_black_indices = np.where((Y != 0))
+    non_black_indices = np.where((0 < Y))
     non_black_data = np.column_stack((Y[non_black_indices], b[non_black_indices], r[non_black_indices]))
     return non_black_data
 

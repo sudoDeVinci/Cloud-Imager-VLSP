@@ -126,6 +126,12 @@ def reading() -> Response:
 
         debug(f"temp = {t}\nhumidity = {h}\npressure = {p}\ndewpoint = {d}")
 
+        if t is None or h is None or p is None or d is None:
+            return jsonify({"error": "None value readings received."}), 400
+
+        if t == "None" or h == "None" or p == "None" or d == "None":
+            return jsonify({"error": "None value readings received."}), 400
+
         # If image arrived before the 
         if not ReadingService.exists(mac, timestamp): ReadingService.add(mac, t, h, p, d, timestamp)
         else: ReadingService.update_readings(mac, t, h, p, d, timestamp)
@@ -155,6 +161,7 @@ def status() -> Response:
     * 
     * sht=<bool>&bmp=<bool>&cam=<bool>
     """
+    valid = ("1", "0")
     try:
         timestamp = request.headers.get('timestamp')
         if not timestamp: return jsonify({"error": "Timestamp header is missing"}), 400
@@ -168,6 +175,9 @@ def status() -> Response:
         cam = request.args.get('cam')
 
         debug(f"SHT = {sht}\nBMP = {bmp}\nCAM = {cam}")
+
+        if sht not in valid or bmp not in valid or cam not in valid:
+            return jsonify({"error": "Invalid status type received"}), 400
 
         if not StatusService.exists(mac): StatusService.add(mac, timestamp, sht, bmp, cam)
         else: StatusService.update(mac, timestamp, sht, bmp, cam)
