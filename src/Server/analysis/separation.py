@@ -65,7 +65,10 @@ def separate_datasets(blocked_image_folder: str, reference_image_folder: str) ->
         for ref, blc in zip(referenceImages, blockedImages):
             refPath = os.path.join(ref_root, ref)
             blockPath = os.path.join(blc_root, blc)
-            __separate(blockPath, refPath, count)
+            debug(f"Block Path: {blockPath}")
+            c_img, s_img = __separate(cv2.imread(blockPath), cv2.imread(refPath), count)
+            cv2.imwrite(os.path.join( cloud_images_folder,f"{ref}"), c_img)
+            cv2.imwrite(os.path.join( sky_images_folder,f"{ref}"), s_img)
             count+=1
 
 
@@ -84,7 +87,7 @@ def filesync(blc:str, ref:str, cld:str, sky:str) -> bool:
 
 if __name__ == '__main__':
     start = datetime.now()
-    empty = False
+    empty = True
     
     if ( not os.path.exists(blocked_images_folder) or not os.path.exists(reference_images_folder)):
         debug("bad path")

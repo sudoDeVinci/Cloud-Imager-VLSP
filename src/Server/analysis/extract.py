@@ -87,7 +87,9 @@ def raw_images(folder_path:str, colour_index: int = 0) -> NDArray:
     """
     data = []
     for filename in os.listdir(folder_path):
-        if (not filename.endswith(".png")):
+        if (not filename.endswith(".png") 
+            and not filename.endswith(".jpg") 
+            and not filename.endswith(".jpeg")):
             continue
     
         im = Image.open(os.path.join(folder_path, filename))

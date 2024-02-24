@@ -14,7 +14,7 @@ class camera_model(Enum):
     OV2640 = "ov2640"
     OV5640 = "ov5640"
     DSLR = "dslr"
-camera:str = camera_model['DSLR'].value
+camera:str = camera_model['OV5640'].value
 
 
 # For typing, these are inexact because out memory layout differences such as between Mat and UMat
