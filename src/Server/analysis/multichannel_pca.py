@@ -20,8 +20,8 @@ def pca(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     del tags
 
     # Process images
-    data_sky = process_images(sky_folder, colour_index)
-    data_cloud = process_images(cloud_folder, colour_index)
+    data_sky = raw_images(sky_folder, colour_index)
+    data_cloud = raw_images(cloud_folder, colour_index)
     
     # Standardize the data
     scaler = StandardScaler()
