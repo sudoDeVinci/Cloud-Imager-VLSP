@@ -245,9 +245,13 @@ NOTE: The divisons in the bar graphs is an artifact from saving the graphs as pn
 
 These show the frequency graphs for the colour channels of the 60 images of the sky, separated into regions of sky and cloud.
 
-DSLR BGR Bar Graph                                          |  DSLR HSV Bar Graph                                       |  DSLR YcbCr Bar Graph
-:----------------------------------------------------------:|:---------------------------------------------------------:|:---------------------------------------------------------:
-![RGB graph](Graphs/hist/dslr/new_hist_dslr_RGB.png)        |  ![HSV graph](Graphs/hist/dslr/new_hist_dslr_HSV.png)     | ![YcbCr graph](Graphs/hist/dslr/new_hist_dslr_YCbCr.png)
+<br>
+
+Desc. | Histogram
+:-----------------------------------:|:------------------------------------:
+RGB Distribution | ![RGB graph](Graphs/hist/dslr/new_hist_dslr_RGB.png) 
+HSv Distribution | ![HSV graph](Graphs/hist/dslr/new_hist_dslr_HSV.png)
+YCbCr Distribution | ![YcbCr graph](Graphs/hist/dslr/new_hist_dslr_YCbCr.png)
 
 <br>
 
@@ -261,15 +265,31 @@ Above we see that for the most part, only the Saturation channel would be useful
 
 These show the frequency graphs for the colour channels of the 20 images of the sky taken with the OV2640, separated into regions of sky and cloud. 
 
-OV2640 BGR Bar Graph                                          |  OV2640 HSV Bar Graph                                       |  OV2640 YcbCr Bar Graph
-:----------------------------------------------------------:|:---------------------------------------------------------:|:---------------------------------------------------------:
-![RGB graph](Graphs/hist/ov2640/new_hist_ov2640_RGB.png)        |  ![HSV graph](Graphs/hist/ov2640/new_hist_ov2640_HSV.png)     | ![YcbCr graph](Graphs/hist/ov2640/new_hist_ov2640_YCbCr.png)
+<br>
+
+Desc. | Histogram
+:-----------------------------------:|:------------------------------------:
+RGB Distribution | ![RGB graph](Graphs/hist/ov2640/new_hist_ov2640_RGB.png) 
+HSv Distribution | ![HSV graph](Graphs/hist/ov2640/new_hist_ov2640_HSV.png)
+YCbCr Distribution | ![YcbCr graph](Graphs/hist/ov2640/new_hist_ov2640_YCbCr.png)
 
 <br>
 
 Above we see that while the pattern of separation in the channels in followed, the lack of colour fidelity causes the sky regions to a more bimodal distribution. This can be seen in images where the sky looks more purple than blue, or regions of it are under/overexposed, or subject to strange tinting.
 
 We see that the hue looks somewhat similar, the saturation and value are nothing like the higher resolution images. I attribute this to the camera querks mentioned before. The value distribution for both clouds and sky regions is completely different now, with the sky region peaking at 100, rather than closer to 150 and skewing right.
+
+<br>
+
+#### Frequency Chart for OV5640
+
+<br>
+
+Desc. | Histogram
+:-----------------------------------:|:------------------------------------:
+RGB Distribution | ![RGB graph](Graphs/hist/ov5640/new_hist_ov5640_RGB.png) 
+HSv Distribution | ![HSV graph](Graphs/hist/ov5640/new_hist_ov5640_HSV.png)
+YCbCr Distribution | ![YcbCr graph](Graphs/hist/ov5640/new_hist_ov5640_YCbCr.png)
 
 ### ScreePlot
 <br>
@@ -283,9 +303,11 @@ These show the screeplots for the colour channels of the 60 higher resolution im
 
 **[CURRENTLY UNLABELLED.]**
 
-DSLR BGR Scree Plot            |  DSLR HSV Scree Plot
-:-------------------------:|:-------------------------:
-![Reference Image](Graphs/PCA/dslr/new_scree_dslr_RGB.png)  |  ![Blocked Image](Graphs/PCA/dslr/new_scree_dslr_HSV.png)
+Desc. | Scree Plot
+:-----------------------------------:|:------------------------------------:
+DSLR RGB Scree Plot | ![RGB graph](Graphs/PCA/dslr/new_scree_dslr_RGB.png) 
+DSLR HSV Scree Plot | ![HSV graph](Graphs/PCA/dslr/new_scree_dslr_HSV.png)
+DSLR YCbCr Scree Plot | ![YcbCr graph](Graphs/PCA/dslr/new_scree_dslr_YCbCr.png)
 
 <br>
 
@@ -298,9 +320,11 @@ Above we see that the Value channel as expected leads in variance, though the ne
 
 These show the screeplots for the colour channels of the 20 images of the sky taken with the OV2640, colour channels separated as principle components to check the variance percentage in differentiating sky versus cloud pixels.
 
-OV2640 BGR Scree Plot            |  OV2640 HSV Scree Plot
-:-------------------------:|:-------------------------:
-![Reference Image](Graphs/PCA/ov2640/new_scree_ov2640_RGB.png)  |  ![Blocked Image](Graphs/PCA/ov2640/new_scree_ov2640_HSV.png)
+Desc. | Scree Plot
+:-----------------------------------:|:------------------------------------:
+OV2640 RGB Scree Plot | ![RGB graph](Graphs/PCA/ov2640/new_scree_ov2640_RGB.png) 
+OV2640 HSV Scree Plot | ![HSV graph](Graphs/PCA/ov2640/new_scree_ov2640_HSV.png)
+OV2640 YCbCr Scree Plot | ![YcbCr graph](Graphs/PCA/ov2640/new_scree_ov2640_YCbCr.png)
 
 <br>
 
@@ -333,6 +357,18 @@ Desc. | Graph
 OV2640 PCA BGR ScatterPlot   | ![BGR PCA ScatterPlot for High Res Images](Graphs/PCA/ov2640/new_pca_ov2640_RGB.png "BGR PCA ScatterPlot for High Res Images")
 OV2640 PCA HSV Scatterplot   | ![HSV PCA ScatterPlot for High Res Images](Graphs/PCA/ov2640/new_pca_ov2640_HSV.png "HSV PCA ScatterPlot for High Res Images")
 OV2640 PCA YcBcR Scatterplot | ![YcBcR PCA ScatterPlot for High Res Images](Graphs/PCA/ov2640/new_pca_ov2640_YCbCr.png "HSV PCA ScatterPlot for High Res Images")
+
+<br>
+
+#### PCA ScatterPlot for OV2640
+
+<br>
+
+Desc. | Graph
+:--------------------------------------:|:-----------------------------------:|
+OV5640 PCA BGR ScatterPlot   | ![BGR PCA ScatterPlot for High Res Images](Graphs/PCA/ov5640/new_pca_ov5640_RGB.png "BGR PCA ScatterPlot for High Res Images")
+OV5640 PCA HSV Scatterplot   | ![HSV PCA ScatterPlot for High Res Images](Graphs/PCA/ov5640/new_pca_ov5640_HSV.png "HSV PCA ScatterPlot for High Res Images")
+OV5640 PCA YcBcR Scatterplot | ![YcBcR PCA ScatterPlot for High Res Images](Graphs/PCA/ov5640/new_pca_ov5640_YCbCr.png "HSV PCA ScatterPlot for High Res Images")
 
 
 ### Final Comments
