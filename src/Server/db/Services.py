@@ -149,7 +149,7 @@ class DeviceService(Service):
         return device
 
 
-class ReadingService:
+class ReadingService(Service):
     @staticmethod
     def get_all() -> List[ReadingEntity]:
         query_string = "SELECT * FROM Readings;"
@@ -286,10 +286,10 @@ class ReadingService:
         return reading
 
 
-class StatusService:
+class StatusService(Service):
     @staticmethod
     def get_all() -> List[SensorEntity]:
-        query_string = "SELECT * FROM Status WHERE MAC=%s LIMIT;"
+        query_string = "SELECT * FROM Status;"
         statuses = []
 
         try:
@@ -399,3 +399,30 @@ class StatusService:
 
         return stats
 
+class LocationService(Service):
+    @staticmethod
+    def get_all() -> List[LocationEntity]:
+        query_string = "SELECT * FROM Locations;"
+        locs = []
+
+        try:
+            cursor = Manager.get_conn().cursor(dictionary=True)
+            cursor.execute(query_string)
+
+            for row in cursor.fetchall():
+                location = LocationEntity(
+                    row["country"],
+                    row["region"],
+                    row["city"],
+                    row["latitude"],
+                    row["longitude"]
+                )
+                locs.append(location)
+
+        except mysql.Error as e:
+            debug(f"Couldn't fetch location records list -> {e}")
+
+        finally:
+            if cursor: cursor.close()
+
+        return locs

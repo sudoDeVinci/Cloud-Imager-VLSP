@@ -52,6 +52,18 @@ def apply(mydb:mysql.MySQLConnection):
         );
     """)
 
+    myCursor.execute("""
+        CREATE TABLE IF NOT EXISTS Locations(
+            country VARCHAR(30),
+            region VARCHAR(30),
+            city VARCHAR(30),
+            latitude FLOAT(10) NOT NULL,
+            longitude FLOAT(10) NOT NULL,
+            PRIMARY KEY (latitude, longitude)
+        );
+
+    """)
+
 
     # Commit
     mydb.commit()

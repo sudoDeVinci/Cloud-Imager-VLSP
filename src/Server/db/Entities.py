@@ -7,6 +7,9 @@ class Entity(ABC):
     __MAC:str
     __timestamp:str
 
+    def __init__(self):
+        pass
+
     def __init__(self, mac:str, stamp:str):
         self.__MAC = mac
         self.__timestamp = stamp
@@ -141,3 +144,35 @@ class SensorEntity(Entity):
     
     def allUp(self) -> bool:
         return (self.__sht and self.__bmp and self.__cam)
+
+class LocationEntity():
+    """
+    Row of data in the locations table.
+    """
+    __country:str
+    __region:str
+    __city:str
+    __latitude:float
+    __longitude:float
+
+    def __init__(self, country:str, region:str, city:str, lat:float, lon:float):
+        self.__country = country
+        self.__region = region
+        self.__city = city
+        self.__latitude = lat
+        self.__longitude = lon
+
+    def get_country(self) -> str:
+        return self.__country
+
+    def get_region(self) -> str:
+        return self.__region
+
+    def get_city(self) -> str:
+        return self.__city
+
+    def get_latitude(self) -> float:
+        return self.__latitude
+
+    def get_longitude(self) -> float:
+        return self.__longitude
