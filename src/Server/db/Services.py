@@ -186,7 +186,9 @@ class ReadingService(Service):
 
         try:
             cursor = Manager.get_conn().cursor(dictionary=True)
-            cursor.execute(query_string)
+            cursor.execute(
+                query_string, (timestamp, MAC)
+            )
 
             row = cursor.fetchone()
             if row:
@@ -316,13 +318,13 @@ class StatusService(Service):
         return status
 
     @staticmethod
-    def get(MAC:str, timetsamp:str) -> SensorEntity | None:
+    def get(MAC:str) -> SensorEntity | None:
         query_string = "SELECT * FROM Status WHERE MAC=%s LIMIT 1;"
         status = None
 
         try:
             cursor = Manager.get_conn().cursor(dictionary=True)
-            cursor.execute(query_string)
+            cursor.execute(query_string, (MAC, ))
 
             row = cursor.fetchone()
             if row:
@@ -399,6 +401,7 @@ class StatusService(Service):
 
         return stats
 
+
 class LocationService(Service):
     @staticmethod
     def get_all() -> List[LocationEntity]:
@@ -426,3 +429,119 @@ class LocationService(Service):
             if cursor: cursor.close()
 
         return locs
+
+    def get(latitude:float, longitude:float) -> LocationEntity:
+        query_string = "SELECT * FROM Locations WHERE latitude=%s AND longitude=%s LIMIT 1;"
+        location = None
+
+        try:
+            cursor = Manager.get_conn().cursor(dictionary=True)
+            cursor.execute(
+                query_string, (latitude, longitude)
+            )
+
+            row = cursor.fetchone()
+            if row:
+                location = LocationEntity(
+                    row["country"],
+                    row["region"],
+                    row["city"],
+                    latitude,
+                    longitude
+                )
+
+        except mysql.Error as e:
+            debug(f"Couldn't fetch location records list -> {e}")
+
+        finally:
+            if cursor: cursor.close()
+
+        return location
+    
+    def get_city(city:str) -> List[LocationEntity]:
+        query_string = "SELECT * FROM Locations WHERE city=%s;"
+        location = None
+        locs = []
+
+        try:
+            cursor = Manager.get_conn().cursor(dictionary=True)
+            cursor.execute(
+                query_string, (city, )
+            )
+
+            for row in cursor.fetchall():
+                location = LocationEntity(
+                    row["country"],
+                    row["region"],
+                    city,
+                    row["latitude"],
+                    row["longitude"]
+                )
+                locs.append(location)
+
+        except mysql.Error as e:
+            debug(f"Couldn't fetch city location records list -> {e}")
+
+        finally:
+            if cursor: cursor.close()
+
+        return locs
+        
+    def get_region(region:str) -> List[LocationEntity]:
+        query_string = "SELECT * FROM Locations WHERE region=%s;"
+        location = None
+        locs = []
+
+        try:
+            cursor = Manager.get_conn().cursor(dictionary=True)
+            cursor.execute(
+                query_string, (region, )
+            )
+
+            for row in cursor.fetchall():
+                location = LocationEntity(
+                    row["country"],
+                    region,
+                    row["city"],
+                    row["latitude"],
+                    row["longitude"]
+                )
+                locs.append(location)
+
+        except mysql.Error as e:
+            debug(f"Couldn't fetch region location records list -> {e}")
+
+        finally:
+            if cursor: cursor.close()
+
+        return locs
+
+    def get_country(country:str) -> List[LocationEntity]:
+        query_string = "SELECT * FROM Locations WHERE country=%s;"
+        location = None
+        locs = []
+
+        try:
+            cursor = Manager.get_conn().cursor(dictionary=True)
+            cursor.execute(
+                query_string, (country, )
+            )
+
+            for row in cursor.fetchall():
+                location = LocationEntity(
+                    country,
+                    row["region"],
+                    row["city"],
+                    row["latitude"],
+                    row["longitude"]
+                )
+                locs.append(location)
+
+        except mysql.Error as e:
+            debug(f"Couldn't fetch country location records list -> {e}")
+
+        finally:
+            if cursor: cursor.close()
+
+        return locs
+    

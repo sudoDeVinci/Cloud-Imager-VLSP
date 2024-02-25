@@ -61,7 +61,6 @@ def apply(mydb:mysql.MySQLConnection):
             longitude FLOAT(10) NOT NULL,
             PRIMARY KEY (latitude, longitude)
         );
-
     """)
 
 

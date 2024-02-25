@@ -1,8 +1,7 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-
-
 def get_QNH_hpa(location:str) -> int:
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
 
@@ -27,3 +26,4 @@ def get_QNH_hpa(location:str) -> int:
     browser.close()
 
     return out[0]
+
