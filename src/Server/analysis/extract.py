@@ -17,6 +17,9 @@ def get_tags(colour_index:int) -> list[list[str, str, str], str]:
         case 2:
             components = ['brightness','Chroma Blue','Chroma Red']
             colour_tag = 'YCbCr'
+        case 3:
+            components = ['','','']
+            colour_tag = 'cymk'
         case _:
             components = None
             colour_tag = None
