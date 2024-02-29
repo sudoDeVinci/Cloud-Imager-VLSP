@@ -99,6 +99,10 @@ def __write_calibration_data(cam_model:camera_model, cameraMatrix:Matlike, dist:
 
 
 def undistort(img:Matlike, cameraMatrix:Matlike, dist:Matlike, remapping:bool = True, cropping:bool = True) -> Matlike:
+    """
+    Undistort an image using the distortion matrix and distance vectors.
+    Can specify whether to remap or crop the image. Returns the undistorted image.
+    """
     h, w = img.shape[:2]
     newCameraMatrix, roi = cv2.getOptimalNewCameraMatrix(cameraMatrix, dist, (w,h), 1, (w,h))
 

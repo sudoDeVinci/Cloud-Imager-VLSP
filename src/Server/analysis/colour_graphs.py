@@ -3,7 +3,7 @@ from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
 from config import *
 from extract import centered_images, raw_images, get_tags
-
+from scipy import stats
 
 
 sub_graph_dir = f"hist/{camera}"
@@ -17,6 +17,16 @@ def __count(xyz_sk: NDArray) -> NDArray:
     unique, counts = np.unique(xyz_sk, return_counts=True)
     freq = np.asarray((unique, counts)).T
     return freq
+
+
+def remove_outliers_z_score(data: NDArray, threshold: float = 3.0) -> NDArray:
+    """
+    Remove outliers from data using the Z-score method.
+    Data points with a Z-score greater than the threshold will be considered as outliers.
+    """
+    z_scores = np.abs(stats.zscore(data))
+    return data[(z_scores < threshold).all(axis=1)]
+
 
 def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     """
@@ -36,9 +46,14 @@ def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     #debug(colour_tag)
 
     # Process images
-    data_sky = raw_images(sky_folder, colour_index)
-    data_cloud = raw_images(cloud_folder, colour_index)
+    sky = raw_images(sky_folder, colour_index)
+    cloud = raw_images(cloud_folder, colour_index)
 
+    # Approximate to normal and remove outliers via z-score using p = 3.0.
+    data_cloud = remove_outliers_z_score(cloud)
+    data_sky = remove_outliers_z_score(sky)
+
+    del cloud, sky
     
     x_cloud_freq = __count(np.array(data_cloud[:, 0]))
     y_cloud_freq = __count(np.array(data_cloud[:, 1]))
@@ -105,7 +120,7 @@ def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour
 
     #print(f"> There are: \n └  {sum(cloudBlues)} cloud datapoints\n └  {sum(skyBlues)} sky datapoints")
 
-    debug(f"\n> Creating {colour_tag} Bar Histogram ...")
+    debug(f"\n> Creating {colour_tag} Histogram ...")
     fig,axes1 = plt.subplots(nrows = 3, ncols = 1)
     axes1 = axes1.flatten()
 

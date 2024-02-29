@@ -11,6 +11,10 @@ import tomllib as toml
 
 # Camera model for current visualization
 class camera_model(Enum):
+    """
+    Enum holding the various camera modules information.
+    To be expanded later to hold dict of info.
+    """
     OV2640 = "ov2640"
     OV5640 = "ov5640"
     DSLR = "dslr"
@@ -30,10 +34,8 @@ def mkdir(folder:str) -> str:
     return folder
 
 
-
 # Database related folders
 db_schema_folder = mkdir('schemas')
-
 
 
 # Various Image folders
@@ -45,7 +47,6 @@ sky_images_folder = mkdir(f"{root_image_folder}/sky_{camera}")
 root_graph_folder = mkdir('Graphs')
 
 
-
 # Calibration image paths and settings  
 calibration_folder = "calibration"
 calibration_images = mkdir(f"{calibration_folder}/images")
@@ -53,7 +54,6 @@ camera_matrices = mkdir(f"{calibration_folder}/matrices")
 undistorted_calibration_images = mkdir(f"{calibration_folder}/undistorted")
 distorted_calibration_images = mkdir(f"{calibration_folder}/distorted")
 calibration_config = "calibration_cfg.toml"
-
 
 
 # If debug is True, print. Otherwise, do nothing.

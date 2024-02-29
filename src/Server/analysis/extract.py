@@ -33,7 +33,7 @@ def __process_RGB(image: NDArray) -> NDArray:
     Extract the non-black pixels from a colour-masked image in RGB format.
     """
     red, green, blue = image[:,:,0], image[:,:,1], image[:,:,2]
-    non_black_indices = np.where((0 < red) & (red < 255) & (0 < green) & (green < 255) & (0 < blue) & (blue < 255))
+    non_black_indices = np.where((0 < red) & (0 < green) & (0 < blue))
     non_black_data = np.column_stack((red[non_black_indices], green[non_black_indices], blue[non_black_indices]))
     return non_black_data
 
@@ -42,7 +42,7 @@ def __process_HSV(image: NDArray) -> NDArray:
     Extract the non-black pixels from a colour-masked image in HSV format.
     """
     h, s, v = image[:,:,0], image[:,:,1], image[:,:,2]
-    non_black_indices = np.where((0 < v) & (v < 250))
+    non_black_indices = np.where((0 < v) & (0 < s) & (0 < h))
     non_black_data = np.column_stack((h[non_black_indices], s[non_black_indices], v[non_black_indices]))
     return non_black_data
 
@@ -154,4 +154,3 @@ def get_func(colour_index: int) -> Callable[[NDArray], NDArray]:
             case _:
                 return __process_RGB
             
-    
