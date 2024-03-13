@@ -1,7 +1,7 @@
 from config import *
 
 
-index = 0
+index = 10
 size = (400, 300)
 images = os.listdir(reference_images_folder)
 img = cv2.imread(os.path.join(reference_images_folder, images[index]))

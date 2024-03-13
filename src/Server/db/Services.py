@@ -404,6 +404,91 @@ class StatusService(Service):
 
 class LocationService(Service):
     @staticmethod
+    def country_exists(region:str) -> bool:
+        query_string = "SELECT * FROM Locations WHERE country=%s;"
+        location = None
+
+        try:
+            cursor = Manager.get_conn().cursor(dictionary=True)
+            cursor.execute(
+                query_string, (region, )
+            )
+
+            location = cursor.fetchone() is not None
+
+        except mysql.Error as e:
+            debug(f"Couldn't fetch country location records list -> {e}")
+
+        finally:
+            if cursor: cursor.close()
+
+        return location
+
+    @staticmethod
+    def region_exists(region:str) -> bool:
+        query_string = "SELECT * FROM Locations WHERE region=%s;"
+        location = None
+
+        try:
+            cursor = Manager.get_conn().cursor(dictionary=True)
+            cursor.execute(
+                query_string, (region, )
+            )
+
+            location = cursor.fetchone() is not None
+
+        except mysql.Error as e:
+            debug(f"Couldn't fetch region location records list -> {e}")
+
+        finally:
+            if cursor: cursor.close()
+
+        return location
+
+
+    @staticmethod
+    def city_exists(city:str) -> bool:
+        query_string = "SELECT * FROM Locations WHERE city=%s;"
+        location = None
+
+        try:
+            cursor = Manager.get_conn().cursor(dictionary=True)
+            cursor.execute(
+                query_string, (city, )
+            )
+
+            location = cursor.fetchone() is not None
+
+        except mysql.Error as e:
+            debug(f"Couldn't fetch city location records list -> {e}")
+
+        finally:
+            if cursor: cursor.close()
+
+        return location
+
+    @staticmethod
+    def exists(latitude:float, longitude:float) -> bool:
+        query_string = "SELECT * FROM Locations WHERE latitude=%s AND longitude=%s LIMIT 1;"
+        location = None
+        try:
+            cursor = Manager.get_conn().cursor(dictionary=True)
+            cursor.execute(
+                query_string, (latitude, longitude)
+            )
+
+            row = cursor.fetchone() is not None
+        
+        except mysql.Error as e:
+            debug(f"Couldn't fetch location records list -> {e}")
+
+        finally:
+            if cursor: cursor.close()
+
+        return location
+        
+
+    @staticmethod
     def get_all() -> List[LocationEntity]:
         query_string = "SELECT * FROM Locations;"
         locs = []

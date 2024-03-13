@@ -15,32 +15,13 @@ def pad_array(padding:int, arr:List[str]):
     new_arr = ["0"]*padding
     for item in arr: new_arr.append(item)
 
-
 def load_config() -> dict[str, str]:
     """
     Attempt to load the database config file.
     """
-    toml_data = None
-
-    try:
-        with open(FIRMWARE_CONF, 'r') as file:
-            toml_data = toml.load(file)
-            if not toml_data: 
-                debug("Couldn't open the file!")
-                return None
-    except FileNotFoundError:
-        debug(f"Error: File '{FIRMWARE_CONF}' not found.")
-        return None
-    except toml.TomlDecodeError as e:
-        debug(f"Error decoding TOML file: {e}")
-        return None
-
-    conf = toml_data.get('firmware', {})
-    out:dict[str, str] = {'path': conf.get('path'),
-            'version': conf.get('version'),
-            'sha256': conf.get('sha256')}
+    data = load_toml(FIRMWARE_CONF)
+    out = data.get('firmware')
     return out
-
 
 def need_update(board_version:str) -> bool:
     conf_dict = load_config()
@@ -49,12 +30,12 @@ def need_update(board_version:str) -> bool:
     board_version = board_version.split(".")
     if (firmware_version is None) or (board_version is None):
         debug("NONETYPE HERE")
-    booolean = greater(firmware_version, board_version)
+    booolean = __greater(firmware_version, board_version)
     if booolean: debug("Update needed!")
     return booolean
 
 
-def greater(outgoing:List[str], incoming:List[str]) -> bool:
+def __greater(outgoing:List[str], incoming:List[str]) -> bool:
     diff:int = len(incoming) - len(outgoing)
     if diff > 0: outgoing = pad_array(diff, outgoing)
     elif diff < 0: incoming = pad_array(0-diff, incoming)

@@ -1,4 +1,7 @@
 def get_QNH_hpa(location:str) -> int:
+    """
+    Get the sea level pressure for a given location in Kronobergs Lan.
+    """
     from selenium import webdriver
     from selenium.webdriver.common.by import By
 
@@ -26,4 +29,3 @@ def get_QNH_hpa(location:str) -> int:
     browser.close()
 
     return out[0]
-

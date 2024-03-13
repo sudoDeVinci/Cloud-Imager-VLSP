@@ -78,14 +78,14 @@ def write_toml(data:dict, path:str) -> None:
 def load_toml(file_path:str) -> dict | None:
     toml_data = None
     try:
-        with open(file_path, 'r') as file:
+        with open(file_path, 'rb') as file:
             toml_data = toml.load(file)
             if not toml_data: return None
     except FileNotFoundError:
-        debug(f"Error: File '{file_path}' not found.")
+        print(f"Error: File '{file_path}' not found.")
         return None
-    except toml.TomlDecodeError as e:
-        debug(f"Error decoding TOML file: {e}")
+    except toml.TOMLDecodeError as e:
+        print(f"Error decoding TOML file: {e}")
         return None
 
     return toml_data
