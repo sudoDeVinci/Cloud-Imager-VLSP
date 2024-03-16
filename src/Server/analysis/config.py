@@ -9,15 +9,17 @@ from typing import List, Sequence, Tuple
 import tomllib as toml
 
 
-# Camera model for current visualization
+
 class camera_model(Enum):
     """
     Enum holding the various camera modules information.
-    To be expanded later to hold dict of info.
+    To be expanded later.
     """
     OV2640 = "ov2640"
     OV5640 = "ov5640"
     DSLR = "dslr"
+
+# Camera model for current visualization
 camera:str = camera_model['OV5640'].value
 
 
@@ -30,6 +32,9 @@ NDArray = numpy.typing.NDArray[any]
 
 # Ensure path exists then return it.
 def mkdir(folder:str) -> str:
+    """
+    Ensure a directory exists and return path to it.
+    """
     if not os.path.exists(folder): os.makedirs(folder)
     return folder
 
@@ -68,6 +73,9 @@ debug = out01 if DEBUG else out02
 # Functions for reading and writing from toml files.
 # Most/all of the config files use toml format for simplicity.
 def write_toml(data:dict, path:str) -> None:
+    """
+    Write to a toml file.
+    """
     try:
         with open(path, "w") as f:
             toml.dump(data, f)
@@ -75,7 +83,10 @@ def write_toml(data:dict, path:str) -> None:
         debug(f"Error writing to TOML file: {e}")
 
 
-def load_toml(file_path:str) -> dict | None:
+def load_toml(file_path:str) -> dict:
+    """ 
+    Attempt to load a toml file as a dictionary.
+    """
     toml_data = None
     try:
         with open(file_path, 'rb') as file:
@@ -91,12 +102,11 @@ def load_toml(file_path:str) -> dict | None:
     return toml_data
 
 
-# Load a pickled resource
 def __load_pkl_resource(folder:str, name:str) -> Mat:
-    import pickle
     """
     Attempt to load pickled resource <name> from <folder>.
     """
+    import pickle
     try:
         with open(f"{folder}/{name}", "rb" ) as file:
             out = pickle.load(file)

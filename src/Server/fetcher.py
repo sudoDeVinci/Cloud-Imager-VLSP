@@ -29,3 +29,7 @@ def get_QNH_hpa(location:str) -> int:
     browser.close()
 
     return out[0]
+
+if __name__ == "__main__":
+    # Example: Getting vaxjo weather.
+    get_QNH_hpa("vaxjo")

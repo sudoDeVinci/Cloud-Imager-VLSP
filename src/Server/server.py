@@ -29,21 +29,21 @@ def system_info():
 
 @app.route('/trucks.mp3')
 def trucks():
-    ROOT = os.getcwd() + "\\src\\Server"
-    response = make_response(send_file(ROOT + "\\" + "templates" + "\\"+ "trucks.mp3", mimetype='audio/mpeg'), 200)
+    ROOT = os.getcwd() + "/src/Server"
+    response = make_response(send_file(ROOT + "/" + "templates" + "/"+ "trucks.mp3", mimetype='audio/mpeg'), 200)
     return response
 
 @app.route('/fazbear.gif')
 def faz():
-    ROOT = os.getcwd() + "\\src\\Server"
-    response = make_response(send_file(ROOT + "\\" + "templates" + "\\"+ "fazbear.gif", mimetype='image/gif'), 200)
+    ROOT = os.getcwd() + "/src/Server"
+    response = make_response(send_file(ROOT + "/" + "templates" + "/"+ "fazbear.gif", mimetype='image/gif'), 200)
     return response
 
 
 @app.route('/favicon.ico')
 def favicon():
-    ROOT = os.getcwd() + "\\src\\Server"
-    response = make_response(send_file(ROOT + "\\" + "templates" + "\\"+ "favicon.ico", mimetype='image/vnd.microsoft.icon'), 200)
+    ROOT = os.getcwd() + "/src/Server"
+    response = make_response(send_file(ROOT + "/" + "templates" + "/"+ "favicon.ico", mimetype='image/vnd.microsoft.icon'), 200)
     return response
 
 
@@ -229,7 +229,7 @@ def images() -> Response:
 
 
 if __name__ == '__main__':
-    ROOT = os.getcwd() + "\\src\\Server"
+    ROOT = os.getcwd() + "/src/Server"
     try:
         Manager.connect(drop_schema = False)
         debug(f"Top most dir: {ROOT}")
@@ -239,4 +239,4 @@ if __name__ == '__main__':
     except Exception as e:
         debug(e)
     
-    app.run(host='0.0.0.0', port=8080, debug=True, ssl_context = 'adhoc')
+    app.run(host='0.0.0.0', port=8080, debug=True)

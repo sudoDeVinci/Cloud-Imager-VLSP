@@ -1,17 +1,19 @@
-from flask import Flask, request, jsonify, Response, send_file
-from typing import List
-import os
-from analysis.config import debug
+from analysis.config import *
 from db.Services import *
-import toml
 
 FIRMWARE_CONF:str = "firmware_cfg.toml"
 
 
 def mac_filter(mac:str) -> bool:
+    """
+    Return True if the mac address does not exists in db.
+    """
     return not DeviceService.exists(mac)
 
 def pad_array(padding:int, arr:List[str]):
+    """
+    Pad an array of integers with 0s.
+    """
     new_arr = ["0"]*padding
     for item in arr: new_arr.append(item)
 
@@ -19,11 +21,12 @@ def load_config() -> dict[str, str]:
     """
     Attempt to load the database config file.
     """
-    data = load_toml(FIRMWARE_CONF)
-    out = data.get('firmware')
-    return out
+    return load_toml(FIRMWARE_CONF)
 
 def need_update(board_version:str) -> bool:
+    """
+    Return True if the firmware version needs to be updated.
+    """
     conf_dict = load_config()
     firmware_version = conf_dict['version'] 
     firmware_version = firmware_version.split(".")
@@ -36,6 +39,9 @@ def need_update(board_version:str) -> bool:
 
 
 def __greater(outgoing:List[str], incoming:List[str]) -> bool:
+    """
+    Compare one array of integers to another.
+    """
     diff:int = len(incoming) - len(outgoing)
     if diff > 0: outgoing = pad_array(diff, outgoing)
     elif diff < 0: incoming = pad_array(0-diff, incoming)
@@ -46,6 +52,9 @@ def __greater(outgoing:List[str], incoming:List[str]) -> bool:
     return False
 
 def timestamp_to_path(timestamp:str) -> str:
+    """
+    Convert a timestamp to format usable for path.
+    """
     timestamp = timestamp.replace(" ", "-")
     timestamp = timestamp.replace(":", "-")
     return timestamp
