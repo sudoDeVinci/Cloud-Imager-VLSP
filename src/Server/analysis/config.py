@@ -5,7 +5,7 @@ import numpy.typing
 from gc import collect
 from datetime import datetime
 from enum import Enum
-from typing import List, Sequence, Tuple
+from typing import List, Sequence, Tuple, Dict
 import tomllib as toml
 
 
@@ -24,9 +24,9 @@ camera:str = camera_model['OV5640'].value
 
 
 # For typing, these are inexact because out memory layout differences such as between Mat and UMat
-Mat = numpy.typing.NDArray[np.uint8]
-Matlike = cv2.typing.MatLike
-NDArray = numpy.typing.NDArray[any]
+type Mat = numpy.typing.NDArray[np.uint8]
+type Matlike = cv2.typing.MatLike
+type NDArray = numpy.typing.NDArray[any]
 
 
 
@@ -72,7 +72,7 @@ debug = out01 if DEBUG else out02
 
 # Functions for reading and writing from toml files.
 # Most/all of the config files use toml format for simplicity.
-def write_toml(data:dict, path:str) -> None:
+def write_toml(data:Dict, path:str) -> None:
     """
     Write to a toml file.
     """
@@ -83,7 +83,7 @@ def write_toml(data:dict, path:str) -> None:
         debug(f"Error writing to TOML file: {e}")
 
 
-def load_toml(file_path:str) -> dict:
+def load_toml(file_path:str) -> Dict:
     """ 
     Attempt to load a toml file as a dictionary.
     """

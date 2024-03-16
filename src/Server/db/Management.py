@@ -1,4 +1,4 @@
-from analysis.config import debug
+from analysis.config import *
 import mysql.connector as mysql
 from db.schema import apply
 import toml
@@ -57,7 +57,7 @@ class Manager:
 
     
     @staticmethod
-    def __load(file_path:str) -> dict | None:
+    def __load(file_path:str) -> Dict | None:
         """
         Attempt to load the database config file.
         """

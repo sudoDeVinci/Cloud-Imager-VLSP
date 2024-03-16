@@ -8,13 +8,13 @@ https://github.com/jeongwhanchoi/find-chessboard-corners/blob/master/calibrating
 
 """
 
-def __validate_config_dict(confdict: dict) -> bool:
+def __validate_config_dict(confdict: Dict) -> bool:
     required_keys = {
         "chessboard": ["vertical", "horizontal", "sqmm"],
         "frame": ["width", "height"]
     }
     
-    if confdict is None or not isinstance(confdict, dict):
+    if confdict is None or not isinstance(confdict, Dict):
         return False
     
     for key, subkeys in required_keys.items():
@@ -28,7 +28,7 @@ def __validate_config_dict(confdict: dict) -> bool:
 
     
 
-def __load_config() -> dict:
+def __load_config() -> Dict:
     """
     Attempt to load the calibration config
     """
@@ -41,7 +41,7 @@ def __calibrate() -> Tuple[Matlike, Matlike, Sequence[Matlike], Sequence[Matlike
     Return camera matrix data.
     """
 
-    confdict:dict = __load_config(calibration_config)
+    confdict:Dict = __load_config(calibration_config)
 
     board_conf = confdict["chessboard"]
     frame_conf = confdict["frame"]

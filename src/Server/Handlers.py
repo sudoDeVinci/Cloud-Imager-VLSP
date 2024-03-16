@@ -17,7 +17,7 @@ def pad_array(padding:int, arr:List[str]):
     new_arr = ["0"]*padding
     for item in arr: new_arr.append(item)
 
-def load_config() -> dict[str, str]:
+def load_config() -> Dict[str, str]:
     """
     Attempt to load the database config file.
     """
