@@ -55,34 +55,6 @@ def __process_YBR(image: NDArray) -> NDArray:
     non_black_data = np.column_stack((Y[non_black_indices], b[non_black_indices], r[non_black_indices]))
     return non_black_data
 
-def centered_images(folder_path:str, colour_index: int = 0) -> NDArray:
-    """
-    Iterate through the binary images of either cloud or sky. Filter through them after converting them to specified colour format via colour_index.
-    default or 0: RGB, 1: HSV, 2: YCbCr
-    Return the image data centered around the mean of the non-black data.
-    """
-    data = []
-    for filename in os.listdir(folder_path):
-        if (not filename.endswith(".png")):
-            continue
-    
-        im = Image.open(os.path.join(folder_path, filename))
-        tag = get_tags(colour_index)[1]
-
-        __process = get_func(colour_index)
-
-        if tag != 'RGB':
-            im = im.convert(tag)
-        im = np.array(im)
-        non_black_data = __process(im)
-
-        
-        # Mean-centering
-        non_black_data = non_black_data - np.mean(non_black_data, axis=0)
-        
-        data.append(non_black_data)
-    return np.vstack(data)
-
 def raw_images(folder_path:str, colour_index: int = 0) -> NDArray:
     """
     Iterate through the binary images of either cloud or sky. Filter through them after converting them to specified colour format via colour_index.
@@ -108,27 +80,6 @@ def raw_images(folder_path:str, colour_index: int = 0) -> NDArray:
         data.append(non_black_data)
         
     return np.vstack(data)
-
-def raw_largest_separations(folder_path:str) -> None:
-    """
-    Args:
-        folder_path (str): _description_
-    """
-    data = []
-    for filename in os.listdir(folder_path):
-        if (not filename.endswith(".png")):
-            continue
-    
-        im = Image.open(os.path.join(folder_path, filename))
-
-        non_black_data = __process_RGB(im)
-
-        im_hsv = im.convert('HSV')
-        non_black_data = __process_HSV(np.array(im_hsv))
-
-        im_ycb = im.convert('YCbCr')
-        image = np.array(im_ycb)
-        non_black_data = __process_YBR(image)
 
 
 def get_func(colour_index: int) -> Callable[[NDArray], NDArray]:

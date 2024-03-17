@@ -1,7 +1,7 @@
 from config import *
 
 
-index = 10
+index = 0
 size = (400, 300)
 images = os.listdir(reference_images_folder)
 img = cv2.imread(os.path.join(reference_images_folder, images[index]))
@@ -11,12 +11,14 @@ NEXT_KEY = ord('d')
 BACK_KEY = ord('a')
 STOP_KEY = ord('q')
 running = True
+# Taking a matrix of size 5 as the kernel 
+kernel = np.ones((5, 5), np.uint8) 
 
 
 def __nothing(x) -> None:   
     pass
 
-def __update_image(i:int) -> None:
+def __update_image() -> None:
     global index
     global img
     img = cv2.imread(os.path.join(reference_images_folder, images[index]))
@@ -24,11 +26,13 @@ def __update_image(i:int) -> None:
 
 def __next() -> None:
     global index
-    __update_image((index + 1 ) % len(images))
+    index = (index + 1 ) % len(images)
+    __update_image()
 
 def __back() -> None:
     global index
-    __update_image((index - 1 ) % len(images))
+    index = (index - 1 ) % len(images)
+    __update_image()
 
 
 cv2.namedWindow("Tracking")
@@ -55,9 +59,14 @@ while running:
     ycbMask = cv2.inRange(img_ycb, lb_cblue, ub_cblue)
 
     fullMask = cv2.bitwise_and(ycbMask, hsvMask)
+    fullMask_eroded = cv2.erode(fullMask, kernel, iterations = 2s)
+    fullMask_eroded = cv2.dilate(fullMask, kernel, iterations = 1)
 
     outimage = cv2.bitwise_and(img, img, mask=fullMask)
+    outimage_eroded = cv2.bitwise_and(img, img, mask=fullMask_eroded)
+
     cv2.imshow("Image State", outimage)
+    cv2.imshow("Cleaned Image State", outimage_eroded)
     cv2.imshow("YCrCb Mask", ycbMask)
     cv2.imshow("HSV Mask", hsvMask)
 

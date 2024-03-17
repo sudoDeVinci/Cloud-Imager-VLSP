@@ -8,21 +8,22 @@ https://github.com/jeongwhanchoi/find-chessboard-corners/blob/master/calibrating
 
 """
 
-def __validate_config_dict(confdict: Dict) -> bool:
+def __valid_config_dict(confdict: Dict) -> bool:
     required_keys = {
         "chessboard": ["vertical", "horizontal", "sqmm"],
         "frame": ["width", "height"]
     }
     
-    if confdict is None or not isinstance(confdict, Dict):
+    if confdict is None or not isinstance(confdict, dict):
         return False
     
     for key, subkeys in required_keys.items():
+        if confdict[key] is None:
+            return False
         if key not in confdict:
             return False
-        for subkey in subkeys:
-            if subkey not in confdict[key]:
-                return False
+        if not all(subkey in confdict[key] for subkey in subkeys):
+            return False
     
     return True
 
