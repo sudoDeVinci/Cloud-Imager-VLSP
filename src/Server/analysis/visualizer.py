@@ -1,85 +1,128 @@
 from config import *
+import cv2
 
+if __name__ == "__main__":
 
-index = 0
-size = (400, 300)
-images = os.listdir(reference_images_folder)
-img = cv2.imread(os.path.join(reference_images_folder, images[index]))
-img = cv2.resize(img,size)
+    def __update_image() -> None:
+        global index
+        global img
+        global img_hsv
+        global img_ycb
+        global contour_img
+        global contours
 
-NEXT_KEY = ord('d')
-BACK_KEY = ord('a')
-STOP_KEY = ord('q')
-running = True
-# Taking a matrix of size 5 as the kernel 
-kernel = np.ones((5, 5), np.uint8) 
+        img = cv2.imread(os.path.join(reference_images_folder, images[index]))
+        img = cv2.resize(img,size)
+        contour_img = img.copy()
+        img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        img_ycb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
+        contours = None
+        rectangle = None
 
-
-def __nothing(x) -> None:   
-    pass
-
-def __update_image() -> None:
-    global index
-    global img
-    img = cv2.imread(os.path.join(reference_images_folder, images[index]))
-    img = cv2.resize(img,size)
-
-def __next() -> None:
-    global index
-    index = (index + 1 ) % len(images)
+    index = 0
+    size = (600, 500)
+    images = os.listdir(reference_images_folder)
     __update_image()
 
-def __back() -> None:
-    global index
-    index = (index - 1 ) % len(images)
-    __update_image()
+    NEXT_KEY = ord('d')
+    BACK_KEY = ord('a')
+    STOP_KEY = ord('q')
+    running = True
+    # Taking a matrix of size 5 as the kernel 
+    kernel = np.ones((5, 5), np.uint8) 
 
 
-cv2.namedWindow("Tracking")
-cv2.createTrackbar("LS", "Tracking", 0, 255, __nothing)
-cv2.createTrackbar("HS", "Tracking", 0, 255, __nothing)
-cv2.createTrackbar("LCB", "Tracking", 0, 255, __nothing)
-cv2.createTrackbar("HCB", "Tracking", 0, 255, __nothing)
+    def __nothing(x) -> None:   
+        pass
+
+    def __next() -> None:
+        global index
+        index = (index + 1 ) % len(images)
+        __update_image()
+
+    def __back() -> None:
+        global index
+        index = (index - 1 ) % len(images)
+        __update_image()
 
 
-while running:
-    ls = cv2.getTrackbarPos("LS", "Tracking")
-    hs = cv2.getTrackbarPos("HS", "Tracking")
-    lcb = cv2.getTrackbarPos("LCB", "Tracking")
-    hcb = cv2.getTrackbarPos("HCB", "Tracking")
+    cv2.namedWindow("Tracking")
+    cv2.createTrackbar("LS", "Tracking", 0, 255, __nothing)
+    cv2.createTrackbar("HS", "Tracking", 0, 255, __nothing)
+    cv2.createTrackbar("LCB", "Tracking", 0, 255, __nothing)
+    cv2.createTrackbar("HCB", "Tracking", 0, 255, __nothing)
+    cv2.createTrackbar("Erosion", "Tracking", 1, 10, __nothing)
+    cv2.createTrackbar("Dilation", "Tracking", 1, 10, __nothing)
 
-    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    ub_sat = np.array([255, hs, 255])
-    lb_sat = np.array([0, ls, 0])
-    hsvMask = cv2.inRange(img_hsv, lb_sat, ub_sat)
-
-    img_ycb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
-    ub_cblue = np.array([255, 255, hcb])
-    lb_cblue = np.array([0, 0, lcb])
-    ycbMask = cv2.inRange(img_ycb, lb_cblue, ub_cblue)
-
-    fullMask = cv2.bitwise_and(ycbMask, hsvMask)
-    fullMask_eroded = cv2.erode(fullMask, kernel, iterations = 2s)
-    fullMask_eroded = cv2.dilate(fullMask, kernel, iterations = 1)
-
-    outimage = cv2.bitwise_and(img, img, mask=fullMask)
-    outimage_eroded = cv2.bitwise_and(img, img, mask=fullMask_eroded)
-
-    cv2.imshow("Image State", outimage)
-    cv2.imshow("Cleaned Image State", outimage_eroded)
-    cv2.imshow("YCrCb Mask", ycbMask)
-    cv2.imshow("HSV Mask", hsvMask)
-
-    key = cv2.waitKey(50)
-
-    if key == BACK_KEY:
-        __back()
-    
-    elif key == NEXT_KEY:
-        __next()
-
-    elif key == STOP_KEY:
-        running = False
+    cv2.setTrackbarPos("LS", "Tracking", 0)
+    cv2.setTrackbarPos("HS", "Tracking", 75)
+    cv2.setTrackbarPos("LCB", "Tracking", 125)
+    cv2.setTrackbarPos("HCB", "Tracking", 145)
+    cv2.setTrackbarPos("Erosion", "Tracking", 2)
+    cv2.setTrackbarPos("Dilation", "Tracking", 3)
 
 
-cv2.destroyAllWindows() 
+    while running:
+        ls = cv2.getTrackbarPos("LS", "Tracking")
+        hs = cv2.getTrackbarPos("HS", "Tracking")
+        lcb = cv2.getTrackbarPos("LCB", "Tracking")
+        hcb = cv2.getTrackbarPos("HCB", "Tracking")
+        erosion = cv2.getTrackbarPos("Erosion", "Tracking")
+        dilation = cv2.getTrackbarPos("Dilation", "Tracking")
+
+        ub_sat = np.array([255, hs, 255])
+        lb_sat = np.array([0, ls, 0])
+        hsvMask = cv2.inRange(img_hsv, lb_sat, ub_sat)
+        
+        ub_cblue = np.array([255, 255, hcb])
+        lb_cblue = np.array([0, 0, lcb])
+        ycbMask = cv2.inRange(img_ycb, lb_cblue, ub_cblue)
+
+        fullMask = cv2.bitwise_and(ycbMask, hsvMask)
+
+        fullMask_eroded = cv2.erode(fullMask, kernel, iterations = erosion)
+        fullMask_eroded = cv2.dilate(fullMask_eroded, kernel, iterations = dilation)
+
+        outimage = cv2.bitwise_and(img, img, mask=fullMask)
+        outimage_eroded = cv2.bitwise_and(img, img, mask=fullMask_eroded)
+
+        n_contours, hier = cv2.findContours(fullMask_eroded, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if contours is None or not bool(np.array_equal(a, b) for a,b in zip(contours, n_contours)):
+            inner = []
+            outer=[]
+            for i, con in enumerate(n_contours):
+                if hier[0,i,3] != -1: inner.append(con)
+                else: outer.append(con)
+            
+            contours = n_contours
+            contour_img = img.copy()
+
+            cv2.drawContours(contour_img, outer, -1, (0, 0, 255), 2)
+            cv2.drawContours(contour_img, inner, -1, (0, 255, 0), 2)
+            
+            rects = tuple(cv2.boundingRect(contour) for contour in outer)
+            for x,y,w,h in rects:
+                cv2.rectangle(contour_img, (x, y), (x + w - 1, y + h - 1), (0, 255, 255), 2)
+
+
+
+        cv2.imshow("Image State", outimage)
+        cv2.imshow("Cleaned Image State", outimage_eroded)
+        cv2.imshow("YCrCb Mask", ycbMask)
+        cv2.imshow("HSV Mask", hsvMask)
+        cv2.imshow("Countours", contour_img)
+
+        key = cv2.waitKey(50)
+
+        if key == BACK_KEY:
+            __back()
+        
+        elif key == NEXT_KEY:
+            __next()
+
+        elif key == STOP_KEY:
+            running = False
+
+
+    cv2.destroyAllWindows() 
