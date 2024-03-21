@@ -20,7 +20,7 @@ if __name__ == "__main__":
         rectangle = None
 
     index = 0
-    size = (600, 500)
+    size = (400, 300)
     images = os.listdir(reference_images_folder)
     __update_image()
 
@@ -104,7 +104,9 @@ if __name__ == "__main__":
             rects = tuple(cv2.boundingRect(contour) for contour in outer)
             for x,y,w,h in rects:
                 cv2.rectangle(contour_img, (x, y), (x + w - 1, y + h - 1), (0, 255, 255), 2)
-
+                (w, h), _ = cv2.getTextSize(" Cloud ", cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                cv2.rectangle(contour_img, (x, y + 20), (x + w, y), (0,255,255), -1)
+                cv2.putText(contour_img, "Cloud", (x, y+15), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0,0,0), 1)
 
 
         cv2.imshow("Image State", outimage)

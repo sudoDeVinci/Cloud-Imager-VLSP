@@ -1,13 +1,11 @@
 import matplotlib.pyplot as plt
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
-from config import *
-from extract import centered_images, raw_images, get_tags
-from scipy import stats
+from src.Server.analysis.config import *
+from src.Server.analysis.extract import raw_images, get_tags, remove_outliers_iqr
 
 
 sub_graph_dir = f"hist/{camera}"
-
 
 
 def __count(xyz_sk: NDArray) -> NDArray:
@@ -17,16 +15,6 @@ def __count(xyz_sk: NDArray) -> NDArray:
     unique, counts = np.unique(xyz_sk, return_counts=True)
     freq = np.asarray((unique, counts)).T
     return freq
-
-
-def remove_outliers_z_score(data: NDArray, threshold: float = 3.0) -> NDArray:
-    """
-    Remove outliers from data using the Z-score method.
-    Data points with a Z-score greater than the threshold will be considered as outliers.
-    """
-    z_scores = np.abs(stats.zscore(data))
-    return data[(z_scores < threshold).all(axis=1)]
-
 
 def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     """
@@ -50,8 +38,8 @@ def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     cloud = raw_images(cloud_folder, colour_index)
 
     # Approximate to normal and remove outliers via z-score using p = 3.0.
-    data_cloud = remove_outliers_z_score(cloud)
-    data_sky = remove_outliers_z_score(sky)
+    data_cloud = remove_outliers_iqr(cloud)
+    data_sky = remove_outliers_iqr(sky)
 
     del cloud, sky
     
@@ -73,35 +61,6 @@ def __plot(sky_folder:str, cloud_folder:str, colour_index: int) -> None:
     del x_cloud_freq, y_cloud_freq, z_cloud_freq
     del x_sky_freq, y_sky_freq, z_sky_freq
     collect()
-
-
-    # Process images
-    data_sky = centered_images(sky_folder, colour_index)
-    data_cloud = centered_images(cloud_folder, colour_index)
-
-    
-    x_cloud_freq = __count(np.array(data_cloud[:, 0]))
-    y_cloud_freq = __count(np.array(data_cloud[:, 1]))
-    z_cloud_freq = __count(np.array(data_cloud[:, 2]))
-
-    del data_cloud
-    
-    x_sky_freq = __count(np.array(data_sky[:, 0]))
-    y_sky_freq = __count(np.array(data_sky[:, 1]))
-    z_sky_freq = __count(np.array(data_sky[:, 2]))
-    
-    del data_sky
-    
-    debug(">> " + str(x_cloud_freq[0]))
-    
-    distributionBarGraphGenerator([x_cloud_freq, x_sky_freq], [y_cloud_freq, y_sky_freq], [z_cloud_freq, z_sky_freq], components, colour_tag, f"{root_graph_folder}/{sub_graph_dir}/new_hist_{camera}_{colour_tag}_centered.png")
-    del x_cloud_freq, y_cloud_freq, z_cloud_freq
-    del x_sky_freq, y_sky_freq, z_sky_freq
-    collect()
-
-
-
-
 
 def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour_tag: str, savepath:str) -> None:
     """
@@ -152,7 +111,6 @@ def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour
     plt.clf()
     collect()
     print(f" └ {colour_tag} Bar Graph created.")
-    
     
 def __main(colour_index: int) -> None:
     # PCA performed for RGB, HSV or YCbCr.

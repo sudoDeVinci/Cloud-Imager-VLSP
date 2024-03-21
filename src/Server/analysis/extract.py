@@ -1,6 +1,7 @@
 from PIL import Image
-from config import *
+from src.Server.analysis.config import *
 from typing import Callable
+from scipy import stats
 
 def get_tags(colour_index:int) -> list[list[str, str, str], str]:
     """
@@ -55,6 +56,14 @@ def __process_YBR(image: NDArray) -> NDArray:
     non_black_data = np.column_stack((Y[non_black_indices], b[non_black_indices], r[non_black_indices]))
     return non_black_data
 
+def __count(xyz_sk: NDArray) -> NDArray:
+    """
+    Return a frequency table of the integers in an input array
+    """
+    unique, counts = np.unique(xyz_sk, return_counts=True)
+    freq = np.asarray((unique, counts)).T
+    return freq
+
 def raw_images(folder_path:str, colour_index: int = 0) -> NDArray:
     """
     Iterate through the binary images of either cloud or sky. Filter through them after converting them to specified colour format via colour_index.
@@ -81,7 +90,6 @@ def raw_images(folder_path:str, colour_index: int = 0) -> NDArray:
         
     return np.vstack(data)
 
-
 def get_func(colour_index: int) -> Callable[[NDArray], NDArray]:
     """_summary_
 
@@ -105,3 +113,41 @@ def get_func(colour_index: int) -> Callable[[NDArray], NDArray]:
             case _:
                 return __process_RGB
             
+def remove_outliers_iqr(data: NDArray) -> NDArray:
+    """
+    Remove outliers from data using IQR.
+    Data points that fall below Q1 - 1.5 IQR or above the third quartile Q3 + 1.5 IQR are outliers.
+    """
+    Q1 = np.percentile(data, 25)
+    Q3 = np.percentile(data, 75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    return data[(data >= lower_bound) & (data <= upper_bound)]
+
+def remove_outliers_z_score(data: NDArray, threshold: float = 3.0) -> NDArray:
+    """
+    Remove outliers from data using the Z-score method.
+    Data points with a Z-score greater than the threshold will be considered as outliers.
+    """
+    z_scores = np.abs(stats.zscore(data))
+    return data[(z_scores < threshold).all(axis=1)]
+
+def __check_distribution(data: NDArray, label:str):
+    distributions = {
+        "Normal": {"func": stats.norm, "params": stats.norm.fit(data)},
+        "Beta": {"func": stats.beta, "params": stats.beta.fit(data)},
+        "Chi-Squared": {"func": stats.chi2, "params": stats.chi2.fit(data)}
+    }
+
+    results = {}
+    for dist_name, dist in distributions.items():
+        _, p_value = stats.kstest(data, dist["func"].name, args=dist["params"])
+        results[dist_name] = p_value
+
+    # Print the results
+    print(f"Distribution Test Results - {label}")
+    for dist_name, p_value in results.items():
+        print(f"{dist_name}: p-value = {p_value:.4f}")
+
+    return results

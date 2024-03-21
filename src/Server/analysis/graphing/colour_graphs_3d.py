@@ -1,10 +1,8 @@
 import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor
-
-from config import *
-from extract import raw_images, get_tags
+from src.Server.analysis.config import *
+from src.Server.analysis.extract import raw_images, get_tags
 
 
 
