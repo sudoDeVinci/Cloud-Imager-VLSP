@@ -3,10 +3,11 @@ import cv2
 import numpy as np
 import numpy.typing
 from gc import collect
+import functools
 from datetime import datetime
 from enum import Enum
 from typing import List, Sequence, Tuple, Dict
-import tomllib as toml
+import toml
 
 
 
@@ -18,13 +19,33 @@ class camera_model(Enum):
     OV2640 = "ov2640"
     OV5640 = "ov5640"
     DSLR = "dslr"
+    UNKNOWN = "unknown"
+
+
+    @classmethod
+    @functools.lru_cache(maxsize=None)
+    def match(cls, camera:str):
+        """
+        Match input string to camera model.
+        """
+        camera = camera.lower()
+        return camera_model[camera] if camera in cls.__members__.items() else cls.UNKNOWN
+
+
+    @classmethod
+    @functools.lru_cache(maxsize=None)
+    def __contains__(cls, camera:str) -> bool:
+        """
+        Check if a camera model is supported.
+        """
+        return camera.lower() in cls.__members__.values()
 
 # Camera model for current visualization
 camera:str = camera_model['OV5640'].value
 
 
 # For typing, these are inexact because out memory layout differences such as between Mat and UMat
-type Mat = numpy.typing.NDArray[np.uint8]
+type Mat = cv2.Mat
 type Matlike = cv2.typing.MatLike
 type NDArray = numpy.typing.NDArray[any]
 
@@ -38,6 +59,8 @@ def mkdir(folder:str) -> str:
     if not os.path.exists(folder): os.makedirs(folder)
     return folder
 
+ROOT = f"{os.getcwd()}/src"
+IMAGE_UPLOADS = mkdir(f"{ROOT}/uploads")
 
 # Database related folders
 db_schema_folder = mkdir('schemas')
@@ -45,16 +68,16 @@ db_schema_folder = mkdir('schemas')
 
 # Various Image folders
 root_image_folder = 'images'
-blocked_images_folder = mkdir(f"{root_image_folder}/blocked_{camera}")
-reference_images_folder = mkdir(f"{root_image_folder}/reference_{camera}")
-cloud_images_folder = mkdir(f"{root_image_folder}/cloud_{camera}")
-sky_images_folder = mkdir(f"{root_image_folder}/sky_{camera}")
+blocked_images_folder = mkdir(f"{root_image_folder}/{camera}/blocked")
+reference_images_folder = mkdir(f"{root_image_folder}/{camera}/reference")
+cloud_images_folder = mkdir(f"{root_image_folder}/{camera}/cloud")
+sky_images_folder = mkdir(f"{root_image_folder}/{camera}/sky")
 root_graph_folder = mkdir('Graphs')
 
 
 # Calibration image paths and settings  
 calibration_folder = "calibration"
-calibration_images = mkdir(f"{calibration_folder}/images")
+calibration_images = mkdir(f"{calibration_folder}/trainers")
 camera_matrices = mkdir(f"{calibration_folder}/matrices")
 undistorted_calibration_images = mkdir(f"{calibration_folder}/undistorted")
 distorted_calibration_images = mkdir(f"{calibration_folder}/distorted")
@@ -77,8 +100,9 @@ def write_toml(data:Dict, path:str) -> None:
     Write to a toml file.
     """
     try:
+        out = toml.dumps(data)
         with open(path, "w") as f:
-            toml.dump(data, f)
+            f.write(out)
     except Exception as e:
         debug(f"Error writing to TOML file: {e}")
 
@@ -89,29 +113,14 @@ def load_toml(file_path:str) -> Dict:
     """
     toml_data = None
     try:
-        with open(file_path, 'rb') as file:
+        with open(file_path, 'r') as file:
             toml_data = toml.load(file)
             if not toml_data: return None
     except FileNotFoundError:
         print(f"Error: File '{file_path}' not found.")
         return None
-    except toml.TOMLDecodeError as e:
+    except toml.TomlDecodeError as e:
         print(f"Error decoding TOML file: {e}")
         return None
 
     return toml_data
-
-
-def __load_pkl_resource(folder:str, name:str) -> Mat:
-    """
-    Attempt to load pickled resource <name> from <folder>.
-    """
-    import pickle
-    try:
-        with open(f"{folder}/{name}", "rb" ) as file:
-            out = pickle.load(file)
-    except FileNotFoundError:
-        debug(f"Error: File '{folder}/{name}' not found.")
-        return None
-
-    return out
