@@ -39,11 +39,10 @@ struct Network {
     const char* SSID;
     const char* PASS;
     const char* CERT;
-    IPAddress HOST;
+    const char* HOST;
     IPAddress GATEWAY;
     IPAddress DNS;
-    HTTPClient *HTTP;
-    WiFiClient *CLIENT;
+    WiFiClientSecure *CLIENT;
     tm TIMEINFO;
     time_t NOW;
 
@@ -59,13 +58,13 @@ struct Network {
      * Routes on the Server. 
      */
     struct Route {
-        const char* IMAGE = "/images";
-        const char* REGISTER = "/register";
-        const char* READING = "/reading";
-        const char* STATUS = "/status";
-        const char* UPDATE = "/update";
-        const char* UPGRADE = "/upgrade";
-        const char* TEST = "/test";
+        const char* IMAGE = "/api/images";
+        const char* REGISTER = "/api/register";
+        const char* READING = "/api/reading";
+        const char* STATUS = "/api/status";
+        const char* UPDATE = "/api/update";
+        const char* UPGRADE = "/api/upgrade";
+        const char* TEST = "/api/test";
     } routes;
 
     struct Header {

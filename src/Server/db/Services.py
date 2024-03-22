@@ -98,7 +98,7 @@ class DeviceService(Service):
         insert_string = "INSERT INTO Devices VALUES(%s, %s, %s, %s, %s, %s, %s);"
 
         try:
-            cursor = conn.cursor()
+            cursor = Manager.get_conn().cursor()
             cursor.execute(
                 insert_string, (MAC, name, dev_model, cam_model, altitude, latitude, longitude)
             )

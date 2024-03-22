@@ -39,7 +39,7 @@ bool readServerConf(fs::FS &fs, const char *path, Network &network) {
       line.trim();
 
       if (line.startsWith("HOST")) {
-          network.HOST.fromString(line.substring(line.indexOf('=') + 1).c_str());
+          network.HOST = readString(line);
       } else if (line.startsWith("CERT")) {
           String certFileName = readString(line);
           readCertificateFile(fs, certFileName.c_str(), network.CERT);
@@ -183,15 +183,15 @@ void getResponse(HTTPClient *HTTP, int httpCode) {
  * Got gist of everything from klucsik at:
  * https://gist.github.com/klucsik/711a4f072d7194842840d725090fd0a7
  */
-void send(Network *network, const String& timestamp, camera_fb_t *fb) {
-  network -> HTTP -> setConnectTimeout(READ_TIMEOUT);
-  network -> HTTP -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.IMAGE_JPG);
-  network -> HTTP -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
-  network -> HTTP -> addHeader(network -> headers.TIMESTAMP, timestamp);
+void send(HTTPClient *https, Network *network, const String& timestamp, camera_fb_t *fb) {
+  https -> setConnectTimeout(READ_TIMEOUT);
+  https -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.IMAGE_JPG);
+  https -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
+  https -> addHeader(network -> headers.TIMESTAMP, timestamp);
 
-  int httpCode = network -> HTTP -> POST(fb -> buf, fb -> len);
+  int httpCode = https -> POST(fb -> buf, fb -> len);
 
-  getResponse(network -> HTTP, httpCode);   
+  getResponse(https, httpCode);   
 }
 
 /**
@@ -199,15 +199,15 @@ void send(Network *network, const String& timestamp, camera_fb_t *fb) {
  * Got gist of everything from klucsik at:
  * https://gist.github.com/klucsik/711a4f072d7194842840d725090fd0a7
  */
-void send(Network *network, const String& timestamp) {
-    network -> HTTP -> setConnectTimeout(READ_TIMEOUT);
-    network -> HTTP -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.APP_FORM);
-    network -> HTTP -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
-    network -> HTTP -> addHeader(network -> headers.TIMESTAMP, timestamp);
+void send(HTTPClient *https, Network *network, const String& timestamp) {
+    https -> setConnectTimeout(READ_TIMEOUT);
+    https -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.APP_FORM);
+    https -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
+    https -> addHeader(network -> headers.TIMESTAMP, timestamp);
 
-    int httpCode = network -> HTTP -> GET();
+    int httpCode = https -> GET();
 
-    getResponse(network -> HTTP, httpCode); 
+    getResponse(https, httpCode); 
 }
 
 /**
@@ -215,19 +215,24 @@ void send(Network *network, const String& timestamp) {
  */
 void sendStats(Network *network, Sensors::Status *stat, const String& timestamp) {
     debugln("\n[STATUS]");
-    const String PATH = String(network->routes.STATUS);
-    IPAddress host = network->HOST;
-    
-    const String values = "sht="  + String(stat -> SHT) +
+    HTTPClient https;
+    const String values ="sht="  + String(stat -> SHT) +
                         "&bmp=" + String(stat -> BMP) +
                         "&cam=" + String(stat -> CAM);
 
-    network -> HTTP -> begin(host.toString(), static_cast<int>(Port::DEF), String(PATH + "?" + values));
+    String url;
+    url.reserve(strlen(network -> HOST) + strlen(network -> routes.STATUS) + values.length() + 2);
+    url.concat(network -> HOST);
+    url.concat(network -> routes.STATUS);
+    url.concat("?" + values);
 
-    debugln(values);
+    https.begin(*network -> CLIENT, url);
 
-    send(network, timestamp);
-    network -> HTTP -> end();
+    debugln(url);
+
+    send(&https, network, timestamp);
+
+    https.end();
 
 }
 
@@ -236,21 +241,25 @@ void sendStats(Network *network, Sensors::Status *stat, const String& timestamp)
  */
 void sendReadings(Network *network, String* thpd, const String& timestamp) {
     debugln("\n[READING]");
-    const String PATH = String(network->routes.READING);
-    IPAddress host = network -> HOST;
-
+    HTTPClient https;
     const String values = "temperature=" + String(thpd[0]) + 
                  "&humidity=" + String(thpd[1]) + 
                  "&pressure=" + String(thpd[2]) + 
                  "&dewpoint=" + String(thpd[3]);
 
-    network -> HTTP -> begin(host.toString(), static_cast<int>(Port::DEF), String(PATH + "?" + values));
+    String url;
+    url.reserve(strlen(network -> HOST) + strlen(network -> routes.READING) + values.length() + 2);
+    url.concat(network -> HOST);
+    url.concat(network -> routes.READING);
+    url.concat("?" + values);
 
-    debugln(values);
+    https.begin(url, network->CERT);
+
+    debugln(url);
     
-    send(network, timestamp);
+    send(&https, network, timestamp);
 
-    network -> HTTP -> end();
+    https.end();
 }
 
 /**
@@ -258,13 +267,17 @@ void sendReadings(Network *network, String* thpd, const String& timestamp) {
  */
 void sendImage(Network *network, camera_fb_t *fb, const String& timestamp) {
     debugln("\n[IMAGE]");
-    const String PATH = String(network->routes.IMAGE);
-    IPAddress host = network -> HOST;
+    HTTPClient https;
+    String url;
+    url.reserve(strlen(network -> HOST) + strlen(network -> routes.IMAGE) + 1);
+    url.concat(network -> HOST);
+    url.concat(network -> routes.IMAGE);
 
-    network -> HTTP -> begin(host.toString(), static_cast<int>(Port::DEF), PATH);
+    https.begin(url, network -> CERT);
 
-    send(network, timestamp, fb);
-    network -> HTTP -> end();
+    send(&https, network, timestamp, fb);
+
+    https.end();
 }
 
 /**
@@ -272,11 +285,17 @@ void sendImage(Network *network, camera_fb_t *fb, const String& timestamp) {
  */
 void OTAUpdate(Network *network, String firmware_version) {
     debugln("\n[UPDATES]");
-    IPAddress host = network -> HOST;
+
+    String url;
+    url.reserve(strlen(network -> HOST) + strlen(network -> routes.UPDATE) + 1);
+    url.concat(network -> HOST);
+    url.concat(network -> routes.UPDATE);
     WiFiClient* client = network -> CLIENT;
 
     // Start the OTA update process
-    t_httpUpdate_return ret = httpUpdate.update(*client, host.toString(), static_cast<int>(Port::DEF), network->routes.UPDATE, firmware_version);
+    debug("Grabbing updates from: ");
+    debugln(url);
+    t_httpUpdate_return ret = httpUpdate.update(*client, url, firmware_version);
     switch (ret) {
       case HTTP_UPDATE_FAILED:
         debugf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
