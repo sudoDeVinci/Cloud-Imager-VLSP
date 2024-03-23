@@ -213,9 +213,8 @@ void send(HTTPClient *https, Network *network, const String& timestamp) {
 /**
  * Send statuses of sensors to HOST on specified PORT. 
  */
-void sendStats(Network *network, Sensors::Status *stat, const String& timestamp) {
+void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const String& timestamp) {
     debugln("\n[STATUS]");
-    HTTPClient https;
     const String values ="sht="  + String(stat -> SHT) +
                         "&bmp=" + String(stat -> BMP) +
                         "&cam=" + String(stat -> CAM);
@@ -226,13 +225,13 @@ void sendStats(Network *network, Sensors::Status *stat, const String& timestamp)
     url.concat(network -> routes.STATUS);
     url.concat("?" + values);
 
-    https.begin(*network -> CLIENT, url);
+    https -> begin(*network -> CLIENT, "https://devinci.cloud/api/status?sht=0&bmp=0&cam=0");
 
     debugln(url);
 
-    send(&https, network, timestamp);
+    send(https, network, timestamp);
 
-    https.end();
+    //https -> end();
 
 }
 

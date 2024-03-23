@@ -113,7 +113,7 @@ void OTAUpdate(Network *network, String firmware_version);
 /**
  * Send statuses of sensors to HOST on specified PORT. 
  */
-void sendStats(Network *network, Sensors::Status *stat, const String& timestamp);
+void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const String& timestamp);
 
 /**
  * Send readings from weather sensors to HOST on specified PORT. 

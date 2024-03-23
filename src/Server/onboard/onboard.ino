@@ -45,6 +45,25 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 -----END CERTIFICATE-----
 )";
 
+void setClock() {
+  configTime(0, 0, "pool.ntp.org");
+
+  Serial.print(F("Waiting for NTP time sync: "));
+  time_t nowSecs = time(nullptr);
+  while (nowSecs < 8 * 3600 * 2) {
+    delay(500);
+    Serial.print(F("."));
+    yield();
+    nowSecs = time(nullptr);
+  }
+
+  Serial.println();
+  struct tm timeinfo;
+  gmtime_r(&nowSecs, &timeinfo);
+  Serial.print(F("Current time: "));
+  Serial.print(asctime(&timeinfo));
+}
+
 void setup() {
   Serial.begin(115200);
   debugln();
@@ -66,8 +85,8 @@ void setup() {
   //const char* profile = "devinci_cloud.cfg";
   //readProfile(SD_MMC, profile, network);// TODO: do something cause the profile reading failed.
   network.HOST = "https://devinci.cloud";
-  network.SSID = "Asimov-2.4GHZ";
-  network.PASS = "Asimov42";
+  network.SSID = "iPhone 13 mini";
+  network.PASS = "cccccccc";
   network.CERT = rootCA;
 
   wifiSetup(network.SSID, network.PASS, &sensors.status);
@@ -76,6 +95,8 @@ void setup() {
   configTime(0, 0, ntpServer);
   setenv("TZ", timezone, 1);
 
+  setClock();  
+  
   sht = Adafruit_SHT31(sensors.wire);
   sensors.SHT = sht;
   shtSetup(&sensors.status, &sensors.SHT);
@@ -86,32 +107,56 @@ void setup() {
 
 void loop() {
   WiFiClientSecure *client = new WiFiClientSecure;
-  network.CLIENT = client;
-  if (network.CLIENT) {
-    network.CLIENT -> setCACert(rootCA);
-    OTAUpdate(&network, FIRMWARE_VERSION);
-    String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
+  if (client) {
+    client -> setCACert(rootCA);
+    network.CLIENT = client;
+    /*
+    Attempting to scope the http client to keep it alive in relation to the wifi client*/
+    {
+      HTTPClient https;
+      //OTAUpdate(&network, FIRMWARE_VERSION);
 
-    /**
-    * Send sensor statuses.
-    */
-    sendStats(&network, &sensors.status, timestamp);
-    delay(50);
+      String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
 
+      debugln("\n[STATUS]");
+      const String values ="sht="  + String(stat -> SHT) +
+                          "&bmp=" + String(stat -> BMP) +
+                          "&cam=" + String(stat -> CAM);
+
+      String url;
+      url.reserve(strlen(network.HOST) + strlen(network.routes.STATUS) + values.length() + 2);
+      url.concat(network.HOST);
+      url.concat(network.routes.STATUS);
+      url.concat("?" + values);
+
+      https.begin(*network -> CLIENT, "https://devinci.cloud/api/status?sht=0&bmp=0&cam=0");
+
+      debugln(url);
+      int httpCode = https.GET();
+
+        // httpCode will be negative on error
+        if (httpCode > 0) {
+          // HTTP header has been send and Server response header has been handled
+          Serial.printf("[HTTPS] GET... code: %d\n", httpCode);
+  
+          // file found at server
+          if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
+            String payload = https.getString();
+            Serial.println(payload);
+          }
+      delay(50);
+      https.end();
+    }
+
+    delete client;
+    
     /**
-    * Send readings from the other sensors.
-    */
     String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
     delay(50);
     printReadings(readings);
     sendReadings(&network, readings, timestamp);
     delete[] readings;
     delay(50);
-    
-
-    /**
-    * If camera is up, send and release image buffer. 
-    */
     
     if(sensors.status.CAM) {
       camera_fb_t * fb = NULL;
@@ -131,11 +176,10 @@ void loop() {
       esp_err_t deinitErr = cameraTeardown();
       if (deinitErr != ESP_OK) debugf("Camera init failed with error 0x%x", deinitErr);
     } 
-
-    delete client;
+    **/
   }
 
   debugln("Going to sleep!...");
   delay(50);
-  deepSleepMins(1);
+  deepSleepMins(10);
 }

@@ -91,15 +91,15 @@ def distributionBarGraphGenerator(x, y, z, components: list[str,str,str], colour
     axes1[0].legend(loc="upper left")
     del x_s, x_c
 
-    axes1[1].bar(y_s[:,0], y_s[:,1], color = 'green', alpha= 0.3, label = f'Cloud {components[1]}')
-    axes1[1].bar(y_c[:,0], y_c[:,1], color = 'yellow', alpha = 0.3, label = f'Sky {components[1]}')
+    axes1[1].bar(y_s[:,0], y_s[:,1], color = 'green', alpha= 0.3, label = f'Sky {components[1]}')
+    axes1[1].bar(y_c[:,0], y_c[:,1], color = 'yellow', alpha = 0.3, label = f'Cloud {components[1]}')
     axes1[1].set_xlabel(f'{colour_tag} {components[1]} (0 - 255)')
     axes1[1].set_ylabel('frequency')
     axes1[1].legend(loc="upper left")
     del y_s, y_c
 
-    axes1[2].bar( z_s[:,0], z_s[:,1], color = 'blue', alpha= 0.3, label = f'Cloud {components[2]}')
-    axes1[2].bar(z_c[:,0], z_c[:,1], color = 'purple', alpha = 0.3, label = f'Sky {components[2]}')
+    axes1[2].bar( z_s[:,0], z_s[:,1], color = 'blue', alpha= 0.3, label = f'Sky {components[2]}')
+    axes1[2].bar(z_c[:,0], z_c[:,1], color = 'purple', alpha = 0.3, label = f'Cloud {components[2]}')
     axes1[2].set_xlabel(f'{colour_tag} {components[2]} (0 - 255)')
     axes1[2].set_ylabel('frequency')
     axes1[2].legend(loc="upper left")

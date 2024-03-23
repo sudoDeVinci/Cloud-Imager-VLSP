@@ -34,7 +34,7 @@ def __load_config() -> Dict:
     """
     return load_toml(calibration_config)
 
-def __calibrate() -> Tuple[Matlike, Matlike, Sequence[Matlike], Sequence[Matlike]]:
+def __calibrate(calibration_image_folder: str) -> Tuple[Matlike, Matlike, Sequence[Matlike], Sequence[Matlike]]:
     """
     Calculate camera matrix data via calibration with chessboard images.
     Return camera matrix data.
@@ -59,7 +59,7 @@ def __calibrate() -> Tuple[Matlike, Matlike, Sequence[Matlike], Sequence[Matlike
     # 2d points in image plane.
     imgpoints = [] 
     
-    images = glob.glob(f'{calibration_images}/*.jpg')
+    images = glob.glob(f'{calibration_image_folder}/*.jpg')
 
     for image in images:
 

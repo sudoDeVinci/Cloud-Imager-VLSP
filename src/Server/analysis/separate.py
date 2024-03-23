@@ -60,6 +60,15 @@ def separate_datasets(blocked_image_folder: str, reference_image_folder: str) ->
     An assumption of this function is that all images are of the same size.
     As to not raise an error
     """
+
+    if not os.path.exists(blocked_image_folder):
+        debug(f"Bad path: {blocked_image_folder} does not exist.")
+        return None
+
+    if not os.path.exists(reference_image_folder)):
+        debug(f"Bad path: {reference_image_folder} does not exist.")
+        return None
+
     count = 1
     for (ref_root, _, referenceImages), (blc_root, _, blockedImages) in zip(os.walk(reference_image_folder), os.walk(blocked_image_folder)):
         for ref, blc in zip(referenceImages, blockedImages):
@@ -76,6 +85,23 @@ def filesync(blc:str, ref:str, cld:str, sky:str) -> bool:
     """
     Make sure filenames are synced before running.
     """
+
+    if not os.path.exists(blc):
+        debug(f"Bad path: {blc} does not exist.")
+        return False
+
+    if not os.path.exists(ref):
+        debug(f"Bad path: {ref} does not exist.")
+        return False
+    
+    if not os.path.exists(cld):
+        debug(f"Bad path: {cld} does not exist.")
+        return False
+    
+    if not os.path.exists(sky):
+        debug(f"Bad path: {sky} does not exist.")
+        return False
+
     for (_, _, b_imgs), (_, _, r_imgs),(_, _, c_imgs),(_, _, s_imgs) in zip (os.walk(blc),os.walk(ref),os.walk(cld),os.walk(sky)):
         for b_img, r_img, c_img, s_img in zip(b_imgs, r_imgs, c_imgs, s_imgs):
             if not (b_img == r_img == c_img == s_img):

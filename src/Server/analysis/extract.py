@@ -3,6 +3,8 @@ from src.Server.analysis.config import *
 from typing import Callable
 from scipy import stats
 
+
+
 def get_tags(colour_index:int) -> list[list[str, str, str], str]:
     """
     Get the colour tags and accompanying label for a given index.
@@ -56,7 +58,7 @@ def __process_YBR(image: NDArray) -> NDArray:
     non_black_data = np.column_stack((Y[non_black_indices], b[non_black_indices], r[non_black_indices]))
     return non_black_data
 
-def __count(xyz_sk: NDArray) -> NDArray:
+def count(xyz_sk: NDArray) -> NDArray:
     """
     Return a frequency table of the integers in an input array
     """
@@ -118,12 +120,12 @@ def remove_outliers_iqr(data: NDArray) -> NDArray:
     Remove outliers from data using IQR.
     Data points that fall below Q1 - 1.5 IQR or above the third quartile Q3 + 1.5 IQR are outliers.
     """
-    Q1 = np.percentile(data, 25)
-    Q3 = np.percentile(data, 75)
+    Q1 = np.percentile(data, 25, axis=0)  # Calculate Q1 along columns (axis=0)
+    Q3 = np.percentile(data, 75, axis=0)  # Calculate Q3 along columns (axis=0)
     IQR = Q3 - Q1
     lower_bound = Q1 - 1.5 * IQR
     upper_bound = Q3 + 1.5 * IQR
-    return data[(data >= lower_bound) & (data <= upper_bound)]
+    return data[((data >= lower_bound) & (data <= upper_bound)).all(axis=1)]  # Ensure 2D structure is preserved
 
 def remove_outliers_z_score(data: NDArray, threshold: float = 3.0) -> NDArray:
     """
