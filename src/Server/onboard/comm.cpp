@@ -232,15 +232,13 @@ void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const
     send(https, network, timestamp);
 
     //https -> end();
-
 }
 
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-void sendReadings(Network *network, String* thpd, const String& timestamp) {
+void sendReadings(HTTPClient *https, Network *network, String* thpd, const String& timestamp) {
     debugln("\n[READING]");
-    HTTPClient https;
     const String values = "temperature=" + String(thpd[0]) + 
                  "&humidity=" + String(thpd[1]) + 
                  "&pressure=" + String(thpd[2]) + 
@@ -252,31 +250,30 @@ void sendReadings(Network *network, String* thpd, const String& timestamp) {
     url.concat(network -> routes.READING);
     url.concat("?" + values);
 
-    https.begin(url, network->CERT);
+    https -> begin(url, network->CERT);
 
     debugln(url);
     
-    send(&https, network, timestamp);
+    send(https, network, timestamp);
 
-    https.end();
+    //https.end();
 }
 
 /**
  * Send image from weather station to server. 
  */
-void sendImage(Network *network, camera_fb_t *fb, const String& timestamp) {
+void sendImage(HTTPClient *https, Network *network, camera_fb_t *fb, const String& timestamp) {
     debugln("\n[IMAGE]");
-    HTTPClient https;
     String url;
     url.reserve(strlen(network -> HOST) + strlen(network -> routes.IMAGE) + 1);
     url.concat(network -> HOST);
     url.concat(network -> routes.IMAGE);
 
-    https.begin(url, network -> CERT);
+    https -> begin(url, network -> CERT);
 
-    send(&https, network, timestamp, fb);
+    send(https, network, timestamp, fb);
 
-    https.end();
+    //https.end();
 }
 
 /**
