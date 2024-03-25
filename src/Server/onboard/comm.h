@@ -118,11 +118,11 @@ void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-void sendReadings(Network *network, String* thpd, const String& timestamp);
+void sendReadings(HTTPClient *https, Network *network, String* thpd, const String& timestamp);
 
 /**
  * Send image from weather station to server. 
  */
-void sendImage(Network *network, camera_fb_t *fb, const String& timestamp);
+void sendImage(HTTPClient *https, Network *network, camera_fb_t *fb, const String& timestamp);
 
 #endif

@@ -48,28 +48,29 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 void setClock() {
   configTime(0, 0, "pool.ntp.org");
 
-  Serial.print(F("Waiting for NTP time sync: "));
+  debug(F("Waiting for NTP time sync: "));
   time_t nowSecs = time(nullptr);
   while (nowSecs < 8 * 3600 * 2) {
     delay(500);
-    Serial.print(F("."));
+    debug(F("."));
     yield();
     nowSecs = time(nullptr);
   }
 
-  Serial.println();
+  debugln();
   struct tm timeinfo;
   gmtime_r(&nowSecs, &timeinfo);
-  Serial.print(F("Current time: "));
-  Serial.print(asctime(&timeinfo));
+  debug(F("Current time: "));
+  debug(asctime(&timeinfo));
 }
 
 void setup() {
-  Serial.begin(115200);
-  debugln();
-  debugln("Setting up.");
-
-  //sdmmcInit();
+  
+  if (DEBUG == 1) { 
+    Serial.begin(115200);
+    debugln();
+    debugln("Setting up.");
+  }
 
   /**
    * wire.begin(sda, scl)
@@ -82,20 +83,20 @@ void setup() {
   /**
    * Read the profile config for the device network struct. 
    */
-  //const char* profile = "devinci_cloud.cfg";
-  //readProfile(SD_MMC, profile, network);// TODO: do something cause the profile reading failed.
   network.HOST = "https://devinci.cloud";
+  //network.SSID = "Asimov-2.4GHZ";
+  //network.PASS = "Asimov42";
   network.SSID = "iPhone 13 mini";
   network.PASS = "cccccccc";
   network.CERT = rootCA;
-
+ 
   wifiSetup(network.SSID, network.PASS, &sensors.status);
   const char* ntpServer = "pool.ntp.org";
   const char* timezone = "CET-1-CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00";
   configTime(0, 0, ntpServer);
   setenv("TZ", timezone, 1);
 
-  setClock();  
+  // setClock();  
   
   sht = Adafruit_SHT31(sensors.wire);
   sensors.SHT = sht;
@@ -111,72 +112,46 @@ void loop() {
     client -> setCACert(rootCA);
     network.CLIENT = client;
     /*
-    Attempting to scope the http client to keep it alive in relation to the wifi client*/
+    Attempting to scope the http client to keep it alive in relation to the wifi client.*/
     {
       HTTPClient https;
-      //OTAUpdate(&network, FIRMWARE_VERSION);
+      OTAUpdate(&network, FIRMWARE_VERSION);
 
       String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
 
-      debugln("\n[STATUS]");
-      const String values ="sht="  + String(stat -> SHT) +
-                          "&bmp=" + String(stat -> BMP) +
-                          "&cam=" + String(stat -> CAM);
-
-      String url;
-      url.reserve(strlen(network.HOST) + strlen(network.routes.STATUS) + values.length() + 2);
-      url.concat(network.HOST);
-      url.concat(network.routes.STATUS);
-      url.concat("?" + values);
-
-      https.begin(*network -> CLIENT, "https://devinci.cloud/api/status?sht=0&bmp=0&cam=0");
-
-      debugln(url);
-      int httpCode = https.GET();
-
-        // httpCode will be negative on error
-        if (httpCode > 0) {
-          // HTTP header has been send and Server response header has been handled
-          Serial.printf("[HTTPS] GET... code: %d\n", httpCode);
-  
-          // file found at server
-          if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-            String payload = https.getString();
-            Serial.println(payload);
-          }
-      delay(50);
+      sendStats(&https, &network, &sensors.status, timestamp);
       https.end();
+      delay(50);
+
+      String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
+      sendReadings(&https, &network, readings, timestamp);
+      https.end();
+      delete[] readings;
+      delay(50);
+
+      if(sensors.status.CAM) {
+        camera_fb_t * fb = NULL;
+        fb = esp_camera_fb_get();
+        esp_camera_fb_return(fb);
+        delay(50);
+        fb = esp_camera_fb_get();
+        esp_camera_fb_return(fb);
+        delay(50);
+        fb = esp_camera_fb_get();
+        esp_camera_fb_return(fb);
+        delay(50);
+        fb = esp_camera_fb_get();
+        sendImage(&https, &network, fb, timestamp);
+        https.end();
+        esp_camera_fb_return(fb);
+        delay(50);
+        esp_err_t deinitErr = cameraTeardown();
+        if (deinitErr != ESP_OK) debugf("Camera init failed with error 0x%x", deinitErr);
+      }
+
     }
 
-    delete client;
-    
-    /**
-    String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
-    delay(50);
-    printReadings(readings);
-    sendReadings(&network, readings, timestamp);
-    delete[] readings;
-    delay(50);
-    
-    if(sensors.status.CAM) {
-      camera_fb_t * fb = NULL;
-      fb = esp_camera_fb_get();
-      esp_camera_fb_return(fb);
-      delay(50);
-      fb = esp_camera_fb_get();
-      esp_camera_fb_return(fb);
-      delay(50);
-      fb = esp_camera_fb_get();
-      esp_camera_fb_return(fb);
-      delay(50);
-      fb = esp_camera_fb_get();
-      sendImage(&network, fb, timestamp);
-      esp_camera_fb_return(fb);
-      delay(50);
-      esp_err_t deinitErr = cameraTeardown();
-      if (deinitErr != ESP_OK) debugf("Camera init failed with error 0x%x", deinitErr);
-    } 
-    **/
+    delete client; 
   }
 
   debugln("Going to sleep!...");
