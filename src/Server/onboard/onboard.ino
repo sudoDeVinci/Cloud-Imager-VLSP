@@ -84,10 +84,8 @@ void setup() {
    * Read the profile config for the device network struct. 
    */
   network.HOST = "https://devinci.cloud";
-  //network.SSID = "Asimov-2.4GHZ";
-  //network.PASS = "Asimov42";
-  network.SSID = "iPhone 13 mini";
-  network.PASS = "cccccccc";
+  network.SSID = "Asimov-2.4GHZ";
+  network.PASS = "Asimov42";
   network.CERT = rootCA;
  
   wifiSetup(network.SSID, network.PASS, &sensors.status);

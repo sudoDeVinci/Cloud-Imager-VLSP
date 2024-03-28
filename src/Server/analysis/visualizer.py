@@ -3,6 +3,13 @@ import cv2
 
 if __name__ == "__main__":
 
+    global index
+    global img
+    global img_hsv
+    global img_ycb
+    global contour_img
+    global contours
+
     def __update_image() -> None:
         global index
         global img
@@ -10,6 +17,7 @@ if __name__ == "__main__":
         global img_ycb
         global contour_img
         global contours
+        global rects
 
         img = cv2.imread(os.path.join(reference_images_folder, images[index]))
         img = cv2.resize(img,size)
@@ -17,7 +25,7 @@ if __name__ == "__main__":
         img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         img_ycb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
         contours = None
-        rectangle = None
+        rects = None
 
     index = 0
     size = (400, 300)
@@ -33,7 +41,13 @@ if __name__ == "__main__":
 
 
     def __nothing(x) -> None:   
-        pass
+        global contours
+        global contour_img
+        global rects
+
+        rects = None
+        contours = None
+        contour_img = img.copy()
 
     def __next() -> None:
         global index
@@ -99,7 +113,7 @@ if __name__ == "__main__":
 
         n_contours, hier = cv2.findContours(fullMask_eroded, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         
-        if contours is None or not bool(np.array_equal(a, b) for a,b in zip(contours, n_contours)):
+        if contours is None or (not bool(np.array_equal(a, b) for a,b in zip(contours, n_contours))):
             inner = []
             outer=[]
             for i, con in enumerate(n_contours):
