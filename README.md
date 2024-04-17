@@ -1,7 +1,7 @@
 # Cost-Focused Weather Tracking
 ### (Cloud Categorization & Tracking)  
 
-- By: Tadj Cazaubon (tc222gf)
+- By: Tadj Cazaubon (tc222gf) and Amirreza Dehdari (ad223fu)
 
 ## TLDR;
 Quick yet accurate Weather prediction is imperative for certain industries to now only survive, but simply exist. An important factor of these is the ability to track, categorize and predict movements of clouds within a given area. Current data is not meant for real-time application on a local area level. The  proposal is the construction of a number of 'weather stations' which take atmospheric readings and images of the sky above them to accurately track cloud cover.
