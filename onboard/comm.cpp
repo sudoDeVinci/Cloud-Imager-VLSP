@@ -225,7 +225,7 @@ void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const
     url.concat(network -> routes.STATUS);
     url.concat("?" + values);
 
-    https -> begin(*network -> CLIENT, "https://devinci.cloud/api/status?sht=0&bmp=0&cam=0");
+    https -> begin(url, network -> CERT);
 
     debugln(url);
 

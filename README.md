@@ -6,52 +6,55 @@
 ## TLDR;
 Quick yet accurate Weather prediction is imperative for certain industries to now only survive, but simply exist. An important factor of these is the ability to track, categorize and predict movements of clouds within a given area. Current data is not meant for real-time application on a local area level. The  proposal is the construction of a number of 'weather stations' which take atmospheric readings and images of the sky above them to accurately track cloud cover.
 
-## Background
-More location-accurate, real-time weather tracking and prediction is an endeavor with wide-reaching application. These include:
-The ability of the average person to better prepare for local weather conditions in their day-today.
-More refined weather condition description, such as duration and area of effect for storage units and warehouses.
-The ability for solar panel owners to more accurately estimate power output using knowledge of cloud-cover.
+<br>
+
+# Longer Story
+More location-accurate, real-time weather tracking and prediction is an endeavor with wide-reaching application. These include the 
+ability to better prepare for local weather conditions,
+more refined weather condition description, such as duration and area of effect for storage units and warehouses, and the potential for solar panel owners to more accurately estimate power output using knowledge of cloud-cover.
 
 These sorts of forecasts are usually made using satellite data. This would be from sources such as the MISR Level 2 Cloud product from NASA, showing cloud-motion vectors accurate to 17.6km [2], or the EUMETSAT MTG 3rd Gen. satellite array with a purported resolution of approx. 1km. [10] This data cannot be used for local weather forecasting however, as cloud-cover obscures the view of the land, as well as cloud-heights and environmental readings for overcast areas being unknowable. 
 
-Cloud-height, visibility, humidity are usually measured on the ground via devices such as ceilometers. This however costs an average of approx. USD $ 30,000 [3] and covers approximately 8 km^2 [12]. Ground-based techniques which utilize a visual component usually do so via the use of calibrated camera arrays performing triangulation (B.Lyu, Y.Chen et al 2021)[13], sometimes going further to separate cloud fields from the sky background to describe cloud cover in terms of both horizontal size and velocity vectors(P.Crispel, G.Roberts 2018)[14]. Techniques which do not make use of a visual component utilize environmental readings such as dewpoint and relative humidity to then calculate the Lifted Condensation Level (LCL). This is “the height at which an air parcel would saturate if lifted adiabatically” [9] and can be used as a stand-in for the base-height of a cloud in a given area. This approach may be able to rival ceilometers in accuracy of +-5m depending on the sensor accuracy [9]. 
+Cloud-height, visibility, humidity are usually measured on the ground via devices such as Ceilometers. This however costs an average of approx. USD $ 30,000 [3] and covers approximately 8 km^2 [12]. Ground-based techniques which utilize a visual component usually do so via the use of calibrated camera arrays performing triangulation (B.Lyu, Y.Chen et al 2021)[13], sometimes going further to separate cloud fields from the sky background to describe cloud cover in terms of both horizontal size and velocity vectors(P.Crispel, G.Roberts 2018)[14]. Techniques which do not make use of a visual component utilize environmental readings such as dewpoint and relative humidity to then calculate the Lifted Condensation Level (LCL). This is “ the height at which an air parcel would saturate if lifted adiabatically ” [9] and can be used as a approximate stand-in for the base-height of a cloud in a given area. This approach may be able to act as a stand-in for areas unable to install a ceilometer, depending on the sensor accuracy [9]. The LCL however, though linearly related to the cloud base-height as shown later, may differ greatly to the actual cloud-base height value, dependent on many factors such as the time of day, time of year and micro-climate of the area. 
 
- A hybrid approach of 3D approximation of cloud positions may be possible with ‘lower-end’ consumer hardware through determination of cloud height via the LCL. 3D reconstruction through camera calibration via the intrinsic/extrinsic distortion matrices are not novel concepts. Many popular image and computer-vision libraries such as OpenCV have methods for finding these properties [15]. The use of a single fixed-point sky-imager to accurately describe the height, position, and velocity vectors of clouds however, is novel.
-Implementation of IoT weather stations which transmit sensor data and sky images over either GSM or Wi-Fi to a central server as well is not novel, being done in (Puja Sharma, Shiva Prakash, 2021). The density of information gathered from a single image at hobbyist cost however, is. The ability to geo-reference ground-based sky images with less data than multi-camera techniques:
-Enables systems hobbyists to create and use more accurate weather data.
-Generates a higher density of data per unit cost in deployment of IoT weather monitoring systems on a local level. 
-
-## Related work
-Finding cloud height and positional data through sky imaging is done usually with multi-camera arrays via triangulation [13][14]. In B.Lyu, Y.Chen et al 2021 [13], the main output is multiple cloud height points. Separation of cloud areas from sky is not done, unlike in P.Crispel & G.Roberts 2018 [14] where cloud area separation is done through visible spectrum filtering, similar to Long et al [22], however, using HSV rather than RGB. We similarly propose obtaining cloud height, however, with only a singular camera, and finding a singular cloud base height value directly above the sensor rather than multiple, using atmospheric calculations to derive cloud height estimates as in  Romps, D. 2017 [9]. Unlike those mentioned however, this height estimate is used by us in obtaining cloud size through 3D reconstruction, rather than through the scale-invariant feature transform (SIFT) used in B.Lyu, Y.Chen et al 2021 [13] and P.Crispel & G.Roberts 2018 [14].  We also propose finding cloud ‘pixels’ in sky images with an approach similar to Long et al [22], filtering by the color ratio of pixel groups, though we propose using multiple color spectrums rather than just RGB; namely RGB, HSV and YCbCr, as well as more modern image pre and post-processing techniques. The cost associated with sky imagers has always been high, though there have been attempts in the past to create inexpensive, miniaturized solutions. Dev et al [23] is a popular example, with Jain et al [5][24] dropping costs further in the area of US$300 per unit capturing 4k images using consumer hardware and compact, 3D printed materials. Our solution drops this cost further, though using 1080p images, whilst retaining the small stature. 
+<br>
 
 ## Proposal
-Both a miniaturization and hybridization of existing techniques of cloud feature description must take place. There now exist ceilometer weather stations with reasonable accuracy such as the MWS-M625 from Intellisense which measures at 19 x 14 x 14 cm fitting many high precision instruments, including a 360 deg high-resolution sky imager [20]. Though inexpensive solutions have been shown such as Dev et al [23] in 2016 in creating whole-sky imagers which cost US$2,500 per unit, as well as Jain et al [5][24] in 2021 and 2022 respectively with costs close to US$300, we believe it possible to drop this further, whilst using less data than either.
+Both a miniaturization and hybridization of existing techniques of cloud feature description must take place. There now exist ceilometer weather stations with reasonable accuracy such as the MWS-M625 from Intellisense which measures at 19 x 14 x 14 cm fitting many high precision instruments, including a 360 deg high-resolution sky-imager [20]. Though inexpensive solutions have been shown such as Dev et al [23] in 2016 in creating whole-sky imagers which cost US$2,500 per unit, as well as Jain et al [5][24] in 2021 and 2022 respectively with costs close to US$300, we believe it possible to drop this further, whilst using less data than either.
 
 The lack of hybridization in related works means that the density of information per image is more sparse than possible if a combination of environmental and visual methods are used.
 We propose to: 
 
-- [x] Create weather station(s) able to collect and send weather data within expected sensor accuracy.
-- [x] Create/host a server which is able to accept multiple connections from these stations and process and store the incoming data.
-- [x] Undistort the sky images. This is done by obtaining the intrinsic and extrinsic matrices of the stations prior to their deployment. 
-- [x] Calculate the LCL (Lifted Condensation Level) via the environmental readings given, according to the method outlined in Romps. D (2017).
-- [ ] Identify the clouds in the scene via either statistical analysis or simple object detection. 
-    
-    a. This also then allows identification of the size of the cloud given the focal length and FOV of the camera module.
-    
-    - [ ] Set up a weather station at the Växjö Kronoberg Airport.
+- [x] Create weather station(s) able to collect and send weather data within usable sensor accuracy.
+    - [ ] Set up a weather station at or near the Växjö Kronoberg Airport.
 
-- [ ] Compare the accuracy of the readings, as well as cloud heights against the data of the Växjö Airport. These are available via the METAR Api, and viewable at https://metar-taf.com/ESMX.
+    - [ ] Compare the accuracy of the readings against the data of the Växjö Airport.
+
+- [x] Create/host a server which is able to accept multiple connections from these stations and process and store the incoming data.
+
+- [x] Undistort the sky images. This is done by obtaining the intrinsic and extrinsic matrices of the stations prior to their deployment.
+
+- [x] Identify the clouds in the scene via either statistical analysis or simple object detection. 
+
+- [x] Calculate the LCL (Lifted Condensation Level) via the environmental readings given, according to the method outlined in Romps. D (2017).
+
+- [x] Compare the LCL approximated cloud heights against the data of the Växjö Airport.
+
+<br>
 
 ## Setup
 
 ### ESP32-S3
-An Esp32-S3 with an OV5640 DVP camera module is pointed at the sky at a location and predetermined angle (prefereably perpendicular).
+An ESP32S3 with an OV5640 DVP camera module is pointed at the sky at a location and predetermined angle (preferably perpendicular).
 
 1. An SHT31-D takes Relative Humidity and Temperature readings.
 2. A BMP390 takes Air Pressure readings.
 3. The Dewpoint is calculated according using the Magnus-Tetens formula [8].
 4. An image of the sky is taken with the OV5640.
-5. The image and readings are sent to a collections server for analysis.
+5. The status of each sensor is sent to the server.
+6. The image and readings are sent to the server.
+7. The MCU sleeps for pre-determined time.
+ 
 
 
 ## How
@@ -65,11 +68,9 @@ The ESP32-S3-OTG Dev board by Freenove was chosen because of:
 4. OTG capability.
 
 Microcontrollers are programmed using Arduino Studio.
-I mostly use VScode for programming. 
+We mostly use VScode for programming. 
 
-* Earlier within the project I used either McroPython and Python for all components. I languages switched due to speed, memory and compatibility concerns.
-
-
+* Earlier within the project we used either MicroPython and Python for all components. We languages switched due to speed, memory and compatibility concerns.
 
 The [Flask server](src/Server/server.py) and [analysis tools](src/Server/analysis/) are written in python for ease of use. 
 
@@ -111,11 +112,10 @@ struct Network {
     const char* SSID;
     const char* PASS;
     const char* CERT;
-    IPAddress HOST;
+    const char* HOST;
     IPAddress GATEWAY;
     IPAddress DNS;
-    HTTPClient *HTTP;
-    WiFiClient *CLIENT;
+    WiFiClientSecure *CLIENT;
     tm TIMEINFO;
     time_t NOW;
 
@@ -131,10 +131,13 @@ struct Network {
      * Routes on the Server. 
      */
     struct Route {
-        const char* IMAGE = "/images";
-        const char* READING = "/reading";
-        const char* STATUS = "/status";
-        const char* UPDATE = "/update";
+        const char* IMAGE = "/api/images";
+        const char* REGISTER = "/api/register";
+        const char* READING = "/api/reading";
+        const char* STATUS = "/api/status";
+        const char* UPDATE = "/api/update";
+        const char* UPGRADE = "/api/upgrade";
+        const char* TEST = "/api/test";
     } routes;
 
     struct Header {
@@ -147,8 +150,8 @@ struct Network {
 
 <br>
 
-I use pointers so that I can have a majority of these functions in separate cpp files to separate responsibility. Sensor related functionality is in [sensors.cpp](src/Server/onboard/sensors.cpp), and networking related functionality is in [comm.cpp](src/Server/onboard/comm.cpp). 
-Pointers are also useful so that the structures containing them can be kept within a global scope, but mutated within methods. I find this helps keep memory management simple. 
+We use pointers and have a majority of these functions in separate cpp files to separate responsibility. Sensor related functionality is in [sensors.cpp](src/Server/onboard/sensors.cpp), and networking related functionality is in [comm.cpp](src/Server/onboard/comm.cpp). 
+Pointers are also useful so that the structures containing them can be kept within a global scope, and mutated within methods. I find this helps keep memory management simple. 
 
 <br>
 
@@ -157,31 +160,35 @@ Pointers are also useful so that the structures containing them can be kept with
 Statuses, readings and images are sent via different functions in comm.cpp. The layout of each function is the same. The readings and statuses are both sent in the URL of GET requests. Once that's sent, we print the return code and end the connection. Low-level details are taken care of by the HTTPClient library.
 
 ```cpp
-void sendStats(Network *network, Sensors::Status *stat, const String& timestamp) {
-    const String PATH = String(network->routes.STATUS);
-    IPAddress host = network->HOST;
-    
-    const String values = "sht="  + String(stat -> SHT) +
-                          "&bmp=" + String(stat -> BMP) +
-                          "&cam=" + String(stat -> CAM);
+void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const String& timestamp) {
+    const String values ="sht="  + String(stat -> SHT) +
+                        "&bmp=" + String(stat -> BMP) +
+                        "&cam=" + String(stat -> CAM);
 
-    network -> HTTP -> begin(host.toString(), static_cast<int>(Ports::DEFAULT), String(PATH + "?" + values));
-    send(network, timestamp);
-    network -> HTTP -> end();
+    String url;
+    url.reserve(strlen(network -> HOST) + strlen(network -> routes.STATUS) + values.length() + 2);
+    url.concat(network -> HOST);
+    url.concat(network -> routes.STATUS);
+    url.concat("?" + values);
+
+    https -> begin(url, network -> CLIENT);
+
+    send(https, network, timestamp);
 }
 ```
 
 Headers are modified within the send() function in comm.cpp. Both readings and statuses are sent this way.
+
 ```cpp
-void send(Network *network, const String& timestamp) {
-    network -> HTTP -> setConnectTimeout(READ_TIMEOUT);
-    network -> HTTP -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.APP_FORM);
-    network -> HTTP -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
-    network -> HTTP -> addHeader(network -> headers.TIMESTAMP, timestamp);
+void send(HTTPClient *https, Network *network, const String& timestamp) {
+    https -> setConnectTimeout(READ_TIMEOUT);
+    https -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.APP_FORM);
+    https -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
+    https -> addHeader(network -> headers.TIMESTAMP, timestamp);
 
-    int httpCode = network -> HTTP -> GET();
+    int httpCode = https -> GET();
 
-    getResponse(network -> HTTP, httpCode); 
+    getResponse(https, httpCode); 
 }
 ```
 
@@ -196,185 +203,181 @@ void send(Network *network, const String& timestamp, camera_fb_t *fb) {
 }
 ```
 
-## Analysis
+# Contents
 
-Images samples have been taken with both an OV2640 and an OV5640. These are compared with multiple shots from various DSLR cameras, taken as frames from timelapses.  
+    1.0 ................ Cost Per Unit
 
+    2.0 ................ Sensor Accuracy
+
+    3.0 ................ Cloud-Sky Separation
+        3.1 ............ Object Segmentation
+        3.2 ............ Channel Distribution Similarity
+            3.3.1 ...... 
+            3.3.2 ...... Best Curve Determination 
+
+    4.0 ................ LCL (Lifted Condensate Level) Accuracy
+
+<br>
+
+# 1.0. Cost Per Unit
+
+Component | Price (kr) | Link
+:--------------------------------------:|:-----------------------------------:|:-----------------------------------:|
+Freenove ESP32-S3-WROOM CAM | 249,00 | [Link](https://www.amazon.se/Freenove-ESP32-S3-WROOM-Compatible-Wireless-Detailed/dp/B0BMQ8F7FN)
+Adafruit Sensirion SHT31-D | 229,00 | [Link](https://www.electrokit.com/en/adafruit-sensirion-sht31-d-temperatur-luftfuktighetssensor)
+Adafruit BMP390 | 179,00 | [Link](https://www.electrokit.com/en/adafruit-bmp390-barometer-och-altimeter)
+OV5640 Camera Module | 162,76 | [Link](https://www.aliexpress.com/item/1005004607216017.html?algo_exp_id=f2a2d413-089f-4c66-882e-137057303f95-1&pdp_npi=4%40dis%21SEK%2196.72%2190.12%21%21%218.64%218.05%21%402103864c17133166104753863efbd1%2112000029810288110%21sea%21SE%210%21AB&curPageLogUid=H68vVWn0F2TC&utparam-url=scene%3Asearch%7Cquery_from%3A)
+Domain hosting for 1 year | 210,03 | [Link](https://www.hostinger.com/)
+TOTAL COST | 1029,79
+
+<br>
+
+# 2.0 Sensor Accuracy
+
+We have yet to install a weather station at or near the Airport. This means that we do not have direct readings from to compare as of yet.
+
+<br>
+
+# 3.0 Cloud-Sky Separation
+
+Images samples have been taken with a variety of cameras which includes the OV5640. These are compared with multiple shots from various DSLR cameras, taken as frames from timelapses.
 
 Camera Model | <div style="width:800px">Image Sample</div>
 :--------------------------------------:|:-----------------------------------:|
-OV2640 | <img src = 'images/reference_ov2640/Image20.png' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
-OV5640 | <img src = 'images/reference_ov5640/2024-02-23-11-17-16.jpg' alt="Example OV5640 Image" style="height: 300px; width:400px;"/>
-DSLR | <img src = 'images/reference_dslr/Image20.png' alt="Example DSLR Image" style="height: 300px; width:400px;"/>
-
-<br>
+OV2640 | <img src = 'Devinci/static/images/ov2640/reference/Image20.png' alt="Example OV2640 Image" style="height: 300px; width:400px;"/>
+OV5640 | <img src = 'Devinci/static/images/ov5640/reference/2024-02-23-11-17-16.jpg' alt="Example OV5640 Image" style="height: 300px; width:400px;"/>
+DSLR | <img src = 'Devinci/static/images/dslr/reference/Image20.png' alt="Example DSLR Image" style="height: 300px; width:400px;"/>
 
 While colour space based operations are fairly easy on high quality images, the OV2460 is not high quality. Contrast is low, over/under-exposure are almost ensured and ISO changes are not only drastic but cause unwanted light filtering and other strange behaviour.
 The OV5640 seems more suited to this application due to it's 5MP shooting capability and higher dynamic range. Contrast, color accuracy, and exposure can be handled dynamically and are stepped up/down smoothly. This seems to also be bared out in our data.
 
-<br>
+## 3.1. Object Segmentation
 
-### Colourspace Frequency Histogram
-
-First is graphing the frequencies of the BGR and HSV values for clouds versus the sky surrounding them. This is done in [colour_graphs](colour_graphs.py).
-Each reference image in [Reference-Images](Reference-Images/) has a corresponding image in [Blocked-Images](Blocked-Images/).
+To distinguish initially between Sky and Cloud regions, for each reference image, a segmented image is made where "sky" regions are coloured as black, and "cloud" regions are coloured as red.
+The boundary between cloud and sky is left bare as to not muddy results.
 
 Reference Image            |  Blocked Image
-:-------------------------:|:-------------------------:
-![Reference Image](images/reference_dslr/Image17.png)  |  ![Blocked Image](images/blocked_dslr/Image17.png)
+:-------------------------:|:-------------------------:|
+![Reference Image](Devinci/static/images/dslr/reference/Image17.png)  |  ![Blocked Image](Devinci/static/images/dslr/blocked/Image17.png)
 
 <br>
 
-The Blocked out images are coloured such that clouds are coloured red and the sky is coloured black. Small borders around clouds are left as to not capture the noise of whispy cloud edges.
-This is used to create two binary images and subsequent masked images of the reference image, one for the clouds and one for the sky in the scene.
+This is used to create two binary masks.
+
+<br>
+
+Cloud Mask Bitmap          |  Sky Mask bitmap
+:-------------------------:|:-------------------------:|
+![Cloud  Bitmap](Devinci/static/images/dslr/masks/cloud/Image17.bmp)  |  ![Sky Bitmap](Devinci/static/images/dslr/masks/sky/Image17.bmp) 
+
+<br>
+
+Then subsequent masked images of the reference image, one for the clouds and one for the sky in the scene.
 
 <br>
 
 Cloud Masked Image          |  Sky Masked Image
-:-------------------------:|:-------------------------:
-![Reference Image](images/cloud_dslr/Image17.png)  |  ![Blocked Image](images/sky_dslr/Image17.png)
+:-------------------------:|:-------------------------:|
+![Cloud Mask Image](Devinci/static/images/dslr/cloud/Image17.png)  |  ![Sky Mask Image](Devinci/static/images/dslr/sky/Image17.png)
 
-<br>
+These are split, iterated over and their colour channel values recorded as a frequency distribution.
 
-
-These are split, iterated over and their colour values recorded. These values are then graphed and can viewed below.
-NOTE: The divisons in the bar graphs is an artifact from saving the graphs as pngs, as the pdf versions do not contain these.
-
-#### Frequency Chart for High Res Images
-<br>
-
-These show the frequency graphs for the colour channels of the 60 images of the sky, separated into regions of sky and cloud.
-
-<br>
+The following shows the frequency graphs for the colour channels of the 60 images of the sky, separated into regions of sky and cloud.
 
 Desc. | Histogram
-:-----------------------------------:|:------------------------------------:
-RGB Distribution | ![RGB graph](Graphs/hist/dslr/new_hist_dslr_RGB.png) 
-HSv Distribution | ![HSV graph](Graphs/hist/dslr/new_hist_dslr_HSV.png)
-YCbCr Distribution | ![YcbCr graph](Graphs/hist/dslr/new_hist_dslr_YCbCr.png)
+:-----------------------------------:|:------------------------------------:|
+RGB Distribution | ![RGB graph](Devinci/static/Graphs/dslr/hist/RGB.png) 
+HSv Distribution | ![HSV graph](Devinci/static/Graphs/dslr/hist/HSV.png)
+YCbCr Distribution | ![YcbCr graph](Devinci/static/Graphs/dslr/hist/YCbCr.png)
 
 <br>
 
-Above we that viusally, the distributions for these images could be approximated to either normal or beta distributions if properly cleaned, especially that of the clouds.
-It is also apparent that the Red and Green colour space would be more useful in the pursuit to classify data.
-
-Above we see that for the most part, only the Saturation channel would be useful for separation/classification, but that the separation between them is more prominent than in other colour channels.
-
-#### Frequency Chart for OV2640
-<br>
-
-These show the frequency graphs for the colour channels of the 20 images of the sky taken with the OV2640, separated into regions of sky and cloud. 
+Above we see that the Saturation channel, as well as Chroma Read and Blue would be good for discriminating between sky and cloud areas.
 
 <br>
 
-Desc. | Histogram
-:-----------------------------------:|:------------------------------------:
-RGB Distribution | ![RGB graph](Graphs/hist/ov2640/new_hist_ov2640_RGB.png) 
-HSv Distribution | ![HSV graph](Graphs/hist/ov2640/new_hist_ov2640_HSV.png)
-YCbCr Distribution | ![YcbCr graph](Graphs/hist/ov2640/new_hist_ov2640_YCbCr.png)
+The "usefulness" of channels however, should intuitively depend on factors such as the frequency response of the particular camera model.
+This is borne out in our results as you will see below, as camera models differ in the the channels which are quantifiably "useful".
 
 <br>
 
-Above we see that while the pattern of separation in the channels in followed, the lack of colour fidelity causes the sky regions to a more bimodal distribution. This can be seen in images where the sky looks more purple than blue, or regions of it are under/overexposed, or subject to strange tinting.
+## 3.2. Channel Distribution Similarity
 
-We see that the hue looks somewhat similar, the saturation and value are nothing like the higher resolution images. I attribute this to the camera querks mentioned before. The value distribution for both clouds and sky regions is completely different now, with the sky region peaking at 100, rather than closer to 150 and skewing right.
-
-<br>
-
-#### Frequency Chart for OV5640
+To quantify the similarity between the distributions for the cloud and sky portions within the dataset, we used the Jaccard index [25](Jaccard 1901). This is a widely applicable method of quantifying the similarity between to sets. It is normally defined as the intersection size divided by the union size. 
+The Jaccard index was calculated for our DSLR group on the three (3) colour spaces, as well as the OV5640. The top channels under 0.5 similarity for each is taken. The results are as follows:
 
 <br>
 
-Desc. | Histogram
-:-----------------------------------:|:------------------------------------:
-RGB Distribution | ![RGB graph](Graphs/hist/ov5640/new_hist_ov5640_RGB.png) 
-HSv Distribution | ![HSV graph](Graphs/hist/ov5640/new_hist_ov5640_HSV.png)
-YCbCr Distribution | ![YcbCr graph](Graphs/hist/ov5640/new_hist_ov5640_YCbCr.png)
+Camera | Jaccard Dictionary
+:-----------------------------------:|:------------------------------------:|
+DSLR| ![Jaccard](Devinci/static/images/dslr/jaccard.png) 
+OV5640 | ![Jaccard](Devinci/static/images/ov5640/jaccard.png)
 
-### ScreePlot
-<br>
-
-Once the percentage variance of each colour channel in differentiating cloud and sky pixels is found, these can be visualized as a ScreePlot. This is done within [pca_graphs](pca_graphs.py).
-
-#### ScreePlot for High Res Images
-<br>
-
-These show the screeplots for the colour channels of the 60 higher resolution images of the sky, colour channels separated as principle components to check the variance percentage in differentiating sky versus cloud pixels.
-
-**[CURRENTLY UNLABELLED.]**
-
-Desc. | Scree Plot
-:-----------------------------------:|:------------------------------------:
-DSLR RGB Scree Plot | ![RGB graph](Graphs/PCA/dslr/new_scree_dslr_RGB.png) 
-DSLR HSV Scree Plot | ![HSV graph](Graphs/PCA/dslr/new_scree_dslr_HSV.png)
-DSLR YCbCr Scree Plot | ![YcbCr graph](Graphs/PCA/dslr/new_scree_dslr_YCbCr.png)
+From here we can see that both the scores and their rankings within the sorted dictionaries are different. Channels such as Green and YCbCr Brightness are not present in the results for the DSLR whilst appearing for the OV5640 group.
 
 <br>
 
-Above we see that the red channel accounts for ~80% of the variance in the cloud vs sky regions, with the green channel accounting for just under 20%. This means that in classification, the red and green channels are the main factors. We could then discard  
+## 3.3. ROC Curve
 
-Above we see that the Value channel as expected leads in variance, though the next two channels are closer than one might think when looking at the distribution graphs. Still, the variance of the Value channel alone is almost as much as the other two channels combined (~50%). 
-
-#### ScreePlots for OV2640
-<br>
-
-These show the screeplots for the colour channels of the 20 images of the sky taken with the OV2640, colour channels separated as principle components to check the variance percentage in differentiating sky versus cloud pixels.
-
-Desc. | Scree Plot
-:-----------------------------------:|:------------------------------------:
-OV2640 RGB Scree Plot | ![RGB graph](Graphs/PCA/ov2640/new_scree_ov2640_RGB.png) 
-OV2640 HSV Scree Plot | ![HSV graph](Graphs/PCA/ov2640/new_scree_ov2640_HSV.png)
-OV2640 YCbCr Scree Plot | ![YcbCr graph](Graphs/PCA/ov2640/new_scree_ov2640_YCbCr.png)
+### 3.3.1. BootStrapping
+* TODO
 
 <br>
 
-Above we see that the screeplot for the BGR channels is similar to that of that higher resolution images, despite the lack of image fidelity.
-
-Above we see that there is an even smaller difference between the respective channels, meaning that using them to differentiate the two data sets is more difficult. The channel variance percents do however follow the expected scale.
-
-### PCA ScatterPlot
-<br>
-
-Once a matrix of principle components (colour channels) and their per variance values is obtained, these can be visulaized in a PCA Plot. The Data is split into two (cloud pixel variance and sky pixel variance matrices respectively) to allow for better labelling. The two highest variance PCs are then graphed onto a Principle component scatterplot of sky versus cloud pixels. This is the second part of [pca_graphs](pca_graphs.py).
-
-#### PCA ScatterPlot for High Res Images
-<br>
-
-Desc. | Graph
-:--------------------------------------:|:-----------------------------------:|
-DSLR PCA BGR ScatterPlot   | ![BGR PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_RGB.png "BGR PCA ScatterPlot for High Res Images")
-DSLR PCA HSV Scatterplot   | ![HSV PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_HSV.png "HSV PCA ScatterPlot for High Res Images")
-DSLR PCA YcBcR Scatterplot | ![YcBcR PCA ScatterPlot for High Res Images](Graphs/PCA/dslr/new_pca_dslr_YCbCr.png "HSV PCA ScatterPlot for High Res Images") 
+To now further refine the choice of colour channels, we construct ROC curves of the possible upper and lower bounds used for masking in a given channel, to quantify its ability to classify the pixels as either "cloud" or "sky". 
 
 <br>
 
-#### PCA ScatterPlot for OV2640
+ROC curves illustrate the performance of a binary classifier model at varying threshold values. As such, they are not used in testing two simultaneous variables, but just one. To remedy this, we fix each lower bound at a given value, then test all feasible upper bounds, and visualize this as an independent curve. This means that for each channel, we get multiple curves on the same plot, each showing the performance of simple masking given the fixed lower bound and a number of possible upper bounds. An example is this is below - The Saturation Channel in the HSV Colourspace for the DSLR groups:
+
+Camera | Saturation ROC Curve | Chrome Blue ROC Curve
+:-----------------------------------:|:------------------------------------:|:------------------------------------:|
+DSLR | ![ROC](Devinci/static/Graphs/dslr/roc/HSV-Saturation.png) | ![ROC](Devinci/static/Graphs/dslr/roc/YCbCr-Chroma%20Blue.png) | 
+OV5640 | ![ROC](Devinci/static/Graphs/ov5640/roc/HSV-Saturation.png)| ![ROC](Devinci/static/Graphs/ov5640/roc/YCbCr-Chroma%20Blue.png) | 
+
+
+### 3.3.2. Best Curve Determination 
+The difficulty comes now in determining the best lower bound via these curves. Normally, an easy measure would be to determine this via the AUC(Area Under the Curve). However, as the lower bound increases, the number of corresponding upper bounds lessons, meaning this determination becomes more complicated as smaller lower-bound values may have an "advantage" in that they have more datapoints, making for a larger curve. As most valid masking ranges seem to cover most of the distribution at a time however, this seems to not affect the result greatly.
 
 <br>
 
-Desc. | Graph
-:--------------------------------------:|:-----------------------------------:|
-OV2640 PCA BGR ScatterPlot   | ![BGR PCA ScatterPlot for High Res Images](Graphs/PCA/ov2640/new_pca_ov2640_RGB.png "BGR PCA ScatterPlot for High Res Images")
-OV2640 PCA HSV Scatterplot   | ![HSV PCA ScatterPlot for High Res Images](Graphs/PCA/ov2640/new_pca_ov2640_HSV.png "HSV PCA ScatterPlot for High Res Images")
-OV2640 PCA YcBcR Scatterplot | ![YcBcR PCA ScatterPlot for High Res Images](Graphs/PCA/ov2640/new_pca_ov2640_YCbCr.png "HSV PCA ScatterPlot for High Res Images")
+As said, we select the curve with the highest AUC. If a channel does not contain a curve with at least an AUC of 0.5, it is discarded. 
+To then select the maximal point on the graph, this can be done in many ways. The criterion for selecting this point many times comes down to business priorities rather than mathematically. In our case however, we have opted to obtain this by selecting the point which maximizes the equation TPR−FPR (True Positive Rate minus False Positive Rate).
 
 <br>
 
-#### PCA ScatterPlot for OV2640
+Filtering for the best Channels from the ov5640 and DSLR datasets leaves us with the following:
+
+Camera | Optimal Channel Characteristics
+:-----------------------------------:|:------------------------------------:|
+DSLR | ![ROC](Devinci/static/Graphs/dslr/roc/optimal.png)
+OV5640 | ![ROC](Devinci/static/Graphs/ov5640/roc/optimal.png)
+
+
+# 4.0. LCL (Lifted Condensate Level) Accuracy
+
+The Lifted Condensate Level can be be used in estimating the cloud-base height when only sufficient environmental readings are available.
+We estimate this according to the method outlined in Romps. D (2017), using the code made available from that publication within our application stack.
+To visualize the difference in cloud-base versus LCL measurement, we retroactively fetch METAR data for a Set of Airports, and visualize the fractional delta and simple 1-to-1 
+comparison in their results. 
+We previously compared this fractional delta to the pressure, relative humidity, and temperature, to investigate their relationships, however, the relative humidity alone seemed
+somewhat directly correlated. 
 
 <br>
 
-Desc. | Graph
-:--------------------------------------:|:-----------------------------------:|
-OV5640 PCA BGR ScatterPlot   | ![BGR PCA ScatterPlot for High Res Images](Graphs/PCA/ov5640/new_pca_ov5640_RGB.png "BGR PCA ScatterPlot for High Res Images")
-OV5640 PCA HSV Scatterplot   | ![HSV PCA ScatterPlot for High Res Images](Graphs/PCA/ov5640/new_pca_ov5640_HSV.png "HSV PCA ScatterPlot for High Res Images")
-OV5640 PCA YcBcR Scatterplot | ![YcBcR PCA ScatterPlot for High Res Images](Graphs/PCA/ov5640/new_pca_ov5640_YCbCr.png "HSV PCA ScatterPlot for High Res Images")
+Through web-scraping [Ogimet](http://www.ogimet.com/), we have made available METAR data from 01/01/2010 to 30/12/2023 for both the Vaxjo and Heartsfield-Jackson (Atlanta) airports.
+THese are viewable for [Växjö here](Devinci/METAR/data/ESMX/) and [ATL here](Devinci/METAR/data/KATL/)
 
+<br>
 
-### Final Comments
+Firstly, the vaxjo airport was investigated due to proximity. Below we see the graph for the entirety of the period:
 
-- It can be seen that sky and cloud regions can be separated somewhat via visible colour space, and this separation simplified via singular value decomposition. The OV2640 however, can be seen to not be suitable for this application however; though following the statistical trends of the higher resolution images, it lacks the image quality/colour fidelity needed for this application.
+Airport | LCL Graph
+:-----------------------------------:|:------------------------------------:|
+ESMX | ![LCL](Devinci/METAR/graphs/ESMX/2005-01-31-06-20-to-2023-12-04-13-50.png)
+KATL | ![LCL](Devinci/METAR/graphs/KATL/2005-01-29-07-27-to-2023-12-01-12-04.png) 
 
+# References
 [1] The National Oceanic and Atmospheric Administration. 16 November 2012. p. 60.
 
 [2] MISR 17.6 KM GRIDDED CLOUD MOTION VECTORS: OVERVIEW AND ASSESSMENT, Jet Propulsion Laboratory, 4800 Oak Grove, Pasadena, California, K. Mueller, M. Garay, C. Moroney, V. Jovanovic (2012).
