@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Cameras{% endblock %} 
+
+{% block import %}
+<link rel="stylesheet" href="../static/button.css">
+<link rel="stylesheet" href="../static/option.css">
+{% endblock %} 
+
+{% block left_content %} <div></div> {% endblock %}
+{% block right_content %} <div></div> {% endblock %}
+
+{% block main_content %}
+<form method="POST" id = "cameraForm">
+  <div class="form-group">
+    <h3>Select a Camera Model</h3>
+    <select class="form-control" id="camera-model-select" name="camera-model-select">
+      {% for camera_model in camera_models %}
+      <option value="{{ camera_model}}">{{ camera_model }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+<!-- Bootstrap spinner -->
+<div class="spinner-border text-primary" role="status" id="loadingSpinner" style="display: none;">
+    <span class="sr-only">Loading...</span>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Show spinner when form is submitted
+  document.getElementById("cameraForm").addEventListener('submit', function() {
+      document.getElementById('loadingSpinner').style.display = 'flex';
+  });
+</script>
+{% endblock %}
