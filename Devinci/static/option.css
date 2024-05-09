@@ -1,0 +1,17 @@
+.option {
+    color: var(--font-color);
+    text-decoration: none;
+    padding: 0 0.5rem 0.5rem 0.5rem;
+    transition: all ease-in-out 350ms;
+}
+
+.option:hover {
+    background-color: var(--font-color);
+    color: var(--main-header-color);
+    transition: all ease-in-out 350ms;
+    text-decoration: none !important;
+}
+
+.form {
+    padding-top: 2rem;
+}
