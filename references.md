@@ -8,16 +8,16 @@
 
 ### Jaccard
 
-[ ] Comparing sets of patterns with the Jaccard index. Australasian Journal of Information Systems. Fletcher, Sam & Islam, Md Zahidul. March 2018, DOI: 22. 10.3127/ajis.v22i0.1538, available [here](https://www.researchgate.net/publication/323624308_Comparing_sets_of_patterns_with_the_Jaccard_index) 
-
 [ ] Etude de la distribution florale dans une portion des Alpes et du Jura. Bulletin de la Societe Vaudoise des Sciences Naturelles, Jaccard, Paul, Jan 1901, pg 37. 547-579. doi: 10.5169/seals-266450. [here](https://www.researchgate.net/publication/225035806_Etude_de_la_distribution_florale_dans_une_portion_des_Alpes_et_du_Jura)
+
+[ ] Comparing sets of patterns with the Jaccard index. Australasian Journal of Information Systems. Fletcher, Sam & Islam, Md Zahidul. March 2018, DOI: 22. 10.3127/ajis.v22i0.1538, available [here](https://www.researchgate.net/publication/323624308_Comparing_sets_of_patterns_with_the_Jaccard_index) 
 
 
 ### ROC Curve
 
-[ ] Fawcett, Tom. (2006). Introduction to ROC analysis. Pattern Recognition Letters. 27. 861-874. 10.1016/j.patrec.2005.10.010. 
+[ ] Fawcett, Tom. (2006). Introduction to ROC analysis. Pattern Recognition Letters. 27. 861-874. 10.1016/j.patrec.2005.10.010.  [here](https://www.researchgate.net/publication/222511520_Introduction_to_ROC_analysis)
 
-[ ] Pintea, Sebastian & Moldovan, Ramona. (2009). The Receiver-Operating Characteristic (ROC) analysis: Fundamentals and applications in clinical psychology. Journal of Cognitive and Behavioral Psychotherapies. 9. 49-66. 
+[ ] Pintea, Sebastian & Moldovan, Ramona. (2009). The Receiver-Operating Characteristic (ROC) analysis: Fundamentals and applications in clinical psychology. Journal of Cognitive and Behavioral Psychotherapies. 9. 49-66. Available: [here](https://www.researchgate.net/publication/256454600_The_Receiver-Operating_Characteristic_ROC_analysis_Fundamentals_and_applications_in_clinical_psychology)
 
 
 ## Cloud-Sky Separation
@@ -39,6 +39,8 @@ Available: here
 
 [ ] Fa, Tao & Xie, Wanyi & Yiren, Wang & Xia, Yingwei. (2019). Development of an all-sky imaging system for cloud cover assessment. Applied Optics. 58. 5516. 10.1364/AO.58.005516. 
 
+[ ] G. Demarcq, "Mastering Semantic Segmentation and Instance Segmentation - 2024," November 22, 2023. [Online]. Available: https://www.ikomia.ai/blog/instance-segmentation-and-semantic-segmentation#how-to-use-semantic-and-instance-segmentation-in-machine-learning-projects.
+
 
 ## Sky-Imager Models
 
@@ -59,7 +61,7 @@ Available: here
 
 [ ] DIY Weather Station With ESP32, AutoDesk Instructables, Giovanni Aggiustatutto, Available:  here
 
-[ ] ESP32 Weather Station with Weather Forecast, Wireless Sensors and Air Quality Measurement, Harald Kreuzer, 29 June 2023, Available: here
+[ ] Sharma, Puja & Prakash, Shiva. ( August 2021). Real Time Weather Monitoring System Using Iot. ITM Web of Conferences. 40. 01006. 10.1051/itmconf/20214001006. [here](https://www.researchgate.net/publication/353773459_Real_Time_Weather_Monitoring_System_Using_Iot)
 
 [ ] Create A Simple ESP32 Weather Station With BME280, LastMinuteEngineers, Available: here
 
@@ -69,9 +71,9 @@ Available: here
 
 [ ] Real Time Weather Monitoring using IoT, Puja Sharma, Shiva Prakash, ITM Web of Conferences 40(3):01006, August 2021, Available: here
 
-[ ] Agarwal, Anita & Rajesh, Rohit & Arul, Nitin. (2023). Spatially-Resolved Hyperlocal Weather Prediction and Anomaly Detection Using IoT Sensor Networks and Machine Learning Techniques. 89-93. 10.1109/MoSICom59118.2023.10458839. 
+[ ] Agarwal, Anita & Rajesh, Rohit & Arul, Nitin. (2023). Spatially-Resolved Hyperlocal Weather Prediction and Anomaly Detection Using IoT Sensor Networks and Machine Learning Techniques. 89-93. 10.1109/MoSICom59118.2023.10458839. Available: [here](https://arxiv.org/abs/2310.11001)
 
-[] Kairuz-Cabrera, David & Hernández-Rodríguez, Victor & Schalm, Olivier & Martínez, Alain & Laso, Pedro & Alejo, Daniellys. (2024). Development of a Unified IoT Platform for Assessing Meteorological and Air Quality Data in a Tropical Environment. Sensors. 24. 2729. 10.3390/s24092729. 
+[] Kairuz-Cabrera, David & Hernández-Rodríguez, Victor & Schalm, Olivier & Martínez, Alain & Laso, Pedro & Alejo, Daniellys. (2024). Development of a Unified IoT Platform for Assessing Meteorological and Air Quality Data in a Tropical Environment. Sensors. 24. 2729. 10.3390/s24092729. Available: [here](https://www.researchgate.net/publication/380103836_Development_of_a_Unified_IoT_Platform_for_Assessing_Meteorological_and_Air_Quality_Data_in_a_Tropical_Environment)
 
 
 ## LCL
@@ -88,9 +90,10 @@ Available: here
 
 [ ] Wolfgang, J. (2006) Research through DESIGN through research - a problem statement and a conceptual sketch, in Friedman, K., Love, T., Côrte-Real, E. and Rust, C. (eds.), Wonderground - DRS International Conference 2006, 1-4 November, Lisbon, Portugal. https://dl.designresearchsociety.org/drs-conference-papers/drs2006/researchpapers/73 
 
-[ ] A design science research methodology for information systems research. Journal of Management Information Systems. 24. 45-77. Peffers, Ken & Tuunanen, Tuure & Rothenberger, Marcus & Chatterjee, S. January 2007. 
+[ ] Peffers, Ken & Tuunanen, Tuure & Rothenberger, Marcus & Chatterjee, S.. (2007). A design science research methodology for information systems research. Journal of Management Information Systems. 24. 45-77. 
+Available: [here](https://www.researchgate.net/publication/284503626_A_design_science_research_methodology_for_information_systems_research) 
 
-[ ] Outline of a design science research process, Offermann, Philipp & Levina, Olga & Schönherr, Marten & Bub, Udo. January 2009. 10.1145/1555619.1555629. 
+[ ] Offermann, Philipp & Levina, Olga & Schönherr, Marten & Bub, Udo. (2009). Outline of a design science research process. 10.1145/1555619.1555629. Available: [here](https://www.researchgate.net/publication/221581320_Outline_of_a_design_science_research_process) 
 
 
 

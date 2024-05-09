@@ -154,5 +154,5 @@ void loop() {
 
   debugln("Going to sleep!...");
   delay(50);
-  deepSleepMins(10);
+  deepSleepMins(5);
 }

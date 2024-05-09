@@ -158,6 +158,3 @@ def images() -> Response:
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-

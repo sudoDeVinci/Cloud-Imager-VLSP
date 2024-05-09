@@ -416,7 +416,7 @@ KATL | ![LCL](Devinci/METAR/graphs/KATL/2005-01-29-07-27-to-2023-12-01-12-04.png
 
 [19] Complete DIY Raspberry Pi Weather Station With Software, AutoDesk Instructables, spacemanlabs, Available: here
 
-[20] MWS-M625,  Intellisense Systems, Inc, 21041 S. Western Ave, Torrance, CA 90501. Available: here
+[20] MWS-M625,  Intellisense Systems, Inc, 21041 S. Western Ave, Torrance, CA 90501. Available: [here](https://www.intellisenseinc.com/products/weather-stations/mws-m625/)
 
 [21] Real Time Weather Monitoring using IoT, Puja Sharma, Shiva Prakash, ITM Web of Conferences 40(3):01006, August 2021, Available: here
 
