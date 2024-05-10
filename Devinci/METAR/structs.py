@@ -9,9 +9,9 @@ from matplotlib.figure import Figure
 import pickle
 from requests import get
 
-CACHE_FOLDER = mkdir(f'{ROOT}\\METAR\\cache')
-DATA_FOLDER = mkdir(f'{ROOT}\\METAR\\data')
-GRAPH_FOLDER = mkdir(f'{ROOT}\\METAR\\graphs')
+CACHE_FOLDER = mkdir(os.path.join(ROOT, 'METAR', 'cache'))
+DATA_FOLDER = mkdir(os.path.join(ROOT, 'METAR', 'data'))
+GRAPH_FOLDER = mkdir(os.path.join(ROOT, 'METAR', 'graphs'))
 
 class Airport(Enum):
     """

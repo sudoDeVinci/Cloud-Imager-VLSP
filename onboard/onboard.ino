@@ -117,6 +117,8 @@ void loop() {
 
       String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
 
+      //getQNH(&https, &network, timestamp);
+
       sendStats(&https, &network, &sensors.status, timestamp);
       https.end();
       delay(50);

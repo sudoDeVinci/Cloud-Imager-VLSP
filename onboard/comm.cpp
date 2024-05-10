@@ -169,13 +169,15 @@ int wifiSetup(const char* SSID, const char* PASS, Sensors::Status *stat) {
     return 0;
 }
 
-void getResponse(HTTPClient *HTTP, int httpCode) {
+String getResponse(HTTPClient *HTTP, int httpCode) {
   if (httpCode > 0) {
-        debugf("[HTTP] POST... code: %d\n", httpCode);
-        if (httpCode == HTTP_CODE_OK) debug(HTTP -> getString());
-  } else debugf("[HTTP] POST... failed, error: %s\n", HTTP -> errorToString(httpCode).c_str());
-
-  debugln();
+    //debug("[HTTP] Request ... code: %d\n", httpCode);
+    //if (httpCode == HTTP_CODE_OK)
+    return HTTP -> getString();
+  } else { 
+    //debug("[HTTP] Request failed, error: %s\n");
+    return HTTP -> errorToString(httpCode);
+  }
 }
 
 /**
@@ -191,7 +193,7 @@ void send(HTTPClient *https, Network *network, const String& timestamp, camera_f
 
   int httpCode = https -> POST(fb -> buf, fb -> len);
 
-  getResponse(https, httpCode);   
+  debugln(getResponse(https, httpCode));  
 }
 
 /**
@@ -199,7 +201,7 @@ void send(HTTPClient *https, Network *network, const String& timestamp, camera_f
  * Got gist of everything from klucsik at:
  * https://gist.github.com/klucsik/711a4f072d7194842840d725090fd0a7
  */
-void send(HTTPClient *https, Network *network, const String& timestamp) {
+String send(HTTPClient *https, Network *network, const String& timestamp) {
     https -> setConnectTimeout(READ_TIMEOUT);
     https -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.APP_FORM);
     https -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
@@ -207,7 +209,7 @@ void send(HTTPClient *https, Network *network, const String& timestamp) {
 
     int httpCode = https -> GET();
 
-    getResponse(https, httpCode); 
+    return getResponse(https, httpCode);  
 }
 
 /**
@@ -229,81 +231,100 @@ void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const
 
     debugln(url);
 
-    send(https, network, timestamp);
-
-    //https -> end();
+    String reply = send(https, network, timestamp);
+    debugln(reply);
 }
 
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
 void sendReadings(HTTPClient *https, Network *network, String* thpd, const String& timestamp) {
-    debugln("\n[READING]");
+  debugln("\n[READING]");
 
   const String values = "temperature=" + thpd[0] + 
                           "&humidity=" + thpd[1] + 
                           "&pressure=" + thpd[2] + 
                           "&dewpoint=" + thpd[3];
 
-    String url;
-    url.reserve(strlen(network -> HOST) + strlen(network -> routes.READING) + values.length() + 2);
-    url.concat(network -> HOST);
-    url.concat(network -> routes.READING);
-    url.concat("?" + values);
+  String url;
+  url.reserve(strlen(network -> HOST) + strlen(network -> routes.READING) + values.length() + 2);
+  url.concat(network -> HOST);
+  url.concat(network -> routes.READING);
+  url.concat("?" + values);
 
-    https -> begin(url, network->CERT);
+  https -> begin(url, network->CERT);
 
-    debugln(url);
-    
-    send(https, network, timestamp);
-
-    //https.end();
+  debugln(url);
+  
+  String reply = send(https, network, timestamp);
+  debugln(reply);
 }
+
+
+/**
+ * Get the Sea Level Pressure from the server.
+*/
+void getQNH(HTTPClient *https, Network *network, const String& timestamp) {
+  debugln("\n[GETTING SEA LEVEL PRESSURE]");
+
+  String url;
+  url.reserve(strlen(network -> HOST) + strlen(network -> routes.QNH) + 1);
+  url.concat(network -> HOST);
+  url.concat(network -> routes.QNH);
+
+  https -> begin(url, network -> CERT);
+
+  debugln(url);
+  
+  String reply = send(https, network, timestamp);
+  debugln(reply);
+}
+
 
 /**
  * Send image from weather station to server. 
  */
 void sendImage(HTTPClient *https, Network *network, camera_fb_t *fb, const String& timestamp) {
-    debugln("\n[IMAGE]");
-    String url;
-    url.reserve(strlen(network -> HOST) + strlen(network -> routes.IMAGE) + 1);
-    url.concat(network -> HOST);
-    url.concat(network -> routes.IMAGE);
+  debugln("\n[IMAGE]");
+  String url;
+  url.reserve(strlen(network -> HOST) + strlen(network -> routes.IMAGE) + 1);
+  url.concat(network -> HOST);
+  url.concat(network -> routes.IMAGE);
 
-    https -> begin(url, network -> CERT);
+  https -> begin(url, network -> CERT);
 
-    send(https, network, timestamp, fb);
+  debugln(url);
 
-    //https.end();
+  send(https, network, timestamp, fb);
 }
 
 /**
  * Update the board firmware via the update server.
  */
 void OTAUpdate(Network *network, String firmware_version) {
-    debugln("\n[UPDATES]");
+  debugln("\n[UPDATES]");
 
-    String url;
-    url.reserve(strlen(network -> HOST) + strlen(network -> routes.UPDATE) + 1);
-    url.concat(network -> HOST);
-    url.concat(network -> routes.UPDATE);
-    WiFiClient* client = network -> CLIENT;
+  String url;
+  url.reserve(strlen(network -> HOST) + strlen(network -> routes.UPDATE) + 1);
+  url.concat(network -> HOST);
+  url.concat(network -> routes.UPDATE);
+  WiFiClient* client = network -> CLIENT;
 
-    // Start the OTA update process
-    debug("Grabbing updates from: ");
-    debugln(url);
-    t_httpUpdate_return ret = httpUpdate.update(*client, url, firmware_version);
-    switch (ret) {
-      case HTTP_UPDATE_FAILED:
-        debugf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-        break;
+  // Start the OTA update process
+  debug("Grabbing updates from: ");
+  debugln(url);
+  t_httpUpdate_return ret = httpUpdate.update(*client, url, firmware_version);
+  switch (ret) {
+    case HTTP_UPDATE_FAILED:
+      debugf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+      break;
 
-      case HTTP_UPDATE_NO_UPDATES:
-        debugln("HTTP_UPDATE_NO_UPDATES");
-        break;
+    case HTTP_UPDATE_NO_UPDATES:
+      debugln("HTTP_UPDATE_NO_UPDATES");
+      break;
 
-      case HTTP_UPDATE_OK:
-        debugln("HTTP_UPDATE_OK");
-        break;
-    }
+    case HTTP_UPDATE_OK:
+      debugln("HTTP_UPDATE_OK");
+      break;
+  }
 }

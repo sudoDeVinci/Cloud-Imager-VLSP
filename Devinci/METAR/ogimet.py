@@ -130,7 +130,7 @@ def ranged_query_ogimet(port: Airport, start: datetime, end: datetime) -> None:
             current_end = datetime(year=year, month=month, day=monthrange(year, month)[1])
             
             stamp = datetimes_to_timestamp(current_start, current_end)
-            filepath = f"{DATA_FOLDER}\\{port.value}\\{stamp}.txt"
+            filepath = os.path.join(DATA_FOLDER, port.value, f'{stamp}.txt')
 
             if os.path.exists(filepath):
                 print(f"{stamp} already exists.")
@@ -208,9 +208,9 @@ if __name__  == "__main__":
     from Devinci.METAR.structs import point_env_vis, plt
     
     port = Airport.VAXJO
-    mkdir(f"{DATA_FOLDER}\\{port.value}")
-    mkdir(f"{CACHE_FOLDER}\\{port.value}")
-    graphdir = mkdir(f"{GRAPH_FOLDER}\\{port.value}")
+    mkdir(os.path.join(DATA_FOLDER, port.value))
+    mkdir(os.path.join(CACHE_FOLDER, port.value))
+    graphdir = mkdir(os.path.join(GRAPH_FOLDER, port.value))
     
     # start = datetime(year=2005, month=1, day=1)
     # end = datetime(year=2023, month=12, day=30)

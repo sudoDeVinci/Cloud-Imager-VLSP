@@ -65,6 +65,7 @@ struct Network {
         const char* UPDATE = "/api/update";
         const char* UPGRADE = "/api/upgrade";
         const char* TEST = "/api/test";
+        const char* QNH = "/api/QNH";
     } routes;
 
     struct Header {
@@ -92,7 +93,7 @@ void readProfile(fs::FS &fs, const char *path, Network &network);
 
 /**
   * Get the current time and format the timestamp as MySQL DATETIME.
-  * timeinfo is an empty struct whihc is filled by calling getLocalTime().
+  * timeinfo is an empty struct whic is filled by calling getLocalTime().
   * Big thanks to Andreas Spiess:
   * https://github.com/SensorsIot/NTP-time-for-ESP8266-and-ESP32/blob/master/NTP_Example/NTP_Example.ino
   *
@@ -109,6 +110,11 @@ int wifiSetup(const char* SSID, const char* PASS, Sensors::Status *stat);
  * Update the board firmware via the update server.
  */
 void OTAUpdate(Network *network, String firmware_version);
+
+/**
+ * Get the Sea Level Pressure from the server.
+*/
+void getQNH(HTTPClient *https, Network *network, const String& timestamp);
 
 /**
  * Send statuses of sensors to HOST on specified PORT. 
