@@ -50,7 +50,6 @@ IMAGE_UPLOADS = mkdir(os.path.join(ROOT,"uploads"))
 root_config_folder = mkdir('configs')
 FIRMWARE_CONF:str = os.path.join(root_config_folder, "firmware_cfg.toml")
 DB_CONFIG:str = os.path.join(root_config_folder, "db_cfg.toml")
-
 IMAGE_TYPES = ("jpg","png","jpeg","bmp","svg")
 
 

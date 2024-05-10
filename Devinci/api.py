@@ -4,6 +4,11 @@ from flask_login import current_user
 
 from Devinci.db.services.reading import ReadingService
 from Devinci.db.services.status import StatusService
+from Devinci.METAR.fetcher import get_QNH_hpa
+
+QNH_cache:Dict['str',Tuple[int, datetime]] = {
+                'Vaxjo':(None, None)
+            }
 
 api = Blueprint("api", __name__) 
 
@@ -14,6 +19,43 @@ def re_to_docs() -> Response:
 @api.route("/docs",methods=['GET'])
 def index() -> Response:
     return render_template("api.html", user=current_user)
+
+def update_qnh_cache() -> None:
+    pres = get_QNH_hpa()
+    if not pres: return jsonify({"qnh":None, "timestamp": datetime.now(),"error": "Couldn't retrieve QNH"}), 400
+    QNH_cache['Vaxjo'] = (pres, datetime.now())
+
+@api.route("/QNH", methods=["GET"])
+def QNH() -> Response:
+    global QNH_cache
+
+    MAH = HEADERS.MACADDRESS.value
+    TSH = HEADERS.TIMESTAMP.value
+    try:
+        err = header_check(request.headers, (MAH, TSH))
+        if err is not None:return err   
+
+        if QNH_cache['Vaxjo'] is (None, None):
+            pres = get_QNH_hpa()
+            if not pres: return jsonify({"qnh":None, "timestamp": datetime.now(),"error": "Couldn't retrieve QNH"}), 400
+            QNH_cache['Vaxjo'] = (pres, datetime.now())
+        
+        else:
+            delta =  datetime.now() - QNH_cache['Vaxjo'][1]
+
+            if delta.seconds > 7200:
+                pres = get_QNH_hpa()
+                if not pres: return jsonify({"qnh":None, "timestamp": datetime.now(),"error": "Couldn't retrieve QNH"}), 500
+                QNH_cache['Vaxjo'] = (pres, datetime.now())
+        
+        return jsonify({"qnh":QNH_cache['Vaxjo'][0], 'timestamp': QNH_cache['Vaxjo'][0]}), 200
+
+
+
+    except Exception as e:
+        debug(e)
+        return jsonify({"qnh":None, "timestamp": datetime.now().strftime("%Y-%m-%d-%H-%M"),"error": str(e)}), 500
+
 
 @api.route("/update", methods=["GET"])
 def update() -> Response:
@@ -158,3 +200,6 @@ def images() -> Response:
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+

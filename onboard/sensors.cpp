@@ -44,9 +44,9 @@ void bmpSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_BMP3XX *bmp) {
     /**
      * Set up oversampling and filter initialization
      */
-    bmp -> setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
+    bmp -> setTemperatureOversampling(BMP3_OVERSAMPLING_32X);
     bmp -> setPressureOversampling(BMP3_OVERSAMPLING_32X);
-    bmp -> setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_15);
+    bmp -> setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_127);
     bmp -> setOutputDataRate(BMP3_ODR_50_HZ);
   }
 }
