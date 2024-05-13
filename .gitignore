@@ -11,5 +11,5 @@ lib64/*
 *.pyc
 *.crt
 *.pem
-
+*.sql
 lib64
