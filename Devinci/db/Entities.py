@@ -26,6 +26,7 @@ class Role(Enum):
         """
         return role.lower() in cls.__members__.values()
 
+
 class Entity(ABC):
     """
     Abstract Parent class representing a given row in a db table, either devices, sensors or readings. 
@@ -43,50 +44,7 @@ class Entity(ABC):
     
     def get_timestamp(self) -> str:
         return self._timestamp
-
-class DeviceEntity(Entity):
-    """
-    Row of data in the Devices table.
-    """
-    _slots__ = ("_name", "_dev_model", "_cam_model", "_altitude", "_latitude", "_longitude")
-    _name:str
-    _dev_model:str
-    _cam_model:camera_model
-    _altitude:float
-    _latitude:float
-    _longitude:float
-
-    @dispatch(str, str, str, str, float, float, float, timestamp = str)
-    def __init__(self, mac:str, name:str, devmodel:str, cammodel:str,
-                 alt:float, lat:float, long:float, timestamp: str = None):
-        Entity.__init__(self, mac, timestamp)
-        self._name = name
-        self._dev_model = devmodel
-        self._altitude = alt
-        self._latitude = lat
-        self._longitude = long
-        self._cam_model = camera_model.match(cammodel)
-
-    def get_name(self) -> str:
-        return self._name
     
-    def get_longitude(self) -> float:
-        return self._longitude
-    
-    def get_latitude(self) -> float:
-        return self._latitude
-    
-    def get_altitude(self) -> float:
-        return self._altitude
-    
-    def get_dev_model(self) -> str:
-        return self._dev_model
-    
-    def get_cam_model(self) -> str:
-        return self._cam_model
-    
-    def set_name(self, n:str) -> None:
-        self._name = n
 
 class ReadingEntity(Entity):
     """
@@ -99,9 +57,15 @@ class ReadingEntity(Entity):
     _dewpoint:float
     _image_path:str
 
-    def __init__(self, mac:str, temp:float, humidity:float, pressure:float,
-                dewpoint:float, timestamp:str, path:str = None):
-        Entity.__init__(self, mac, timestamp)
+    def __init__(self,
+                 mac:str,
+                 temp:float,
+                 humidity:float,
+                 pressure:float,
+                 dewpoint:float,
+                 timestamp:str,
+                 path:str = None):
+        super().__init__(mac, timestamp)
         self._dewpoint = dewpoint
         self._humidity = humidity
         self._image_path = path
@@ -136,8 +100,14 @@ class SensorEntity(Entity):
     _cam:bool
     _wifi:bool
 
-    def __init__(self, mac:str, timestamp:str, sht_stat:bool, bmp_stat:bool, cam_stat:bool, wifi_stat:bool = None):
-        Entity.__init__(self, mac, timestamp)
+    def __init__(self,
+                 mac:str,
+                 timestamp:str,
+                 sht_stat:bool,
+                 bmp_stat:bool,
+                 cam_stat:bool,
+                 wifi_stat:bool = None):
+        super().__init__(mac, timestamp)
         self._bmp = bmp_stat
         self._cam = cam_stat
         self._sht = sht_stat
@@ -168,7 +138,67 @@ class SensorEntity(Entity):
         self._wifi = x
     
     def allUp(self) -> bool:
-        return (self.__sht and self.__bmp and self.__cam)
+        return (self._sht and self._bmp and self._cam)
+    
+class DeviceEntity(Entity):
+    """
+    Row of data in the Devices table.
+    """
+    _slots__ = ("_name", "_dev_model", "_cam_model", "_altitude", "_latitude", "_longitude", "_sensors")
+    _name:str
+    _dev_model:str
+    _cam_model:camera_model
+    _altitude:float
+    _latitude:float
+    _longitude:float
+    _sensors:SensorEntity
+
+    def __init__(self,
+                 mac:str,
+                 name:str,
+                 devmodel:str,
+                 cammodel:str,
+                 alt:float,
+                 lat:float,
+                 long:float,
+                 timestamp: str = None,
+                 sen:SensorEntity = None):
+        super().__init__(mac, timestamp)
+        self._name = name
+        self._dev_model = devmodel
+        self._altitude = alt
+        self._latitude = lat
+        self._longitude = long
+        self._cam_model = camera_model.match(cammodel)
+        if sen: self._sensors = sen
+
+    def get_name(self) -> str:
+        return self._name
+    
+    def get_longitude(self) -> float:
+        return self._longitude
+    
+    def get_latitude(self) -> float:
+        return self._latitude
+    
+    def get_altitude(self) -> float:
+        return self._altitude
+    
+    def get_dev_model(self) -> str:
+        return self._dev_model
+    
+    def get_cam_model(self) -> str:
+        return self._cam_model
+    
+    def set_name(self, n:str) -> None:
+        self._name = n
+    
+    def get_sensors(self) -> SensorEntity | None:
+        return self._sensors
+    
+    def set_sensors(self, sen:SensorEntity) -> None:
+        self._sensors = sen
+
 
 class LocationEntity(Entity):
     """

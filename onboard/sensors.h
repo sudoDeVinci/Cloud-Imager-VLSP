@@ -22,7 +22,7 @@
 #define CAMERA_CLK 5000000
 #define CAMERA_MODEL_ESP32S3_EYE
 #define UNDEFINED -69420.00
-#define SAMPLES 300
+#define SAMPLES 500
 
 
 /**

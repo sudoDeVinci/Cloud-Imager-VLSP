@@ -110,14 +110,15 @@ void loop() {
     client -> setCACert(rootCA);
     network.CLIENT = client;
     /*
-    Attempting to scope the http client to keep it alive in relation to the wifi client.*/
+    Attempting to scope the http client to keep it alive in relation to the wifi client.
+    */
     {
       HTTPClient https;
       OTAUpdate(&network, FIRMWARE_VERSION);
 
       String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
 
-      //getQNH(&https, &network, timestamp);
+      getQNH(&https, &network, timestamp);
 
       sendStats(&https, &network, &sensors.status, timestamp);
       https.end();
@@ -147,6 +148,7 @@ void loop() {
         delay(50);
         esp_err_t deinitErr = cameraTeardown();
         if (deinitErr != ESP_OK) debugf("Camera init failed with error 0x%x", deinitErr);
+      
       }
 
     }

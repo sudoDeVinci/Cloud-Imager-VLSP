@@ -1,7 +1,91 @@
 import mysql.connector as mysql
+import sqlite3 as sqlite
 
-def apply(mydb:mysql.MySQLConnection):
-    myCursor = mydb.cursor()
+def apply(mydb:mysql.MySQLConnection | sqlite.Connection):
+
+    print("Here")
+    
+    cursor: mysql.MySQLCursor |sqlite.Cursor = mydb.cursor()
+
+    match type(mydb):
+        case mysql.MySQLConnection:
+            _apply_mysql(cursor)
+        case sqlite.Connection:
+            _apply_sqlite(cursor)
+        case _:
+            pass
+
+    # Commit
+    mydb.commit()
+
+def _apply_sqlite(myCursor: sqlite.Cursor) -> None:
+
+    # Create the Devices table
+    myCursor.execute("""
+        CREATE TABLE IF NOT EXISTS Devices(
+            MAC TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            device_model TEXT NOT NULL,
+            camera_model TEXT NOT NULL,
+            altitude REAL NOT NULL,
+            latitude REAL NOT NULL,
+            longitude REAL NOT NULL
+        );
+    """)
+
+    # Create the Readings table
+    myCursor.execute("""
+        CREATE TABLE IF NOT EXISTS Readings(
+            timestamp TEXT,
+            MAC TEXT,
+            temperature REAL,
+            relative_humidity REAL,
+            pressure REAL,
+            dewpoint REAL,
+            filepath TEXT,
+            PRIMARY KEY (MAC, timestamp),
+            FOREIGN KEY (MAC) REFERENCES Devices(MAC)
+        );
+    """)
+
+    # Create the Status table
+    myCursor.execute("""
+        CREATE TABLE IF NOT EXISTS Status(
+            MAC TEXT PRIMARY KEY,
+            SHT INTEGER NOT NULL,
+            BMP INTEGER NOT NULL,
+            CAM INTEGER NOT NULL,
+            WIFI INTEGER NOT NULL,
+            timestamp TEXT NOT NULL,
+            FOREIGN KEY (MAC) REFERENCES Devices(MAC)
+        );
+    """)
+
+    # Create the Locations table
+    myCursor.execute("""
+        CREATE TABLE IF NOT EXISTS Locations(
+            country TEXT,
+            region TEXT,
+            city TEXT,
+            latitude REAL NOT NULL,
+            longitude REAL NOT NULL,
+            PRIMARY KEY (latitude, longitude)
+        );
+    """)
+
+    # Create the Users table
+    myCursor.execute("""
+        CREATE TABLE IF NOT EXISTS Users(
+            ID TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL
+        );
+    """)
+
+
+def _apply_mysql(myCursor) -> None:
     # Create the cook book database 
     myCursor.execute("CREATE DATABASE IF NOT EXISTS weather")
 
@@ -69,7 +153,3 @@ def apply(mydb:mysql.MySQLConnection):
             role VARCHAR(30) NOT NULL
         );
     """)
-
-
-    # Commit
-    mydb.commit()

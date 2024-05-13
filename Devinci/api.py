@@ -35,7 +35,7 @@ def QNH() -> Response:
         err = header_check(request.headers, (MAH, TSH))
         if err is not None:return err   
 
-        if QNH_cache['Vaxjo'] is (None, None):
+        if QNH_cache['Vaxjo'] == (None, None):
             pres = get_QNH_hpa()
             if not pres: return jsonify({"qnh":None, "timestamp": datetime.now(),"error": "Couldn't retrieve QNH"}), 400
             QNH_cache['Vaxjo'] = (pres, datetime.now())

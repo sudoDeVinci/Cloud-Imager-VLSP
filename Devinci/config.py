@@ -13,7 +13,6 @@ import json
 from abc import ABC
 
 
-
 COLOUR_MARKERS:List[tuple[str,str]] = [
     ('b', 'o'),  # blue, circle
     ('g', '^'),  # green, triangle up
@@ -45,7 +44,6 @@ def mkdir(folder:str) -> str:
 
 ROOT = os.path.join(os.getcwd(), "Devinci", "static")
 IMAGE_UPLOADS = mkdir(os.path.join(ROOT,"uploads"))
-
 # Various config files
 root_config_folder = mkdir('configs')
 FIRMWARE_CONF:str = os.path.join(root_config_folder, "firmware_cfg.toml")
@@ -134,7 +132,6 @@ class Camera(Optical):
 
         # Various config files
         root_config_folder = 'configs'
-
 
     @dispatch(Optical)
     def __eq__(self, value: Optical) -> bool:
