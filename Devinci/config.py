@@ -160,10 +160,10 @@ class Camera(Optical):
         return self._Model
 
 # For typing, these are inexact because out memory layout differences such as between Mat and UMat
-Mat = cv2.Mat
-Matlike = cv2.typing.MatLike
-NDArray = numpy.typing.NDArray[any]
-intp = np.intp
+type Mat = cv2.Mat
+type Matlike = cv2.typing.MatLike
+type NDArray = numpy.typing.NDArray[any]
+type intp = np.intp
 
 
 

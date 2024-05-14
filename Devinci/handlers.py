@@ -87,7 +87,6 @@ def header_check(req_headers: Headers, headers: Tuple[str]) -> Request | None:
         return jsonify({"error": f"Incorrect header fields: {', '.join(missing_headers)}"}), 400
     
     if len(mac_header) == 1:
-        # print(f"Is the mac {req_headers.get(mac_header[0])} in the thing? - {not mac_filter(req_headers.get(mac_header[0]))}")
         if mac_filter(req_headers.get(mac_header[0])):
             return jsonify({"error": "Unauthorized"}), 401
 

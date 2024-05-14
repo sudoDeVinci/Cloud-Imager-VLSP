@@ -26,10 +26,10 @@ def _scoredict_vis(CAM:Camera, result: ScoreDict) -> None:
 def _optimaldict_vis(CAM:Camera, optimal_dict: Dict[str, Dict[str, ChannelBound|float]]) -> None:
     debug(f"\n- {CAM.Model.value.upper()} Optimal Channel Boundaries") 
     debug("-------------------------------------------------")
-    debug(f"| {'Channel':^18} | {'Lower - Upper':>10} | {'AUC':^8} |") 
+    debug(f"| {'Channel':^18} | {'Lower - Upper':>10} | {'AUC':^8} | {'Accuracy':^8}") 
     debug("-------------------------------------------------")
     for channel, ldict in optimal_dict.items():
-        debug(f"| {channel:<18} | {ldict['bound'].lower_bound if ldict['bound'] is not None else "None":<5} - {ldict['bound'].upper_bound if ldict['bound'] is not None else "None":>5} |  {ldict['AUC'] if ldict['AUC'] is not None else "None":.4f}  |")
+        debug(f"| {channel:<18} | {ldict['bound'].lower_bound if ldict['bound'] is not None else "None":<5} - {ldict['bound'].upper_bound if ldict['bound'] is not None else "None":>5} |  {ldict['AUC'] if ldict['AUC'] is not None else "None":.4f}  |  {ldict['Accuracy'] if ldict['Accuracy'] is not None else "None":.4f}")
     debug("-------------------------------------------------")
 
 
@@ -250,7 +250,7 @@ def _select_optimal_bounds(CAM: Camera, DATA: Dict[str, Dict[int, List[ChannelBo
     
     for channel, LB_DICT in DATA.items():
         
-        optimal_dict[channel] = {"bound":None, "AUC": 0}
+        optimal_dict[channel] = {"bound":None, "AUC": 0.0, "Accuracy": 0.0}
         
         for _, ROCL in LB_DICT.items():
             ROC = sorted(ROCL, key=lambda x: x.False_Positive_Rate)
@@ -271,8 +271,9 @@ def _select_optimal_bounds(CAM: Camera, DATA: Dict[str, Dict[int, List[ChannelBo
             
             current = optimal_dict[channel]
             current_max = current['bound']
-            
-            optimal_dict[channel] = {"bound":maxch, "AUC": AUC} if current_max is None or maximal > (current_max.True_Positive_Rate - current_max.False_Positive_Rate) else current
+
+            if current_max is None or maximal > (current_max.True_Positive_Rate - current_max.False_Positive_Rate):
+                optimal_dict[channel] = {"bound":maxch, "AUC": AUC, "Accuracy": maxch.Accuracy}
     
     return optimal_dict
 
@@ -384,7 +385,7 @@ def graph_ROC(CAM:Camera, averaged: Dict[str, Dict[int, List[ChannelBound]]], ST
             types.Array(types.uint8, 3, 'C'),
             types.Array(types.uint8, 3, 'C')
         ),
-        parallel=True,
+        parallel=False,
         fastmath = True)
 def _runit(bound: Tuple[types.uint8, types.uint8], 
           GROUND_TRUTH_MASKS: np.ndarray, 
@@ -423,7 +424,6 @@ def _runstrata(  channel_index: int,
     for strat_dex, stratum in enumerate(cloud_strata):
         print(f"\n\n>> Testing {channel_label} Stratum {str(strat_dex+1).zfill(3)} of {str(strat_count).zfill(3)}")
         for bound_dex, bound in enumerate(cloud_bound_perms):
-            # print(f"\r>> Testing Bound {str(bound_dex+1).zfill(3)} of {str(bound_count).zfill(3)}", end="")
             GROUND_TRUTH_MASKS = np.array([IMAGE_MASKS[i] for i in stratum], dtype=np.uint8)
             BOUND_MASKS = np.array([_thresh(CH_REFERENCES[i], index=channel_index, bounds=bound) for i in stratum], dtype=np.uint8)
 
@@ -444,7 +444,7 @@ def ROC(cam: camera_model, jaccard: ScoreDict = None, overwrite: bool = False, S
     return _ROC(Camera(cam), jaccard = jaccard, tags = Colour_Tag.members(), overwrite=overwrite, STRATA_COUNT=STRATA_COUNT, SAMPLE_POINTS=SAMPLE_POINTS)
 
 
-def _ROC(CAM: Camera, tags: List[Colour_Tag], jaccard:ScoreDict = None, overwrite: bool = False, STRATA_COUNT: int = 30, STRATA_SIZE: int = 30, SAMPLE_POINTS: int = None) -> Dict[str, Dict[int, List[ChannelBound]]]:
+def _ROC(CAM: Camera, tags: List[Colour_Tag], jaccard:ScoreDict = None, overwrite: bool = False, STRATA_COUNT: int = 60, STRATA_SIZE: int = 30, SAMPLE_POINTS: int = None) -> Dict[str, Dict[int, List[ChannelBound]]]:
     """
     Calculates the Receiver Operating Characteristic (ROC) and Precision-Recall curves for a given camera and set of colour tags.
 

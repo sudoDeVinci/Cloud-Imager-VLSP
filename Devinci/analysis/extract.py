@@ -102,16 +102,23 @@ class ChannelBound(Boundary):
     Used during colour-boundary analysis to represent a point on an ROC graph.
     """
 
-    __slots__ = ('_lower_bound', '_upper_bound', '_channel', '_TP', '_FP', '_TN', '_FN', '_False_Positive_Rate', '_True_Positive_Rate', '_Precision')
+    __slots__ = ('_lower_bound', '_upper_bound', '_channel', '_False_Positive_Rate', '_True_Positive_Rate', '_Precision')
 
-    def __init__(self, lower_bound: int,upper_bound: int, channel: str,
-                True_Pos: float = None, False_Pos: float = None, pres: float = None):
+    def __init__(self,
+                 lower_bound: int,
+                 upper_bound: int,
+                 channel: str,
+                 True_Pos: float = None,
+                 False_Pos: float = None,
+                 pres: float = None,
+                 acc: float = None):
         self._lower_bound = lower_bound
         self._upper_bound = upper_bound
         self._channel = channel
         self._True_Positive_Rate = True_Pos
         self._False_Positive_Rate = False_Pos
         self._Precision = pres
+        self._Accuracy = acc
 
 
     @property
@@ -137,6 +144,10 @@ class ChannelBound(Boundary):
     @property
     def channel(self) -> str:
         return self._channel
+    
+    @property
+    def Accuracy(self) -> float:
+        return self._Accuracy
 
     def _ChannelBoundCheck(self, obj: Self) -> None:
         if not isinstance(obj, Boundary): 
@@ -155,9 +166,10 @@ class ChannelBound(Boundary):
                             channel = self.channel,
                             True_Pos = self._True_Positive_Rate + obj.True_Positive_Rate,
                             False_Pos= self._False_Positive_Rate + obj.False_Positive_Rate,
-                            pres = self._Precision + obj.Precision)
+                            pres = self._Precision + obj.Precision,
+                            acc = self.Accuracy + obj.Accuracy)
     
-    def __sub__(self, obj: Boundary) -> Self:
+    def __sub__(self, obj: Self) -> Self:
         self._ChannelBoundCheck(obj)
 
         return ChannelBound(lower_bound = self.lower_bound,
@@ -165,7 +177,8 @@ class ChannelBound(Boundary):
                             channel = self.channel,
                             True_Pos = self._True_Positive_Rate - obj.True_Positive_Rate,
                             False_Pos = self._False_Positive_Rate - obj.False_Positive_Rate,
-                            pres = self._Precision - obj.Precision)
+                            pres = self._Precision - obj.Precision,
+                            acc = self._Accuracy - obj.Accuracy)
     
     @dispatch(Boundary)
     def __mul__(self, obj: Self) -> Self:
@@ -176,7 +189,8 @@ class ChannelBound(Boundary):
                             channel = self.channel,
                             True_Pos = self._True_Positive_Rate * obj.True_Positive_Rate,
                             False_Pos = self._False_Positive_Rate * obj.False_Positive_Rate,
-                            pres = self._Precision * obj.Precision)
+                            pres = self._Precision * obj.Precision,
+                            acc = self._Accuracy * obj.Accuracy)
     
     @dispatch(float)
     def __mul__(self, num: float) -> Self:
@@ -186,7 +200,8 @@ class ChannelBound(Boundary):
                             channel = self.channel,
                             True_Pos = self._True_Positive_Rate * num,
                             False_Pos = self._False_Positive_Rate * num,
-                            pres = self._Precision * num)
+                            pres = self._Precision * num,
+                            acc = self._Accuracy * num)
     
     @dispatch(int)
     def __mul__(self, num: int) -> Self:
@@ -200,7 +215,8 @@ class ChannelBound(Boundary):
                             channel = self.channel,
                             True_Pos = self._True_Positive_Rate / num,
                             False_Pos = self._False_Positive_Rate / num,
-                            pres = self._Precision / num)
+                            pres = self._Precision / num,
+                            acc = self._Accuracy / num)
     
     @dispatch(int)
     def __truediv__(self, num: int) -> Self:

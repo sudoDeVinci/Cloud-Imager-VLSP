@@ -1,0 +1,5 @@
+- Need to change all string datetimes to datetime objects. - Tedious but necessary
+- Add accuracy to the website as a metric alongside AUC.
+- Move class definitions such as Colour_Tag and ChanelBoundary to their own files.
+- Switch to serializing chanelbound data as json/toml.
+- 

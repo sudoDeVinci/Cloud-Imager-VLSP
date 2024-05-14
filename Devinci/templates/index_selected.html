@@ -55,6 +55,7 @@
             <th scope="col">Channel</th>
             <th scope="col">Lower - Upper</th>
             <th scope="col">AUC <span class = "annotation">  ( Higher is Better * )</span></th>
+            <th scope="col">Accuracy <span class = "annotation">  ( Higher is Better * )</span></th>
         </tr>
         </thead>
         <tbody>
@@ -63,6 +64,7 @@
             <td>{{ channel }}</td>
             <td>{{ l_dict['bound'].lower_bound }} - {{ l_dict['bound'].upper_bound }}</td>
             <td>{{ '%.4f'|format(l_dict['AUC']) }}</td>
+            <td>{{ '%.4f'|format(l_dict['Accuracy']) }}</td>
         </tr>
         {% endfor %}
         </tbody>
