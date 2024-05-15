@@ -13,3 +13,4 @@ lib64/*
 *.pem
 *.sql
 lib64
+compare.py

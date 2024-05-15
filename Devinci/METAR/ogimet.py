@@ -3,6 +3,26 @@ from time import sleep
 from sys import exit
 from datetime import datetime, timedelta
 from calendar import monthrange
+import random
+
+def random_datetimes(start_datetime, end_datetime, num_datetimes) -> List[datetime]:
+
+    # Calculate the total time span between start_date and end_date
+    total_seconds = (end_datetime - start_datetime).total_seconds()
+
+    # Generate random datetimes with uniform distribution across the full range
+    random_datetimes = []
+    for _ in range(num_datetimes):
+        # Generate a random number of seconds within the total time span
+        random_seconds = random.uniform(0, total_seconds)
+
+        # Calculate the corresponding random datetime
+        random_dt = start_datetime + timedelta(seconds=random_seconds)
+
+        # Append the random datetime to the list
+        random_datetimes.append(random_dt)
+
+    return random_datetimes
 
 def daterange(start_date: datetime, end_date: datetime):
     for n in range(int((end_date - start_date).days)):
