@@ -102,7 +102,7 @@ class ChannelBound(Boundary):
     Used during colour-boundary analysis to represent a point on an ROC graph.
     """
 
-    __slots__ = ('_lower_bound', '_upper_bound', '_channel', '_False_Positive_Rate', '_True_Positive_Rate', '_Precision')
+    __slots__ = ('_lower_bound', '_upper_bound', '_channel', '_False_Positive_Rate', '_True_Positive_Rate', '_Precision', '_Accuracy')
 
     def __init__(self,
                  lower_bound: int,

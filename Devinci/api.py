@@ -67,7 +67,7 @@ def update() -> Response:
     ESPSHA = HEADERS.ESP_SHA256.value
 
     try:
-        err = header_check(request, ('X-esp32-sta-mac', 'X-esp32-version', 'X-esp32-sketch-sha256'))
+        err = header_check(request.headers, (ESPMAC, ESPVER, ESPSHA))
         if not err: return err
 
         # mac = request.headers.get('X-esp32-sta-mac')

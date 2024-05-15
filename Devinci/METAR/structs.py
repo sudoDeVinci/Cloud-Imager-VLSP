@@ -160,7 +160,7 @@ def point_env_vis(airport: Airport, measurements: Iterable[Measurement]) -> Tupl
 
     del points_lcl
 
-    fs = 20
+    fs = 10
 
     fig, axes = plt.subplots(nrows=2, ncols=1)
     fig.set_figheight(30)

@@ -4,7 +4,7 @@ from os import getpid
 from flask_login import login_required, current_user
 from flask import Blueprint, Response, render_template, request
 
-from Devinci.analysis.ROC import colourspace_similarity_test, _scoredict_vis, ROC, _select_optimal_bounds, _optimaldict_vis
+from Devinci.analysis.ROC import colourspace_similarity_test, ROC, _select_optimal_bounds, _optimaldict_vis
 from Devinci.analysis.extract import Colour_Tag, _is_image
 from Devinci.analysis.distribution import create
 
@@ -57,7 +57,7 @@ def index():
             
             if OPTIMALS[model.name] is None:
                 roc = ROC(cam = model, jaccard = jaccard, STRATA_COUNT = 30, STRATA_SIZE = 30, SAMPLE_POINTS = None)
-                optimal = _select_optimal_bounds(CAM, roc)
+                optimal = _select_optimal_bounds(DATA = roc)
                 OPTIMALS[model.name] = optimal
             else: 
                 optimal = OPTIMALS[model.name]

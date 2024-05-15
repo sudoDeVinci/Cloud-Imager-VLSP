@@ -18,7 +18,7 @@ class ReadingService(Service):
                     row["relative_humidity"],
                     row["pressure"],
                     row["dewpoint"],
-                    row["timestamp"],
+                    datetime.strptime(row["timestamp"], "%Y-%m-%d %H:%M:%S"),
                     row["filepath"]
                 )
                 readings.append(reading)
@@ -50,7 +50,7 @@ class ReadingService(Service):
                     row["relative_humidity"],
                     row["pressure"],
                     row["dewpoint"],
-                    row["timestamp"],
+                    datetime.strptime(row["timestamp"], "%Y-%m-%d %H:%M:%S"),
                     row["filepath"]
                 )
 

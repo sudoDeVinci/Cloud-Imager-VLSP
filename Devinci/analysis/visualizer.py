@@ -2,7 +2,7 @@ from Devinci.config import *
 
 if __name__ == "__main__":
 
-    CAM = Camera(camera_model.DSLR)
+    CAM = Camera(camera_model.OV5640)
 
     global index
     global img
@@ -66,17 +66,13 @@ if __name__ == "__main__":
     cv2.createTrackbar("HS", "Tracking", 0, 255, __nothing)
     cv2.createTrackbar("LCB", "Tracking", 0, 255, __nothing)
     cv2.createTrackbar("HCB", "Tracking", 0, 255, __nothing)
-    cv2.createTrackbar("HR", "Tracking", 0, 255, __nothing)
-    cv2.createTrackbar("LR", "Tracking", 0, 255, __nothing)
     cv2.createTrackbar("Erosion", "Tracking", 1, 10, __nothing)
     cv2.createTrackbar("Dilation", "Tracking", 1, 10, __nothing)
 
     cv2.setTrackbarPos("LS", "Tracking", 0)
-    cv2.setTrackbarPos("HS", "Tracking", 75)
-    cv2.setTrackbarPos("LCB", "Tracking", 125)
-    cv2.setTrackbarPos("HCB", "Tracking", 145)
-    cv2.setTrackbarPos("HR", "Tracking", 255)
-    cv2.setTrackbarPos("LR", "Tracking", 75)
+    cv2.setTrackbarPos("HS", "Tracking", 85)
+    cv2.setTrackbarPos("LCB", "Tracking", 1)
+    cv2.setTrackbarPos("HCB", "Tracking", 148)
     cv2.setTrackbarPos("Erosion", "Tracking", 2)
     cv2.setTrackbarPos("Dilation", "Tracking", 3)
 
@@ -86,8 +82,6 @@ if __name__ == "__main__":
         hs = cv2.getTrackbarPos("HS", "Tracking")
         lcb = cv2.getTrackbarPos("LCB", "Tracking")
         hcb = cv2.getTrackbarPos("HCB", "Tracking")
-        hr = cv2.getTrackbarPos("HR", "Tracking")
-        lr = cv2.getTrackbarPos("LR", "Tracking")
         erosion = cv2.getTrackbarPos("Erosion", "Tracking")
         dilation = cv2.getTrackbarPos("Dilation", "Tracking")
 
@@ -99,12 +93,7 @@ if __name__ == "__main__":
         lb_cblue = np.array([0, 0, lcb], dtype=np.uint8)
         ycbMask = cv2.inRange(img_ycb, lb_cblue, ub_cblue)
 
-        ub_red = np.array([255,255,hr], dtype=np.uint8)
-        lb_red = np.array([0,0,lr], dtype=np.uint8)
-        redmask = cv2.inRange(img, lb_red, ub_red)
-
         fullMask = cv2.bitwise_and(ycbMask, hsvMask)
-        fullMask =cv2.bitwise_and(fullMask, redmask)
 
         fullMask_eroded = cv2.erode(fullMask, kernel, iterations = erosion)
         fullMask_eroded = cv2.dilate(fullMask_eroded, kernel, iterations = dilation)
@@ -137,9 +126,8 @@ if __name__ == "__main__":
 
         cv2.imshow("Image State", outimage)
         cv2.imshow("Cleaned Image State", outimage_eroded)
-        cv2.imshow("YCrCb Mask", ycbMask)
-        cv2.imshow("HSV Mask", hsvMask)
-        cv2.imshow("BGR Mask", redmask)
+        cv2.imshow("YCBCR - Chroma Blue Mask", ycbMask)
+        cv2.imshow("HSV - Saturation Mask", hsvMask)
         cv2.imshow("Countours", contour_img)
 
         key = cv2.waitKey(50)

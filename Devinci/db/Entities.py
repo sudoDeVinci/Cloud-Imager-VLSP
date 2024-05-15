@@ -90,6 +90,10 @@ class ReadingEntity(Entity):
     def set_image_path(self, path:str) -> None:
         self._image_path = path
 
+    @property
+    def timestamp(self) -> datetime:
+        return self._timestamp
+
 class SensorEntity(Entity):
     """
     Row of data in the senors table.

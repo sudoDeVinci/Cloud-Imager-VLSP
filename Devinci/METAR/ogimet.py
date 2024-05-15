@@ -4,6 +4,10 @@ from sys import exit
 from datetime import datetime, timedelta
 from calendar import monthrange
 
+def daterange(start_date: datetime, end_date: datetime):
+    for n in range(int((end_date - start_date).days)):
+        yield start_date + timedelta(n)
+
 def _files_in_date_range(start_date_str, end_date_str, directory) -> List[str]:
     """_summary_
 
@@ -37,7 +41,7 @@ def _files_in_date_range(start_date_str, end_date_str, directory) -> List[str]:
 
     return files_to_look_at
     
-def _get_measurement(path: str) -> List[Measurement]:
+def get_measurement(path: str) -> List[Measurement]:
     """_summary_
 
     Args:
@@ -106,7 +110,7 @@ def get_all_measurements(port: Airport) -> List[Measurement]:
     # If cache miss, build array and re-cache.
     for name in paths:
         path = os.path.join(datapath, name)
-        measurements.extend(_get_measurement(path))
+        measurements.extend(get_measurement(path))
 
     # Cache measurements
     pickle_measurements(cache_path, measurements)
@@ -202,21 +206,3 @@ def query_ogimet(airport: Airport, start: datetime, end: datetime) -> str:
         out = f"{out}{line}"
     
     return out
-
-
-if __name__  == "__main__":
-    from Devinci.METAR.structs import point_env_vis, plt
-    
-    port = Airport.VAXJO
-    mkdir(os.path.join(DATA_FOLDER, port.value))
-    mkdir(os.path.join(CACHE_FOLDER, port.value))
-    graphdir = mkdir(os.path.join(GRAPH_FOLDER, port.value))
-    
-    # start = datetime(year=2005, month=1, day=1)
-    # end = datetime(year=2023, month=12, day=30)
-    
-    # ranged_query_ogimet(port=port, start=start, end=end)
-    readings = get_all_measurements(port=port)
-    fig, axes, stamp = point_env_vis(port, readings)
-    plt.savefig(f"{os.path.join(graphdir, stamp)}.png")
-    plt.clf()

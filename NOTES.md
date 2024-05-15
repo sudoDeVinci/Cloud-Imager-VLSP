@@ -2,4 +2,5 @@
 - Add accuracy to the website as a metric alongside AUC.
 - Move class definitions such as Colour_Tag and ChanelBoundary to their own files.
 - Switch to serializing chanelbound data as json/toml.
-- 
+- use @property tags on Entities to obfuscate provate properties. The speed loss is negligible.
+- COnversion to and from datetimes in database.

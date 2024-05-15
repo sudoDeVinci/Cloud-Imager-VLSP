@@ -227,7 +227,7 @@ def _chbound_mean(roclistlist: List[List[ChannelBound]]) -> List[ChannelBound]:
         return out
 
 
-def _select_optimal_bounds(CAM: Camera, DATA: Dict[str, Dict[int, List[ChannelBound]]]) -> Dict[str, Dict[str, Any]]:
+def _select_optimal_bounds(DATA: Dict[str, Dict[int, List[ChannelBound]]]) -> Dict[str, Dict[str, Any]]:
     """
     Construct a dictionary of the optimal colour channels for a given camera given ROC curve data.
 
@@ -379,17 +379,15 @@ def graph_ROC(CAM:Camera, averaged: Dict[str, Dict[int, List[ChannelBound]]], ST
         else: 
             plt.clf()
         
-@njit(types.containers.UniTuple(types.float64, 3)
+@njit(types.containers.UniTuple(types.float64, 4)
         (
-            types.containers.UniTuple(types.uint8, 2),
             types.Array(types.uint8, 3, 'C'),
             types.Array(types.uint8, 3, 'C')
         ),
         parallel=False,
         fastmath = True)
-def _runit(bound: Tuple[types.uint8, types.uint8], 
-          GROUND_TRUTH_MASKS: np.ndarray, 
-          bound_masks: np.ndarray) -> Tuple[float, float, float]:
+def _runit( GROUND_TRUTH_MASKS: np.ndarray, 
+            bound_masks: np.ndarray ) -> Tuple[float, float, float, float]:
 
     TP, TN, FP, FN = 0, 0, 0, 0
 
@@ -407,8 +405,9 @@ def _runit(bound: Tuple[types.uint8, types.uint8],
     True_Positive_Rate = TP / (TP + FN) if TP != 0 else 0
     False_Positive_Rate = FP / (FP + TN) if FP != 0 else 0
     Precision = TP / (TP + FP) if TP != 0 else 0
+    Accuracy = (TP + TN) / (TP + TN + FP + FN) if TP!= 0 else 0
     
-    return (True_Positive_Rate, False_Positive_Rate, Precision)
+    return (True_Positive_Rate, False_Positive_Rate, Precision, Accuracy)
 
 def _runstrata(  channel_index: int,
                 channel_label: str,
@@ -427,13 +426,14 @@ def _runstrata(  channel_index: int,
             GROUND_TRUTH_MASKS = np.array([IMAGE_MASKS[i] for i in stratum], dtype=np.uint8)
             BOUND_MASKS = np.array([_thresh(CH_REFERENCES[i], index=channel_index, bounds=bound) for i in stratum], dtype=np.uint8)
 
-            True_Positive_Rate, False_Positive_Rate, Precision = _runit((np.uint8(bound[0]), np.uint8(bound[1])), GROUND_TRUTH_MASKS, BOUND_MASKS)
+            True_Positive_Rate, False_Positive_Rate, Precision, Accuracy = _runit(GROUND_TRUTH_MASKS, BOUND_MASKS)
         
             looplist[bound[0]][strat_dex].append(ChannelBound(  bound[0], bound[1],
                                                                 channel = channel_label,
                                                                 True_Pos = True_Positive_Rate,
                                                                 False_Pos = False_Positive_Rate,
-                                                                pres = Precision
+                                                                pres = Precision,
+                                                                acc = Accuracy
                                                             )
                                                 )
             
@@ -442,6 +442,40 @@ def _runstrata(  channel_index: int,
 
 def ROC(cam: camera_model, jaccard: ScoreDict = None, overwrite: bool = False, STRATA_COUNT: int = 30, STRATA_SIZE: int = 30, SAMPLE_POINTS: int = None) -> Dict[str, Dict[int, List[ChannelBound]]]:
     return _ROC(Camera(cam), jaccard = jaccard, tags = Colour_Tag.members(), overwrite=overwrite, STRATA_COUNT=STRATA_COUNT, SAMPLE_POINTS=SAMPLE_POINTS)
+
+def _Confusion_Matrix_Dual(CAM: Camera, CH1: ChannelBound, CH2: ChannelBound) -> Tuple[float, float, float, float]:
+    """"""
+    ch1_parts = CH1.channel.split("-")
+    ch2_parts = CH2.channel.split("-")
+    ch1_label = ch1_parts[1]
+    ch2_label = ch2_parts[1]
+    ch1_tag = Colour_Tag.match(ch1_parts[0])
+    ch2_tag = Colour_Tag.match(ch2_parts[0])
+
+    if ch1_tag is Colour_Tag.UNKNOWN or ch2_tag is Colour_Tag.UNKNOWN: return None
+
+    # Load the images and their masks.
+    cloud_image_paths = tuple(os.listdir(CAM.cloud_images_folder))
+    cloud_image_indexes = [i for i in range(len(cloud_image_paths))]
+    # Partition the ground-truth image indexes into strata.
+    # cloud_strata = _bootstrap_indexes(cloud_image_indexes, stratum_size=STRATA_SIZE, n_bootstraps=STRATA_COUNT)
+    IMAGE_MASKS = np.array([cv2.cvtColor(cv2.imread(os.path.join(CAM.cloud_masks_folder, _bmpize(p))), cv2.COLOR_BGR2GRAY) for p in cloud_image_paths], dtype=np.uint8)
+    REFERENCE_IMAGES = np.array([cv2.imread(os.path.join(CAM.reference_images_folder, p)) for p in cloud_image_paths], dtype=np.uint8)
+
+    # Convert the Images for each channelbound
+    CH1_REFERENCES = np.array([cv2.cvtColor(img, ch1_tag.value['converter']) for img in REFERENCE_IMAGES], dtype = np.uint8)
+    CH2_REFERENCES = np.array([cv2.cvtColor(img, ch2_tag.value['converter']) for img in REFERENCE_IMAGES], dtype = np.uint8)
+
+    ch1_index:int = ch1_tag.value['components'].index(ch1_label)
+    CH1_BOUND_MASKS = np.array([_thresh(i, index=ch1_index, bounds=(CH1.lower_bound, CH1.upper_bound)) for i in CH1_REFERENCES], dtype = np.uint8)
+     
+    ch2_index:int = ch2_tag.value['components'].index(ch2_label)
+    CH2_BOUND_MASKS = np.array([_thresh(i, index=ch2_index, bounds=(CH2.lower_bound, CH2.upper_bound)) for i in CH2_REFERENCES], dtype = np.uint8)
+    
+    FUSED_MASKS = np.array([ch1mask & ch2mask for ch1mask, ch2mask in zip(CH1_BOUND_MASKS, CH2_BOUND_MASKS)], dtype = np.uint8)
+
+    return _runit(IMAGE_MASKS, FUSED_MASKS)
+    
 
 
 def _ROC(CAM: Camera, tags: List[Colour_Tag], jaccard:ScoreDict = None, overwrite: bool = False, STRATA_COUNT: int = 60, STRATA_SIZE: int = 30, SAMPLE_POINTS: int = None) -> Dict[str, Dict[int, List[ChannelBound]]]:
