@@ -56,7 +56,7 @@ xticks_stamps_strs = [reading.strftime("%m-%d %H:%M:%S") for reading in xticks_s
 plt.rcParams["figure.autolayout"] = True
 bg_color = '#f0f0f0'
 line_color = "#202330"
-fs = 20
+fs = 30
 fig, (ax0, ax1, ax2) = plt.subplots(nrows = 3, ncols = 1)
     
     
