@@ -8,6 +8,7 @@
 Network network;
 Adafruit_BMP3XX bmp;
 Adafruit_SHT31 sht;
+Adafruit_SSD1306 display;
 TwoWire wire = TwoWire(0);
 Sensors sensors;
 
@@ -95,10 +96,16 @@ void setup() {
   setenv("TZ", timezone, 1);
 
   // setClock();  
+
+  display = Adafruit_SSD1306(DISPLAY_WIDTH, DISPLAY_HEIGHT, sensors.wire, -1);
+  sensors.SCREEN = display;
+  displaySetup(&sensors.status, &sensors.SCREEN);
   
   sht = Adafruit_SHT31(sensors.wire);
   sensors.SHT = sht;
+  
   shtSetup(&sensors.status, &sensors.SHT);
+
   sensors.BMP = bmp;
   bmpSetup(sensors.wire, &sensors.status, &sensors.BMP);
   cameraSetup(&sensors.status);
@@ -109,9 +116,9 @@ void loop() {
   if (client) {
     client -> setCACert(rootCA);
     network.CLIENT = client;
+    
     /*
     Attempting to scope the http client to keep it alive in relation to the wifi client.
-    */
     {
       HTTPClient https;
       OTAUpdate(&network, FIRMWARE_VERSION);
@@ -154,6 +161,8 @@ void loop() {
     }
 
     delete client; 
+    */
+    
   }
 
   debugln("Going to sleep!...");

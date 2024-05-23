@@ -51,6 +51,39 @@ void bmpSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_BMP3XX *bmp) {
   }
 }
 
+void displaySetup(Sensors::Status *stat, Adafruit_SSD1306 *display) {
+  if (!display -> begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    debugln("Display allocation failed");
+  } else {
+    stat -> SCREEN = false;
+    debugln("Display Found!");
+    display -> clearDisplay();
+
+    display -> setTextSize(1);
+    display -> setTextColor(WHITE);
+    display -> setCursor(0, 10);
+    // Display static text
+    display -> println("Welcome!");
+    display -> display(); 
+  }
+
+}
+
+
+void displayPrintln(Adafruit_SSD1306 *display, const String& message) {
+  display -> clearDisplay();
+  display -> setCursor(0, 10);
+  // Display static text
+  display -> println(message);
+  display -> display(); 
+}
+
+
+void sensorPrintout() {
+  return ;
+}
+
+
 /**
  * Set up the camera. 
  */
