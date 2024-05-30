@@ -6,27 +6,27 @@ class Manager:
     """
     Static Database Manager.
     """
-    __conn:mysql.MySQLConnection = None
-    __config_path:str = DB_CONFIG
+    _conn:mysql.MySQLConnection = None
+    _config_path:str = DB_CONFIG
 
     @staticmethod
     def get_conn():
         """
         Get database connection object to write to local db.
         """
-        if Manager.__conn is None: Manager.connect()
-        return Manager.__conn
+        if (not Manager._conn) or (not Manager._conn.is_connected()): Manager.connect()
+        return Manager._conn
     
     @staticmethod
     def get_config_path() -> str:
         """
         Get the config path for the Database connection.
         """
-        return Manager.__config_path
+        return Manager._config_path
     
     @staticmethod
     def get_sk() -> str:
-        conf_dict = Manager.__load(Manager.__config_path)
+        conf_dict = Manager._load(Manager._config_path)
         if conf_dict is None: raise RuntimeError("Couldn't read database config file.")
         return conf_dict['key']
 
@@ -36,33 +36,33 @@ class Manager:
         """
         Connect to database specified in the config files.
         """
-        conf_dict = Manager.__load(Manager.__config_path)
+        conf_dict = Manager._load(Manager._config_path)
         if conf_dict is None: raise RuntimeError("Couldn't read database config file.")
 
         username =  conf_dict['user']
         passw = conf_dict['pass']
         hostname = conf_dict['host']
-
+        
         try:
-            Manager.__conn = mysql.connect(
+            Manager._conn = mysql.connect(
                 user = username,
                 password = passw,
                 host = hostname)
 
             Manager.apply_schema(drop_schema)
 
-            cursor = Manager.__conn.cursor()
+            cursor = Manager._conn.cursor()
             cursor.execute("USE weather")
             cursor.close()
             debug("successfully connected to the database")
 
         except mysql.Error as e:
-            Manager.__conn = None
+            Manager._conn = None
             raise RuntimeError(str(e) + " -> Couldn't connect to db 'weather'.")
 
     
     @staticmethod
-    def __load(file_path:str) -> Dict | None:
+    def _load(file_path:str) -> Dict | None:
         """
         Attempt to load the database config file.
         """
@@ -90,7 +90,7 @@ class Manager:
         exists = False
 
         try:
-            cursor = Manager.__conn.cursor()
+            cursor = Manager._conn.cursor()
             cursor.execute("SHOW DATABASES LIKE 'weather'")
             result = cursor.fetchone()
             exists = result is not None
@@ -100,7 +100,7 @@ class Manager:
 
         if should_drop_schema and exists:
             try:
-                cursor = Manager.__conn.cursor()
+                cursor = Manager._conn.cursor()
                 cursor.execute("DROP DATABASE weather")
                 cursor.close()
             except mysql.Error:
@@ -108,6 +108,6 @@ class Manager:
 
         if should_drop_schema or not exists:
             try:
-                apply(Manager.__conn)
+                apply(Manager._conn)
             except Exception as e:
                 raise RuntimeError(str(e) + " -> Couldn't load schema for Database: 'weather.'")
