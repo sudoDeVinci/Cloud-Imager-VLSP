@@ -28,7 +28,7 @@ def system_info() -> Response:
     return jsonify(memory_usage=memory_usage, cpu_usage=cpu_usage)
 
 @views.route("/", methods=['GET', 'POST'])
-@login_required
+# @login_required
 def index():
     global JACCARDS
     global OPTIMALS
@@ -56,7 +56,7 @@ def index():
                 jaccard = JACCARDS[model.name]
             
             if OPTIMALS[model.name] is None:
-                roc = ROC(cam = model, jaccard = jaccard, STRATA_COUNT = 30, STRATA_SIZE = 30, SAMPLE_POINTS = None)
+                roc = ROC(cam = model, jaccard = jaccard, STRATA_COUNT = 60, STRATA_SIZE = 30, SAMPLE_POINTS = None)
                 optimal = _select_optimal_bounds(DATA = roc)
                 OPTIMALS[model.name] = optimal
             else: 
