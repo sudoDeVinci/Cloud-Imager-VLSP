@@ -24,7 +24,7 @@
 #define CAMERA_CLK 5000000
 #define CAMERA_MODEL_ESP32S3_EYE
 #define UNDEFINED -69420.00
-#define SAMPLES 300
+#define SAMPLES 80
 #define DISPLAY_WIDTH 128
 #define DISPLAY_HEIGHT 64
 
@@ -68,6 +68,9 @@ void bmpSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_BMP3XX *bmp);
  * Set up the camera (OV5640). 
  */
 void cameraSetup(Sensors::Status *stat);
+
+
+void resetDisplay(Adafruit_SSD1306 *display);
  
 /**
  * Setup and calibrate the display - Show a welcome message.
@@ -75,9 +78,14 @@ void cameraSetup(Sensors::Status *stat);
 void displaySetup(Sensors::Status *stat, Adafruit_SSD1306 *display);
 
 /**
- * Display a line on the oled display.
+ * Display the readings on the OLED display.
  */
-void displayLine(Adafruit_SSD1306 *display, const String& message);
+void displayReadings(String* readings, Adafruit_SSD1306 *display);
+
+/**
+ * Display the statuses of the sensors.
+ */
+void displayStatuses(Sensors::Status *stat, Adafruit_SSD1306 *display, const char* SSID);
 
 /**
  * De-init the camera. 

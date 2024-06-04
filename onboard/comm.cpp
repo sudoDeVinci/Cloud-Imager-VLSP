@@ -242,9 +242,9 @@ void sendReadings(HTTPClient *https, Network *network, String* thpd, const Strin
   debugln("\n[READING]");
 
   const String values = "temperature=" + thpd[0] + 
-                          "&humidity=" + thpd[1] + 
-                          "&pressure=" + thpd[2] + 
-                          "&dewpoint=" + thpd[3];
+                        "&humidity=" + thpd[1] + 
+                        "&pressure=" + thpd[2] + 
+                        "&dewpoint=" + thpd[3];
 
   String url;
   url.reserve(strlen(network -> HOST) + strlen(network -> routes.READING) + values.length() + 2);

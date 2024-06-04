@@ -112,10 +112,14 @@ void setup() {
 }
 
 void loop() {
+  resetDisplay(&sensors.SCREEN);
+  displayStatuses(&sensors.status, &sensors.SCREEN, network.SSID);
   WiFiClientSecure *client = new WiFiClientSecure;
   if (client) {
     client -> setCACert(rootCA);
     network.CLIENT = client;
+    String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
+    displayReadings(readings, &sensors.SCREEN);
     
     /*
     Attempting to scope the http client to keep it alive in relation to the wifi client.
@@ -167,5 +171,5 @@ void loop() {
 
   debugln("Going to sleep!...");
   delay(50);
-  deepSleepMins(5);
+  deepSleepMins(20);
 }
