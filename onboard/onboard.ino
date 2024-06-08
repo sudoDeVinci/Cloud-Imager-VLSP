@@ -96,20 +96,34 @@ void setup() {
 
 void loop() {
   resetDisplay(&sensors.SCREEN);
+
+  // Show the sensor statuses.
   displayStatuses(&sensors.status, &sensors.SCREEN, network.SSID);
+
+  // Read sensor readings into singular Reading object - Display them to the screen.
+  Reading currentReading = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
+  currentReading.timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
+  displayReadings(&currentReading, &sensors.SCREEN);
+
+  // Connect to the Wi-Fi.
   WiFiClientSecure *client = new WiFiClientSecure;
-  if (client) {
+  if (client && sensors.status.WIFI) {
+
+    // Set the certificate to communicate.
     client -> setCACert(rootCA);
     network.CLIENT = client;
 
-    String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
-    displayReadings(readings, &sensors.SCREEN);
+    /* Read the file content as a vector of strings - Convert to array of readings. 
+    std::vector<String*> fileContent = readFile(SD_MMC, "/readings.txt");
+    Reading* loggedReadings = csvToReadings(fileContent);
+    
+    
+    for (int i = 0; i < fileContent.size(); i ++) {
+      printReadings(&loggedReadings[i]);
+    }
+    */
 
-    String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
-    String message = readingsToString(timestamp, readings);
-    debugln(message);
-    writeToFile(SD_MMC, "/readings.txt", message);
-    std::vector<String*> output = readFile(SD_MMC, "/readings.txt");
+
     /*
     Attempting to scope the http client to keep it alive in relation to the wifi client.
     {
@@ -152,10 +166,14 @@ void loop() {
       }
 
     }
-
-    delete client; 
     */
+    delete client; 
     
+  } else {
+    // Save the readings to the SD Card in CSV format.
+    String message = readingsToString(&currentReading);
+    debugln(message);
+    writeToFile(SD_MMC, "/readings.txt", message);
   }
 
   debugln("Going to sleep!...");

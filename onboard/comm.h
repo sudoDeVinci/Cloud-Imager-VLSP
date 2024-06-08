@@ -123,7 +123,7 @@ void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-void sendReadings(HTTPClient *https, Network *network, String* thpd, const String& timestamp);
+void sendReadings(HTTPClient *https, Network *network, Reading* readings);
 
 /**
  * Send image from weather station to server. 

@@ -140,14 +140,14 @@ void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-void sendReadings(HTTPClient *https, Network *network, String* thpd, const String& timestamp) {
+void sendReadings(HTTPClient *https, Network *network, Reading* readings) {
   debugln("\n[READING]");
 
-  const String values = "temperature=" + thpd[0] + 
-                        "&humidity=" + thpd[1] + 
-                        "&pressure=" + thpd[2] + 
-                        "&dewpoint=" + thpd[3];
-
+  const String values = "temperature=" + readings -> temperature + 
+                        "&humidity=" + readings -> humidity + 
+                        "&pressure=" + readings -> pressure + 
+                        "&dewpoint=" + readings -> dewpoint;
+  
   String url;
   url.reserve(strlen(network -> HOST) + strlen(network -> routes.READING) + values.length() + 2);
   url.concat(network -> HOST);
@@ -158,7 +158,7 @@ void sendReadings(HTTPClient *https, Network *network, String* thpd, const Strin
 
   debugln(url);
   
-  String reply = send(https, network, timestamp);
+  String reply = send(https, network, readings -> timestamp);
   debugln(reply);
 }
 

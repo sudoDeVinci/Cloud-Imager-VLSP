@@ -48,6 +48,18 @@ struct Sensors {
     } status;
 };
 
+/**
+ * A singular timestamped reading taken by all the sensors.
+ */
+struct Reading {
+    String timestamp = "None";
+    String temperature = "None";
+    String humidity = "None";
+    String pressure = "None";
+    String altitude = "None";
+    String dewpoint = "None";
+};
+
 
 /**
  * Deep sleep for a specified number of minutes. 
@@ -80,7 +92,7 @@ void displaySetup(Sensors::Status *stat, Adafruit_SSD1306 *display);
 /**
  * Display the readings on the OLED display.
  */
-void displayReadings(String* readings, Adafruit_SSD1306 *display);
+void displayReadings(Reading* readings, Adafruit_SSD1306 *display);
 
 /**
  * Display the statuses of the sensors.
@@ -95,16 +107,21 @@ esp_err_t cameraTeardown();
 /**
  * Read all sensors for info as Strings. 
  */
-String* readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp);
+Reading readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp);
 
 /**
  * Return string equivalent of float array of readings.
  */
-String readingsToString(String& timestamp, String* readings);
+String readingsToString(Reading* readings);
 
 /**
  * Print the readings for the sesnsors.
  */
-void printReadings(String* readings);
+void printReadings(Reading* readings);
+
+/**
+ * Convert a vector a Strings from a csv file to an array of readings.
+ */
+Reading* csvToReadings(std::vector<String*> csv);
 
 #endif

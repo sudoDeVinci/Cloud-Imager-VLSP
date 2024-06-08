@@ -113,11 +113,9 @@ std::vector<String*> readFile(fs::FS &fs, const char * path){
     return output;
   }
 
-  debugln("- read from file:");
   while(file.available()){
     String line = file.readStringUntil('\n');
     output.push_back(split(line, ","));
-    debugln(line);
   }
   debugln();
   file.close();
