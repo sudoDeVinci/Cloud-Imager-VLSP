@@ -14,6 +14,20 @@ ScoreDict = TypeVar("ScoreDict", Dict[str, List[List[List[ChannelBound]]]], None
 
 
 def _scoredict_vis(CAM:Camera, result: ScoreDict) -> None:
+    """
+    Visualize the Jaccard similarity scores for different channels of a given camera model.
+
+    This function prints out the Jaccard similarity scores for various channels in a formatted table.
+    The scores are displayed for the specified camera model.
+
+    Args:
+        - CAM (Camera): An instance of the Camera class, representing the camera model for which the analysis is performed.
+        - result (ScoreDict): A dictionary containing the Jaccard similarity scores for different channels. The keys are channel names,
+                            and the values are dictionaries containing the 'score' for each channel.
+
+    Returns:
+        None
+    """
     
     debug(f"\n- {CAM.Model.value.upper()} Jaccard Similarities") 
     debug("--------------------------------")
@@ -24,12 +38,27 @@ def _scoredict_vis(CAM:Camera, result: ScoreDict) -> None:
     debug("--------------------------------")
     
 def _optimaldict_vis(CAM:Camera, optimal_dict: Dict[str, Dict[str, ChannelBound|float]]) -> None:
+    """
+    Visualize the optimal channel boundaries for a given camera model.
+
+    This function prints out the optimal channel boundaries along with their AUC and accuracy values
+    in a formatted table. The boundaries are displayed for the specified camera model.
+
+    Args:
+        - CAM (Camera): An instance of the Camera class, representing the camera model for which the analysis is performed.
+        - optimal_dict (Dict[str, Dict[str, ChannelBound | float]]): A dictionary containing the optimal channel boundaries for different channels.
+            The keys are channel names, and the values are dictionaries containing the 'bound' (ChannelBound object), 'AUC', and 'Accuracy' for each channel.
+
+    Returns:
+        None
+    """
+
     debug(f"\n- {CAM.Model.value.upper()} Optimal Channel Boundaries") 
     debug("-------------------------------------------------")
     debug(f"| {'Channel':^18} | {'Lower - Upper':>10} | {'AUC':^8} | {'Accuracy':^8}") 
     debug("-------------------------------------------------")
     for channel, ldict in optimal_dict.items():
-        debug(f"| {channel:<18} | {ldict['bound'].lower_bound if ldict['bound'] is not None else "None":<5} - {ldict['bound'].upper_bound if ldict['bound'] is not None else "None":>5} |  {ldict['AUC'] if ldict['AUC'] is not None else "None":.4f}  |  {ldict['Accuracy'] if ldict['Accuracy'] is not None else "None":.4f}")
+        debug(f"| {channel:<18} | {ldict['bound'].lower_bound if ldict['bound'] is not None else 'None':<5} - {ldict['bound'].upper_bound if ldict['bound'] is not None else 'None':>5} |  {ldict['AUC'] if ldict['AUC'] is not None else 'None':.4f}  |  {ldict['Accuracy'] if ldict['Accuracy'] is not None else 'None':.4f}")
     debug("-------------------------------------------------")
 
 
@@ -62,9 +91,9 @@ def colourspace_similarity_test(cam: Camera, colours: List[Colour_Tag], overwrit
     A lower score indicates a better distinction between sky and clouds in that colour channel.
 
     Args:
-        cam (Camera): An instance of the Camera class, representing the camera model for which the analysis is performed.
-        colours (List[Colour_Tag]): A list of Colour_Tag enums representing the colour spaces to be analyzed.
-        overwrite (bool, optional): A flag to determine whether to overwrite existing cached results. If False, the function
+        - cam (Camera): An instance of the Camera class, representing the camera model for which the analysis is performed.
+        - colours (List[Colour_Tag]): A list of Colour_Tag enums representing the colour spaces to be analyzed.
+        - overwrite (bool, optional): A flag to determine whether to overwrite existing cached results. If False, the function
                                      will attempt to load and return cached results to save computation time. Defaults to False.
 
     Returns:
@@ -153,8 +182,8 @@ def _jaccard(array1: Iterable[Number], array2: Iterable[Number]) -> float:
     The Jaccard similarity index is a measure of similarity between two sets. 
 
     Args:
-        array1 (Iterable[Number]): The first array to compare. It should be an iterable of numbers.
-        array2 (Iterable[Number]): The second array to compare. It should be an iterable of numbers.
+        - array1 (Iterable[Number]): The first array to compare. It should be an iterable of numbers.
+        - array2 (Iterable[Number]): The second array to compare. It should be an iterable of numbers.
 
     Returns:
         float: The Jaccard similarity index between the two arrays. This is a value between 0 and 1,
@@ -179,9 +208,9 @@ def _thresh(img: Matlike, index: int, bounds: Tuple[int, int]) -> Matlike:
     Perform a thresholding operation on an image.
 
     Args:
-        img (Matlike): The input image.
-        index (int): The index of the color channel to threshold.
-        bounds (Tuple[int, int]): A tuple containing the lower and upper bounds for the threshold.
+        - img (Matlike): The input image.
+        - index (int): The index of the color channel to threshold.
+        - bounds (Tuple[int, int]): A tuple containing the lower and upper bounds for the threshold.
 
     Returns:
         numpy.ndarray: The thresholded image.
@@ -232,8 +261,8 @@ def _select_optimal_bounds(DATA: Dict[str, Dict[int, List[ChannelBound]]]) -> Di
     Construct a dictionary of the optimal colour channels for a given camera given ROC curve data.
 
     Args:
-        CAM (Camera): The camera being used.
-        DATA (Dict[str, Dict[int, List[ChannelBound]]]): The ROC curve data.
+        - CAM (Camera): The camera being used.
+        - DATA (Dict[str, Dict[int, List[ChannelBound]]]): The ROC curve data.
 
     Returns:
         Dict[str, Dict[str, Any]]: _description_
@@ -282,9 +311,9 @@ def _bootstrap_indexes(indexes: List[int], stratum_size: Optional[int] = None, n
     Split the dataset indexes into testing strata using bootstrapping.
 
     Parameters:
-        indexes (List[int]): List of indexes to the dataset of images.
-        stratum_size (int, optional): Number of items in each stratum. If None, the size is set to the total number of samples in the dataset.
-        n_bootstraps (int, optional): Number of bootstrap iterations.
+        - indexes (List[int]): List of indexes to the dataset of images.
+        - stratum_size (int, optional): Number of items in each stratum. If None, the size is set to the total number of samples in the dataset.
+        - n_bootstraps (int, optional): Number of bootstrap iterations.
 
     Returns:
         List of Lists: List of testing strata.
@@ -316,12 +345,12 @@ def _average_scoredict(ROC_DATA: Dict[str, List[List[List[ChannelBound]]]]) -> D
 
 def graph_ROC(CAM:Camera, averaged: Dict[str, Dict[int, List[ChannelBound]]], STRATA_COUNT: Optional[int] = 30, STRATA_SIZE: Optional[int] = 30) -> None:
     """
-    Graphsthe Receiver Operating Characteristic (ROC) curves for a given set of colour channels
+    Graphs the Receiver Operating Characteristic (ROC) curves for a given set of colour channels
 
     Args:
-        averaged (Dict[str, List[List[List[ChannelBound]]]]): A dictionary containing the averaged ROC data.
-        STRATA_COUNT (int, optional): The number of strata to use for bootstrapping. Defaults to 30.
-        STRATA_SIZE (int, optional): The size of each stratum. Defaults to 30.
+        - averaged (Dict[str, List[List[List[ChannelBound]]]]): A dictionary containing the averaged ROC data.
+        - STRATA_COUNT (int, optional): The number of strata to use for bootstrapping. Defaults to 30.
+        - STRATA_SIZE (int, optional): The size of each stratum. Defaults to 30.
     """
 
     fs =  30
@@ -388,6 +417,21 @@ def graph_ROC(CAM:Camera, averaged: Dict[str, Dict[int, List[ChannelBound]]], ST
         fastmath = True)
 def _runit( GROUND_TRUTH_MASKS: np.ndarray, 
             bound_masks: np.ndarray ) -> Tuple[float, float, float, float]:
+    """
+    Calculate the True Positive Rate, False Positive Rate, Precision, and Accuracy 
+    for a set of ground truth masks and corresponding boundary masks.
+
+    Args:
+        GROUND_TRUTH_MASKS (np.ndarray): An array of ground truth masks.
+        bound_masks (np.ndarray): An array of boundary masks to compare against the ground truth masks.
+
+    Returns:
+        Tuple[float, float, float, float]: A tuple containing:
+            - True_Positive_Rate (float): The rate of true positives.
+            - False_Positive_Rate (float): The rate of false positives.
+            - Precision (float): The precision of the boundary masks.
+            - Accuracy (float): The accuracy of the boundary masks.
+    """
 
     TP, TN, FP, FN = 0, 0, 0, 0
 
@@ -415,6 +459,25 @@ def _runstrata(  channel_index: int,
                 cloud_bound_perms: Tuple[Tuple[int, int]],
                 IMAGE_MASKS: NDArray,
                 CH_REFERENCES: NDArray) -> List[List[List[ChannelBound]]]:
+    """
+    Perform stratified testing of channel boundaries for a given channel index and label.
+
+    This function evaluates the performance of different channel boundaries on stratified subsets of image data.
+    It calculates the True Positive Rate, False Positive Rate, Precision, and Accuracy for each boundary and stratum.
+
+    Args:
+        - channel_index (int): The index of the color channel to be tested.
+        - channel_label (str): The label of the color channel to be tested.
+        - cloud_strata (List[List[int]]): A list of lists, where each inner list contains indexes of images in a stratum.
+        - cloud_bound_perms (Tuple[Tuple[int, int]]): A tuple of tuples, where each inner tuple contains the lower and upper bounds for the threshold.
+        - IMAGE_MASKS (NDArray): An array of ground truth masks for the images.
+        - CH_REFERENCES (NDArray): An array of images converted to the color space of the channel being tested.
+
+    Returns:
+        List[List[List[ChannelBound]]]: A nested list where the outer list corresponds to the lower bound of the threshold,
+                                        the middle list corresponds to the stratum index, and the inner list contains
+                                        ChannelBound objects with the calculated metrics for each boundary.
+    """
     
     strat_count = len(cloud_strata)
     bound_count = len(cloud_bound_perms)
@@ -483,12 +546,12 @@ def _ROC(CAM: Camera, tags: List[Colour_Tag], jaccard:ScoreDict = None, overwrit
     Calculates the Receiver Operating Characteristic (ROC) and Precision-Recall curves for a given camera and set of colour tags.
 
     Args:
-        CAM (Camera): The camera used for image acquisition.
-        tags (List[Colour_Tag]): The list of colour tags to use for analysis.
-        overwrite (bool, optional): A flag to determine whether to overwrite existing cached results.
-        STRATA_COUNT (int, optional): The number of strata to use for bootstrapping. Defaults to 30.
-        STRATA_SIZE (int, optional): The size of each stratum. Defaults to 30.
-        SAMPLE_POINTS (int, optional): The number of sample points to use for each stratum. Defaults to 500.
+        - CAM (Camera): The camera used for image acquisition.
+        - tags (List[Colour_Tag]): The list of colour tags to use for analysis.
+        - overwrite (bool, optional): A flag to determine whether to overwrite existing cached results.
+        - STRATA_COUNT (int, optional): The number of strata to use for bootstrapping. Defaults to 30.
+        - STRATA_SIZE (int, optional): The size of each stratum. Defaults to 30.
+        - SAMPLE_POINTS (int, optional): The number of sample points to use for each stratum. Defaults to 500.
 
     Returns:
         Dict[str, Dict[int, List[ChannelBound]]]: A dictionary where keys are strings combining the colour space tag and the channel name, and values are dictionaries containing the 'score' (Jaccard similarity) and 'index' (channel index) for each channel.
