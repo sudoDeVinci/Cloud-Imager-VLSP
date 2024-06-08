@@ -13,10 +13,10 @@ def get_QNH_hpa(
     It uses the METAR-TAF API to fetch the data.
 
     Parameters:
-    airport (Airport, optional): The airport for which to retrieve the QNH. Defaults to Airport.VAXJO.
-    locale (Locale, optional): The language locale for the API response. Defaults to Locale.English.
-    version (str, optional): The API version. Defaults to "2.3".
-    key (str, optional): The API key for authentication. Defaults to a predefined key.
+    - airport (Airport, optional): The airport for which to retrieve the QNH. Defaults to Airport.VAXJO.
+    - locale (Locale, optional): The language locale for the API response. Defaults to Locale.English.
+    - version (str, optional): The API version. Defaults to "2.3".
+    - key (str, optional): The API key for authentication. Defaults to a predefined key.
 
     Returns:
     float|None: The current QNH in hPa, or None if an error occurred.
