@@ -1,47 +1,48 @@
 #include "sensors.h"
 #include "camera_pins.h"
 
-// Function to calculate the median of a sorted array
+/**
+ * Calculate the median of a sorted array.
+ */
 float median(float* sortedArray, int size) {
-    if (size % 2 == 0) {
-        return (sortedArray[size / 2 - 1] + sortedArray[size / 2]) / 2.0;
-    } else {
-        return sortedArray[size / 2];
-    }
+  if (size % 2 == 0) return (sortedArray[size / 2 - 1] + sortedArray[size / 2]) / 2.0;
+  else return sortedArray[size / 2];
 }
 
-// Function to remove outliers using IQR and calculate mean
+/**
+ * Calculate mean of float array after removing outliers via IQR.
+ */
 float removeOutliersAndGetMean(float* dataArray, int dataSize) {
-    // Sort the array
-    float sortedData[dataSize];
-    memcpy(sortedData, dataArray, dataSize * sizeof(float));
-    std::sort(sortedData, sortedData + dataSize);
+  // Sort the array
+  float sortedData[dataSize];
+  memcpy(sortedData, dataArray, dataSize * sizeof(float));
+  std::sort(sortedData, sortedData + dataSize);
 
-    // Calculate Q1 and Q3
-    int Q1_index = dataSize / 4;
-    int Q3_index = (3 * dataSize) / 4;
-    float Q1 = median(sortedData, Q1_index == 0 ? 1 : Q1_index);
-    float Q3 = median(sortedData + Q3_index, dataSize - Q3_index);
+  // Calculate Q1 and Q3
+  int Q1_index = dataSize / 4;
+  int Q3_index = (3 * dataSize) / 4;
+  float Q1 = median(sortedData, Q1_index == 0 ? 1 : Q1_index);
+  float Q3 = median(sortedData + Q3_index, dataSize - Q3_index);
 
-    // Calculate IQR
-    float IQR = Q3 - Q1;
+  // Calculate IQR
+  float IQR = Q3 - Q1;
 
-    // Define the lower and upper bounds for outliers
-    float lowerBound = Q1 - 1.5 * IQR;
-    float upperBound = Q3 + 1.5 * IQR;
+  // Define the lower and upper bounds for outliers
+  float lowerBound = Q1 - 1.5 * IQR;
+  float upperBound = Q3 + 1.5 * IQR;
 
-    float sum = 0.0;
-    int validCount = 0;
+  float sum = 0.0;
+  int validCount = 0;
 
-    // Calculate mean of non-outlier values
-    for (int i = 0; i < dataSize; i++) {
-        if (dataArray[i] >= lowerBound && dataArray[i] <= upperBound) {
-            sum += dataArray[i];
-            validCount++;
-        }
+  // Calculate mean of non-outlier values
+  for (int i = 0; i < dataSize; i++) {
+    if (dataArray[i] >= lowerBound && dataArray[i] <= upperBound) {
+      sum += dataArray[i];
+      validCount++;
     }
+  }
 
-    return sum / validCount;
+  return sum / validCount;
 }
 
 /**
@@ -283,43 +284,40 @@ void cameraSetup(Sensors::Status *stat) {
  * De-initialize the camera.
  */
 esp_err_t cameraTeardown() {
-    esp_err_t err = ESP_OK;
+  esp_err_t err = ESP_OK;
 
-    // Deinitialize camera
-    err = esp_camera_deinit();
+  // Deinitialize camera
+  err = esp_camera_deinit();
 
-    // Display any errors associated with camera deinitialization
-    if (err != ESP_OK) {
-        debugf("Error deinitializing camera: %s\n", esp_err_to_name(err));
-    } else {
-        debugf("Camera deinitialized successfully\n");
-    }
-    debugln();
-    return err;
+  // Display any errors associated with camera deinitialization
+  if (err != ESP_OK) debugf("Error deinitializing camera: %s\n", esp_err_to_name(err));
+  else debugf("Camera deinitialized successfully\n");
+  
+  debugln();
+  return err;
 }
 
 /**
  * Read the humidity and temperature from the SHT-31D.
  */
 void read(Adafruit_SHT31 *sht, float *out) {
-    float h, t;
-    for (int s = 0; s < SAMPLES; s++) {
-      h += sht -> readHumidity();
-      t += sht -> readTemperature();
-    }
-    if(!isnan(h)) out[0] = h/SAMPLES;
-    if(!isnan(t)) out[1] = t/SAMPLES;
+  float h, t;
+  for (int s = 0; s < SAMPLES; s++) {
+    h += sht -> readHumidity();
+    t += sht -> readTemperature();
+  }
+  if(!isnan(h)) out[0] = h/SAMPLES;
+  if(!isnan(t)) out[1] = t/SAMPLES;
 }
 
 /**
  * Read the pressure and altitude from the BMP390 in and Pa and meters.
  */
 void read(Adafruit_BMP3XX *bmp, double *out) {
-  float pres = 0;
-  float alt = 0;
-  float temp = 0;
 
   float* presses = new float[SAMPLES];
+  float* altids = new float[SAMPLES];
+  float* tempers = new float[SAMPLES];
 
   double pressure;
   double altitude;
@@ -328,14 +326,14 @@ void read(Adafruit_BMP3XX *bmp, double *out) {
   if (! bmp -> performReading()) return;
 
   for (int s = 0; s < SAMPLES; s++) {
-    presses[s] += bmp -> readPressure();
-    alt += bmp -> readAltitude(SEALEVELPRESSURE_HPA);
-    temp += bmp -> readTemperature(); 
+    presses[s] = bmp -> readPressure();
+    altids[s] = bmp -> readAltitude(SEALEVELPRESSURE_HPA);
+    tempers[s] = bmp -> readTemperature(); 
   }
 
-  altitude = static_cast<double>(alt/SAMPLES);
+  altitude = static_cast<double>(removeOutliersAndGetMean(altids, SAMPLES));
   pressure = static_cast<double>(removeOutliersAndGetMean(presses, SAMPLES));
-  temperature = static_cast<double>(temp/SAMPLES);
+  temperature = static_cast<double>(removeOutliersAndGetMean(tempers, SAMPLES));
 
   if(!isnan(pressure)) out[0] = pressure;
   if(!isnan(altitude)) out[1] = altitude;
@@ -378,9 +376,9 @@ String* readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp
   double altitude = pat[1];
 
   if (temperature != UNDEFINED &&
-      humidity !=UNDEFINED &&
-      pressure !=UNDEFINED && 
-      altitude !=UNDEFINED) thpd[3] = calcDP(temperature, humidity, pressure, altitude);
+    humidity !=UNDEFINED &&
+    pressure !=UNDEFINED && 
+    altitude !=UNDEFINED) thpd[3] = calcDP(temperature, humidity, pressure, altitude);
 
   if(temperature != UNDEFINED) thpd[0] = String(temperature);
   if(humidity != UNDEFINED) thpd[1] = String(humidity);

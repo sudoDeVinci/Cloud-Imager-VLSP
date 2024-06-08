@@ -4,28 +4,28 @@
  * Extract the double-quote enclosed string from a line in a conf file.
  */
 const char* readString(const String& line) {
-    // Find the position of '=' and the first double quote
-    int equalsIndex = line.indexOf('=');
-    int quoteStartIndex = line.indexOf('"', equalsIndex);
+  // Find the position of '=' and the first double quote
+  int equalsIndex = line.indexOf('=');
+  int quoteStartIndex = line.indexOf('"', equalsIndex);
 
-    // Check if '=' and '"' are found
-    if (equalsIndex != -1 && quoteStartIndex != -1) {
-        int quoteEndIndex = line.indexOf('"', quoteStartIndex + 1);
+  // Check if '=' and '"' are found
+  if (equalsIndex != -1 && quoteStartIndex != -1) {
+    int quoteEndIndex = line.indexOf('"', quoteStartIndex + 1);
 
-        // Check if the second double quote is found
-        if (quoteEndIndex != -1) {
-            int pathStartIndex = quoteStartIndex + 1;
-            int pathLength = quoteEndIndex - pathStartIndex;
+    // Check if the second double quote is found
+    if (quoteEndIndex != -1) {
+      int pathStartIndex = quoteStartIndex + 1;
+      int pathLength = quoteEndIndex - pathStartIndex;
 
-            // Extract the file path
-            char* filePath = new char[pathLength + 1];  // +1 for null-terminator
-            line.substring(pathStartIndex, quoteEndIndex).toCharArray(filePath, pathLength + 1);
+      // Extract the file path
+      char* filePath = new char[pathLength + 1];  // +1 for null-terminator
+      line.substring(pathStartIndex, quoteEndIndex).toCharArray(filePath, pathLength + 1);
 
-            return filePath;
-        }
+      return filePath;
     }
+  }
 
-    return nullptr;
+  return nullptr;
 }
 
 /**
@@ -47,4 +47,18 @@ void sdmmcInit(void){
   debugf("SD_MMC Card Size: %lluMB\n", cardSize);  
   debugf("Total space: %lluMB\r\n", SD_MMC.totalBytes() / (1024 * 1024));
   debugf("Used space: %lluMB\r\n", SD_MMC.usedBytes() / (1024 * 1024));
+}
+
+
+
+/**
+ * Attempt to append to a given file.
+ * Create the file if it doesn't exist.
+ */
+void writeToFile(fs::FS &fs, const char* path, const char* message) {
+  // Try to open file for appending.
+  File file = SD_MMC.open(path, FILE_APPEND, true);
+  if (!file) return;
+
+  file.println(message);
 }
