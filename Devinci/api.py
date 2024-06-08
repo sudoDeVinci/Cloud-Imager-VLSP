@@ -7,7 +7,7 @@ from Devinci.db.services.status import StatusService
 from Devinci.METAR.fetcher import get_QNH_hpa
 
 QNH_cache:Dict['str',Tuple[int, datetime]] = {
-                'Vaxjo':(None, None)
+                'ESMX':(None, None)
             }
 
 api = Blueprint("api", __name__) 
@@ -35,10 +35,10 @@ def QNH() -> Response:
         err = header_check(request.headers, (MAH, TSH))
         if err is not None:return err   
 
-        if QNH_cache['Vaxjo'] == (None, None):
+        if QNH_cache['ESMX'] == (None, None):
             pres = get_QNH_hpa()
-            if not pres: return jsonify({"qnh":None, "timestamp": datetime.now(),"error": "Couldn't retrieve QNH"}), 400
-            QNH_cache['Vaxjo'] = (pres, datetime.now())
+            if not pres: return jsonify({"qnh":None, "timestamp": datetime.now().strftime("%Y-%m-%d-%H-%M"),"error": "Couldn't retrieve QNH"}), 400
+            QNH_cache['ESMX'] = (pres, datetime.now())
         
         else:
             delta =  datetime.now() - QNH_cache['Vaxjo'][1]
@@ -46,9 +46,9 @@ def QNH() -> Response:
             if delta.seconds > 7200:
                 pres = get_QNH_hpa()
                 if not pres: return jsonify({"qnh":None, "timestamp": datetime.now(),"error": "Couldn't retrieve QNH"}), 500
-                QNH_cache['Vaxjo'] = (pres, datetime.now())
+                QNH_cache['Vaxjo'] = (pres, datetime.now().strftime("%Y-%m-%d-%H-%M"))
         
-        return jsonify({"qnh":QNH_cache['Vaxjo'][0], 'timestamp': QNH_cache['Vaxjo'][0]}), 200
+        return jsonify({"qnh":QNH_cache['Vaxjo'][0], 'timestamp': QNH_cache['Vaxjo'][1].strftime("%Y-%m-%d-%H-%M")}), 200
 
 
 
@@ -200,6 +200,4 @@ def images() -> Response:
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
 
