@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include "FS.h"
 #include "SD_MMC.h"
+#include <vector>
 
 #define DEBUG 1
 
@@ -18,14 +19,12 @@
 #define debugf(...)
 #endif
 
-
 #define SD_MMC_CMD  38 //Please do not modify it.
 #define SD_MMC_CLK  39 //Please do not modify it. 
 #define SD_MMC_D0   40 //Please do not modify it.
-#define CERT_FOLDER "//certs"
-#define SERVER_FOLDER "//servers"
-#define AP_FOLDER "//aps"
-#define PROFILE_FOLDER "//profiles"
+#define CERT_DIR "//certs"
+#define AP_DIR "//aps"
+#define LOG_DIR "//logs"
 
 /**
  * Initialize the sdcard file system. 
@@ -36,5 +35,13 @@ void sdmmcInit(void);
  * Extract the double-quote enclosed string from a line in a conf file.
  */
 const char* readString(const String& line);
+
+/**
+ * Attempt to append to a given file.
+ * Create the file if it doesn't exist.
+ */
+void writeToFile(fs::FS& fs, const String& filename, const String& message);
+
+std::vector<String*> readFile(fs::FS &fs, const char * path);
 
 #endif

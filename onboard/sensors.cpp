@@ -228,6 +228,7 @@ void cameraSetup(Sensors::Status *stat) {
   esp_err_t initErr = esp_camera_init(&config);
   if (initErr != ESP_OK) {
     debugf("Camera init failed with error 0x%x", initErr);
+    debugln();
     stat -> CAM = false;
     return;
   }
@@ -385,6 +386,27 @@ String* readAll(Sensors::Status *stat, Adafruit_SHT31 *sht, Adafruit_BMP3XX *bmp
   if(pressure != UNDEFINED) thpd[2] = String(pressure);
   
   return thpd;
+}
+
+/**
+ * Return string equivalent of float array of readings.
+ */
+String readingsToString(String& timestamp, String* readings) {
+  int length = readings[0].length() +
+               readings[1].length() +
+               readings[2].length() + 
+               readings[3].length() + 
+               timestamp.length() + 4;
+  
+  String out;
+  out.reserve(length);
+  out.concat(timestamp + ",");
+  out.concat(readings[0] + ",");
+  out.concat(readings[1] + ",");
+  out.concat(readings[2] + ",");
+  out.concat(readings[3]);
+  
+  return out;
 }
 
 /**

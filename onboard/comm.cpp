@@ -1,6 +1,28 @@
 #include "comm.h"
 
 /**
+ * Set the internal clock via NTP server.
+ */
+void setClock() {
+  configTime(0, 0, "pool.ntp.org");
+
+  debug(F("Waiting for NTP time sync: "));
+  time_t nowSecs = time(nullptr);
+  while (nowSecs < 8 * 3600 * 2) {
+    delay(500);
+    debug(F("."));
+    yield();
+    nowSecs = time(nullptr);
+  }
+
+  debugln();
+  struct tm timeinfo;
+  gmtime_r(&nowSecs, &timeinfo);
+  debug(F("Current time: "));
+  debug(asctime(&timeinfo));
+}
+
+/**
   * Get the current time and format the timestamp as MySQL DATETIME.
   * timeinfo is an empty struct whihc is filled by calling getLocalTime().
   * Big thanks to Andreas Spiess:

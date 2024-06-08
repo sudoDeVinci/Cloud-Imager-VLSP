@@ -46,25 +46,6 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 -----END CERTIFICATE-----
 )";
 
-void setClock() {
-  configTime(0, 0, "pool.ntp.org");
-
-  debug(F("Waiting for NTP time sync: "));
-  time_t nowSecs = time(nullptr);
-  while (nowSecs < 8 * 3600 * 2) {
-    delay(500);
-    debug(F("."));
-    yield();
-    nowSecs = time(nullptr);
-  }
-
-  debugln();
-  struct tm timeinfo;
-  gmtime_r(&nowSecs, &timeinfo);
-  debug(F("Current time: "));
-  debug(asctime(&timeinfo));
-}
-
 void setup() {
   
   if (DEBUG == 1) { 
@@ -72,6 +53,8 @@ void setup() {
     debugln();
     debugln("Setting up.");
   }
+
+  sdmmcInit();
 
   /**
    * wire.begin(sda, scl)
@@ -118,9 +101,15 @@ void loop() {
   if (client) {
     client -> setCACert(rootCA);
     network.CLIENT = client;
+
     String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
     displayReadings(readings, &sensors.SCREEN);
-    
+
+    String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
+    String message = readingsToString(timestamp, readings);
+    debugln(message);
+    writeToFile(SD_MMC, "/readings.txt", message);
+    std::vector<String*> output = readFile(SD_MMC, "/readings.txt");
     /*
     Attempting to scope the http client to keep it alive in relation to the wifi client.
     {

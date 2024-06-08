@@ -87,10 +87,9 @@ struct Network {
 #define CLRF "\r\n"
 
 /**
- * Try to load the config file for a connection profile.
+ * Set the internal clock via NTP server.
  */
-void readProfile(fs::FS &fs, const char *path, Network &network);
-
+void setClock();
 /**
   * Get the current time and format the timestamp as MySQL DATETIME.
   * timeinfo is an empty struct whic is filled by calling getLocalTime().
