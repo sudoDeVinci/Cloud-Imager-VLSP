@@ -30,7 +30,7 @@ def get_QNH_hpa(
     try:
         url = f"https://api.metar-taf.com/metar?api_key={key}&v={version}&locale={locale.value}&id={airport.value}&station_id={airport.value}"
         reply = get(url)
-        outjson = json.loads(reply.content)['qnh']
+        outjson = json.loads(reply.content)['metar']['qnh']
     except Exception as e:
         print(f'{e} -> Couldn\'t encode json, check response body.')
 
