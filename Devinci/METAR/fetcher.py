@@ -1,33 +1,24 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
+from Devinci.METAR.structs import Airport, Locale, get
+
+import json
 
 
-def get_QNH_hpa(location:str) -> int:
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("--log-level=3")
+def get_QNH_hpa(
+                airport: Airport = Airport.VAXJO,
+                locale: Locale = Locale.English,
+                version: str = "2.3",
+                key: str = 'VOeVgaTHCcmuX4vuOS47tRLPEkOfPWTT'
+                ) -> float|None:
 
-    browser = webdriver.Chrome(options=options) 
-    browser.get("https://meteologix.com/se/observations/kronoberg/pressure-qnh/20240225-1100z.html") 
+    url = f"https://api.metar-taf.com/metar?api_key={key}&v={version}&locale={locale.value}&id={airport.value}&station_id={airport.value}"
 
-    results = browser.find_elements(By.CLASS_NAME, "o-4")
+    reply = get(url)
 
-    result = tuple(result.get_property("title") for result in results if location.lower() in result.get_property("title").lower())
-    if len(result) == 0:
-        return None
-
-    out = result[0].split(" | ")
-    # print(out)
+    outjson = None
 
     try:
-        out[0] = int(out[0].split(" ")[0])
-    except Exception:
-        return None
+        outjson = json.loads(reply.content)['qnh']
+    except Exception as e:
+        print(f'{e} -> Couldn\'t encode json, check response body.')
 
-    print(out)
-    browser.close()
-
-    return out[0]
-
-if __name__ == "__main__":
-    get_QNH_hpa("Vaxjo")
+    return outjson
