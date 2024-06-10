@@ -87,13 +87,13 @@ String getResponse(HTTPClient *HTTP, int httpCode) {
  * Got gist of everything from klucsik at:
  * https://gist.github.com/klucsik/711a4f072d7194842840d725090fd0a7
  */
-void send(HTTPClient* https, NetworkInfo* network, const String& timestamp, camera_fb_t *fb) {
+void send(HTTPClient* https, NetworkInfo* network, const String& timestamp, uint8_t* buf, size_t len) {
   https -> setConnectTimeout(READ_TIMEOUT);
   https -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.IMAGE_JPG);
   https -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
   https -> addHeader(network -> headers.TIMESTAMP, timestamp);
 
-  int httpCode = https -> POST(fb -> buf, fb -> len);
+  int httpCode = https -> POST(buf, len);
 
   debugln(getResponse(https, httpCode));  
 }
@@ -130,10 +130,12 @@ bool websiteReachable(HTTPClient* https, NetworkInfo* network, const String& tim
 
   // Check if the response code is 200 (OK)
   if (httpCode == 200) {
+    https -> end();
     return true;
   } else {
     debug("HTTP GET failed, error: ");
     debug(https -> errorToString(httpCode));
+    https -> end();
     return false;
   }
 }
@@ -159,6 +161,7 @@ void sendStats(HTTPClient* https, NetworkInfo* network, Sensors::Status *stat, c
 
     String reply = send(https, network, timestamp);
     debugln(reply);
+    https -> end();
 }
 
 /**
@@ -184,33 +187,30 @@ void sendReadings(HTTPClient* https, NetworkInfo* network, Reading* readings) {
   
   String reply = send(https, network, readings -> timestamp);
   debugln(reply);
+
+  https -> end();
 }
 
 /**
  * Parse the QNH from the server response.
  */
-String parseQNH(const String& jsonText) {
+float parseQNH(const String& jsonText) {
   const char* json = jsonText.c_str();
   DynamicJsonDocument doc(jsonText.length());
 
   // Deserialize the JSON document
   DeserializationError error = deserializeJson(doc, json);
 
-  String qnhString;
-  qnhString.reserve(5);
-
   // Test if parsing succeeds.
   if (error) {
     debug("Failed to parse QNH json response error :-> ");
     debug(error.f_str());
     debugln();
-    qnhString.concat("None");
-    return qnhString;
+    return UNDEFINED;
   }
 
-  int qnh = doc["metar"]["qnh"];
-  qnhString.concat(String(qnh));
-  return qnhString;
+  float qnh = doc["metar"]["qnh"];
+  return qnh;
 }
 
 /**
@@ -254,7 +254,7 @@ String getQNH(NetworkInfo* network) {
 /**
  * Send image from weather station to server. 
  */
-void sendImage(HTTPClient* https, NetworkInfo* network, camera_fb_t *fb, const String& timestamp) {
+void sendImage(HTTPClient* https, NetworkInfo* network, uint8_t* buf, size_t len, const String& timestamp) {
   debugln("\n[IMAGE]");
   String url;
   url.reserve(strlen(network -> HOST) + strlen(network -> routes.IMAGE) + 1);
@@ -265,7 +265,9 @@ void sendImage(HTTPClient* https, NetworkInfo* network, camera_fb_t *fb, const S
 
   debugln(url);
 
-  send(https, network, timestamp, fb);
+  send(https, network, timestamp, buf, len);
+
+  https -> end();
 }
 
 /**

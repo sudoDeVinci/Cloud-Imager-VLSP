@@ -102,10 +102,13 @@ void writeToFile(fs::FS& fs, const String& path, const String& message) {
   return output;
 }
 
-std::vector<String*> readFile(fs::FS &fs, const char * path){
+/**
+ * Read the csv of past readings and return a vector of String arrays.
+ */
+std::vector<String*> readFile(fs::FS &fs, const char * path) {
   std::vector<String*> output;
 
-  Serial.printf("\nReading file: %s\r\n", path);
+  debugf("\nReading file: %s\r\n", path);
 
   File file = fs.open(path);
   if(!file || file.isDirectory()){
@@ -122,4 +125,40 @@ std::vector<String*> readFile(fs::FS &fs, const char * path){
   return output;
 }
 
+/**
+ * Write an image buffer into a jpg file. 
+ */
 
+void writejpg(fs::FS &fs, const char * path, const uint8_t* buf, size_t size) {
+  File file = fs.open(path, FILE_WRITE);
+  if(!file){
+    debugln("Failed to open file for writing");
+    return;
+  }
+  file.write(buf, size);
+  debugf("Saved file to path: %s\r\n", path);
+}
+
+/**
+ * Read an image buffer from a jpg file. 
+ */
+uint8_t* readjpg(fs::FS &fs, const char* path) {
+  uint8_t* output;
+
+  debugf("\nReading file: %s\r\n", path);
+
+  File file = fs.open(path);
+  if(!file || file.isDirectory()){
+    debugln("- failed to open file for reading");
+    return output;
+  }
+
+  const size_t fileSize = file.size();
+
+  while(file.available()){
+    file.read(output, fileSize);
+  }
+  debugln();
+  file.close();
+  return output;
+}

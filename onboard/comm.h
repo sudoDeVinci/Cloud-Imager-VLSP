@@ -96,7 +96,7 @@ String getQNH(NetworkInfo* network);
 /**
  * Parse the QNH from the server response.
  */
-String parseQNH(const String& jsonText);
+float parseQNH(const String& jsonText);
 
 /**
  * Check if the website is reachable before trying to communicate further.
@@ -116,7 +116,7 @@ void sendReadings(HTTPClient* https, NetworkInfo* network, Reading* readings);
 /**
  * Send image from weather station to server. 
  */
-void sendImage(HTTPClient* https, NetworkInfo* network, camera_fb_t *fb, const String& timestamp);
+void sendImage(HTTPClient* https, NetworkInfo* network, uint8_t* buf, size_t len, const String& timestamp);
 
 /**
  * Update the board firmware via the update server.

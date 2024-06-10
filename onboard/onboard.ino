@@ -12,7 +12,7 @@ Adafruit_SSD1306 display;
 TwoWire wire = TwoWire(0);
 Sensors sensors;
 
- const char*rootCA = R"(
+ const char* rootCA = R"(
 -----BEGIN CERTIFICATE-----
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
 TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
@@ -78,9 +78,7 @@ void setup() {
   const char* ntpServer = "pool.ntp.org";
   const char* timezone = "CET-1-CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00";
   configTime(0, 0, ntpServer);
-  setenv("TZ", timezone, 1);
-
-  // setClock();  
+  setenv("TZ", timezone, 1);  
 
   display = Adafruit_SSD1306(DISPLAY_WIDTH, DISPLAY_HEIGHT, sensors.wire, -1);
   sensors.SCREEN = display;
@@ -88,48 +86,42 @@ void setup() {
   
   sht = Adafruit_SHT31(sensors.wire);
   sensors.SHT = sht;
-  
   shtSetup(&sensors.status, &sensors.SHT);
 
   sensors.BMP = bmp;
   bmpSetup(sensors.wire, &sensors.status, &sensors.BMP);
+
   cameraSetup(&sensors.status);
 }
+
+
+
 
 void loop() {
   resetDisplay(&sensors.SCREEN);
 
   // Show the sensor statuses.
-  //displayStatuses(&sensors.status, &sensors.SCREEN, network.SSID);
+  displayStatuses(&sensors.status, &sensors.SCREEN, network.SSID);
 
   // Read sensor readings into singular Reading object - Display them to the screen.
-  //Reading currentReading = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
-  //currentReading.timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
-  //displayReadings(&currentReading, &sensors.SCREEN);
+  Reading currentReading = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
+  currentReading.timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
+  displayReadings(&currentReading, &sensors.SCREEN);
 
   // Connect to the Wi-Fi.
   WiFiClientSecure *client = new WiFiClientSecure;
-
 
   if (client && sensors.status.WIFI) {
 
     // Get the QNH from the weather server.
     String qnhResponse = getQNH(&network);
-    String qnh = parseQNH(qnhResponse);
-    debugln(qnh);
+    float qnh = parseQNH(qnhResponse);
+    
 
     // Set the certificate to communicate.
     client -> setCACert(rootCA);
     network.CLIENT = client;
 
-    /* Read the file content as a vector of strings - Convert to array of readings. 
-    std::vector<String*> fileContent = readFile(SD_MMC, "/readings.txt");
-    Reading* loggedReadings = csvToReadings(fileContent);
-    
-    for (int i = 0; i < fileContent.size(); i ++) {
-      printReadings(&loggedReadings[i]);
-    }
-    */
 
     // Attempting to scope the http client to keep it alive in relation to the wifi client.
     {
@@ -138,19 +130,43 @@ void loop() {
 
       // Check if the site is reachable.
       if (websiteReachable(&https, &network, currentReading.timestamp)) {
+        
+        // Update the firmware if possible.
         OTAUpdate(&network, FIRMWARE_VERSION);
 
-        /*
-        sendStats(&https, &network, &sensors.status, timestamp);
-        https.end();
+        // Send the sensor statuses to server.
+        sendStats(&https, &network, &sensors.status, currentReading.timestamp);
         delay(50);
 
-        String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
-        sendReadings(&https, &network, readings, timestamp);
-        https.end();
-        delete[] readings;
+        /** 
+         * Read the file content as a vector of strings - Convert to array of readings. 
+         *
+         * std::vector<String*> fileContent = readFile(SD_MMC, "/readings.txt");
+         * Reading* loggedReadings = csvToReadings(fileContent);
+         *
+         * uint8_t* img;
+         *
+         * for (int i = 0; i < fileContent.size(); i ++) {
+         *    printReadings(&loggedReadings[i]);
+         *    String imagePathString = "/" + loggedReadings[i].timestamp + ".jpg";
+         *    uint8_t* img = readjpg(SD_MMC, imagePathString.c_str());
+         *    size_t len = sizeof(img);
+         *    sendReadings(&https, &network, &loggedReadings[i]);
+         *    sendImage(&https, &network, img, len, timestamp);
+         * }
+         *
+         * delete[] loggedReadings;
+         * fileContent.clear();
+         * delete[] img;
+         */
+
+        // Send the current reading to the server.
+        sendReadings(&https, &network, &currentReading);
         delay(50);
 
+        /**
+         * Refresh the image buffer - Take multiple images.
+         */
         if(sensors.status.CAM) {
           camera_fb_t * fb = NULL;
           fb = esp_camera_fb_get();
@@ -163,24 +179,47 @@ void loop() {
           esp_camera_fb_return(fb);
           delay(50);
           fb = esp_camera_fb_get();
-          sendImage(&https, &network, fb, timestamp);
-          https.end();
-          esp_camera_fb_return(fb);
+          
+          // Send the image to the server.
+          sendImage(&https, &network, fb -> buf, fb -> len, currentReading.timestamp);
           delay(50);
+          esp_camera_fb_return(fb);
           esp_err_t deinitErr = cameraTeardown();
-          if (deinitErr != ESP_OK) debugf("Camera init failed with error 0x%x", deinitErr);
+          if (deinitErr != ESP_OK) debugf("Camera de-init failed with error 0x%x", deinitErr);
         
         }
-        */  
         
       } else {
         // Save the readings to the SD Card in CSV format.
         String message = readingsToString(&currentReading);
         debugln(message);
         writeToFile(SD_MMC, "/readings.txt", message);
+
+        /**
+         * Refresh the image buffer - Take multiple images.
+         */
+        if(sensors.status.CAM) {
+          camera_fb_t * fb = NULL;
+          fb = esp_camera_fb_get();
+          esp_camera_fb_return(fb);
+          delay(50);
+          fb = esp_camera_fb_get();
+          esp_camera_fb_return(fb);
+          delay(50);
+          fb = esp_camera_fb_get();
+          esp_camera_fb_return(fb);
+          delay(50);
+          fb = esp_camera_fb_get();
+          
+
+          String imagePathString = "/" + currentReading.timestamp + ".jpg";
+          writejpg(SD_MMC, imagePathString.c_str(), fb -> buf, fb -> len);
+          esp_camera_fb_return(fb);
+          esp_err_t deinitErr = cameraTeardown();
+          if (deinitErr != ESP_OK) debugf("Camera de-init failed with error 0x%x", deinitErr);
+        }
       }
     }
-    
   } else {
     debug("No Connection Present.");
   }
