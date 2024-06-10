@@ -87,7 +87,7 @@ String getResponse(HTTPClient *HTTP, int httpCode) {
  * Got gist of everything from klucsik at:
  * https://gist.github.com/klucsik/711a4f072d7194842840d725090fd0a7
  */
-void send(HTTPClient* https, Networking* network, const String& timestamp, camera_fb_t *fb) {
+void send(HTTPClient* https, NetworkInfo* network, const String& timestamp, camera_fb_t *fb) {
   https -> setConnectTimeout(READ_TIMEOUT);
   https -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.IMAGE_JPG);
   https -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
@@ -103,7 +103,7 @@ void send(HTTPClient* https, Networking* network, const String& timestamp, camer
  * Got gist of everything from klucsik at:
  * https://gist.github.com/klucsik/711a4f072d7194842840d725090fd0a7
  */
-String send(HTTPClient* https, Networking* network, const String& timestamp) {
+String send(HTTPClient* https, NetworkInfo* network, const String& timestamp) {
     https -> setConnectTimeout(READ_TIMEOUT);
     https -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.APP_FORM);
     https -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
@@ -111,13 +111,37 @@ String send(HTTPClient* https, Networking* network, const String& timestamp) {
 
     int httpCode = https -> GET();
 
-    return getResponse(https, httpCode);  
+    return getResponse(https, httpCode);
+}
+
+/**
+ * Check if the website is reachable before trying to communicate further.
+ */
+bool websiteReachable(HTTPClient* https, NetworkInfo* network, const String& timestamp) {
+  String url;
+  url.reserve(strlen(network -> HOST) + strlen(network -> routes.INDEX));
+  url.concat(network -> HOST);
+  url.concat(network -> routes.INDEX);
+  https -> begin(url, network -> CERT);
+
+  debugln(url);
+
+  int httpCode = https -> GET();
+
+  // Check if the response code is 200 (OK)
+  if (httpCode == 200) {
+    return true;
+  } else {
+    debug("HTTP GET failed, error: ");
+    debug(https -> errorToString(httpCode));
+    return false;
+  }
 }
 
 /**
  * Send statuses of sensors to HOST on specified PORT. 
  */
-void sendStats(HTTPClient* https, Networking* network, Sensors::Status *stat, const String& timestamp) {
+void sendStats(HTTPClient* https, NetworkInfo* network, Sensors::Status *stat, const String& timestamp) {
     debugln("\n[STATUS]");
     const String values ="sht="  + String(stat -> SHT) +
                         "&bmp=" + String(stat -> BMP) +
@@ -140,7 +164,7 @@ void sendStats(HTTPClient* https, Networking* network, Sensors::Status *stat, co
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-void sendReadings(HTTPClient* https, Networking* network, Reading* readings) {
+void sendReadings(HTTPClient* https, NetworkInfo* network, Reading* readings) {
   debugln("\n[READING]");
 
   const String values = "temperature=" + readings -> temperature + 
@@ -163,29 +187,74 @@ void sendReadings(HTTPClient* https, Networking* network, Reading* readings) {
 }
 
 /**
+ * Parse the QNH from the server response.
+ */
+String parseQNH(const String& jsonText) {
+  const char* json = jsonText.c_str();
+  DynamicJsonDocument doc(jsonText.length());
+
+  // Deserialize the JSON document
+  DeserializationError error = deserializeJson(doc, json);
+
+  String qnhString;
+  qnhString.reserve(5);
+
+  // Test if parsing succeeds.
+  if (error) {
+    debug("Failed to parse QNH json response error :-> ");
+    debug(error.f_str());
+    debugln();
+    qnhString.concat("None");
+    return qnhString;
+  }
+
+  int qnh = doc["metar"]["qnh"];
+  qnhString.concat(String(qnh));
+  return qnhString;
+}
+
+/**
  * Get the Sea Level Pressure from the server.
 */
-void getQNH(HTTPClient* https, Networking* network, const String& timestamp) {
+String getQNH(NetworkInfo* network) {
   debugln("\n[GETTING SEA LEVEL PRESSURE]");
 
+  HTTPClient https;
+  const String HOST = "https://api.metar-taf.com";
+  const String ROUTE = "/metar";
+  const String key = "VOeVgaTHCcmuX4vuOS47tRLPEkOfPWTT";
+  const String version = "2.3";
+  const String locale = "en-US";
+  const String airport = "ESMX";
+
+
+  const String values = "api_key=" + key + 
+                        "&v=" + version + 
+                        "&locale=" + locale + 
+                        "&id=" + airport + 
+                        "&station_id=" + airport + 
+                        "&test=0";
+
   String url;
-  url.reserve(strlen(network -> HOST) + strlen(network -> routes.QNH) + 1);
-  url.concat(network -> HOST);
-  url.concat(network -> routes.QNH);
+  url.reserve(HOST.length() + ROUTE.length() + values.length());
+  url.concat(HOST);
+  url.concat(ROUTE);
+  url.concat("?" + values);
 
-  https -> begin(url, network -> CERT);
+  https.begin(url);
 
-  debugln(url);
+  int httpCode = https.GET();
+
+  String reply = getResponse(&https, httpCode);
   
-  String reply = send(https, network, timestamp);
-  debugln(reply);
+  return reply;
 }
 
 
 /**
  * Send image from weather station to server. 
  */
-void sendImage(HTTPClient* https, Networking* network, camera_fb_t *fb, const String& timestamp) {
+void sendImage(HTTPClient* https, NetworkInfo* network, camera_fb_t *fb, const String& timestamp) {
   debugln("\n[IMAGE]");
   String url;
   url.reserve(strlen(network -> HOST) + strlen(network -> routes.IMAGE) + 1);
@@ -202,7 +271,7 @@ void sendImage(HTTPClient* https, Networking* network, camera_fb_t *fb, const St
 /**
  * Update the board firmware via the update server.
  */
-void OTAUpdate(Networking* network, const String& firmware_version) {
+void OTAUpdate(NetworkInfo* network, const String& firmware_version) {
   debugln("\n[UPDATES]");
 
   String url;

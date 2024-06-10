@@ -5,7 +5,7 @@
 /**
  * My beautiful globals
  */
-Networking network;
+NetworkInfo network;
 Adafruit_BMP3XX bmp;
 Adafruit_SHT31 sht;
 Adafruit_SSD1306 display;
@@ -70,8 +70,8 @@ void setup() {
    * Read the profile config for the device network struct. 
    */
   network.HOST = "https://devinci.cloud";
-  network.SSID = "Asimov-2.4GHZ";
-  network.PASS = "Asimov42";
+  network.SSID = "VLSP-Innovation";
+  network.PASS = "9a5mPA8bU64!";
   network.CERT = rootCA;
  
   wifiSetup(network.SSID, network.PASS, &sensors.status);
@@ -100,16 +100,23 @@ void loop() {
   resetDisplay(&sensors.SCREEN);
 
   // Show the sensor statuses.
-  displayStatuses(&sensors.status, &sensors.SCREEN, network.SSID);
+  //displayStatuses(&sensors.status, &sensors.SCREEN, network.SSID);
 
   // Read sensor readings into singular Reading object - Display them to the screen.
-  Reading currentReading = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
-  currentReading.timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
-  displayReadings(&currentReading, &sensors.SCREEN);
+  //Reading currentReading = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
+  //currentReading.timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
+  //displayReadings(&currentReading, &sensors.SCREEN);
 
   // Connect to the Wi-Fi.
   WiFiClientSecure *client = new WiFiClientSecure;
+
+
   if (client && sensors.status.WIFI) {
+
+    // Get the QNH from the weather server.
+    String qnhResponse = getQNH(&network);
+    String qnh = parseQNH(qnhResponse);
+    debugln(qnh);
 
     // Set the certificate to communicate.
     client -> setCACert(rootCA);
@@ -118,7 +125,6 @@ void loop() {
     /* Read the file content as a vector of strings - Convert to array of readings. 
     std::vector<String*> fileContent = readFile(SD_MMC, "/readings.txt");
     Reading* loggedReadings = csvToReadings(fileContent);
-    
     
     for (int i = 0; i < fileContent.size(); i ++) {
       printReadings(&loggedReadings[i]);
@@ -129,54 +135,57 @@ void loop() {
     {
       // Check for firmware update.
       HTTPClient https;
-      OTAUpdate(&network, FIRMWARE_VERSION);
 
-      // Get the QNH from the weather server.
-      getQNH(&https, &network, currentReading.timestamp);
+      // Check if the site is reachable.
+      if (websiteReachable(&https, &network, currentReading.timestamp)) {
+        OTAUpdate(&network, FIRMWARE_VERSION);
 
-      /*
-      sendStats(&https, &network, &sensors.status, timestamp);
-      https.end();
-      delay(50);
-
-      String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
-      sendReadings(&https, &network, readings, timestamp);
-      https.end();
-      delete[] readings;
-      delay(50);
-
-      if(sensors.status.CAM) {
-        camera_fb_t * fb = NULL;
-        fb = esp_camera_fb_get();
-        esp_camera_fb_return(fb);
-        delay(50);
-        fb = esp_camera_fb_get();
-        esp_camera_fb_return(fb);
-        delay(50);
-        fb = esp_camera_fb_get();
-        esp_camera_fb_return(fb);
-        delay(50);
-        fb = esp_camera_fb_get();
-        sendImage(&https, &network, fb, timestamp);
+        /*
+        sendStats(&https, &network, &sensors.status, timestamp);
         https.end();
-        esp_camera_fb_return(fb);
         delay(50);
-        esp_err_t deinitErr = cameraTeardown();
-        if (deinitErr != ESP_OK) debugf("Camera init failed with error 0x%x", deinitErr);
-      
+
+        String* readings = readAll(&sensors.status, &sensors.SHT, &sensors.BMP);
+        sendReadings(&https, &network, readings, timestamp);
+        https.end();
+        delete[] readings;
+        delay(50);
+
+        if(sensors.status.CAM) {
+          camera_fb_t * fb = NULL;
+          fb = esp_camera_fb_get();
+          esp_camera_fb_return(fb);
+          delay(50);
+          fb = esp_camera_fb_get();
+          esp_camera_fb_return(fb);
+          delay(50);
+          fb = esp_camera_fb_get();
+          esp_camera_fb_return(fb);
+          delay(50);
+          fb = esp_camera_fb_get();
+          sendImage(&https, &network, fb, timestamp);
+          https.end();
+          esp_camera_fb_return(fb);
+          delay(50);
+          esp_err_t deinitErr = cameraTeardown();
+          if (deinitErr != ESP_OK) debugf("Camera init failed with error 0x%x", deinitErr);
+        
+        }
+        */  
+        
+      } else {
+        // Save the readings to the SD Card in CSV format.
+        String message = readingsToString(&currentReading);
+        debugln(message);
+        writeToFile(SD_MMC, "/readings.txt", message);
       }
-      */  
-
     }
-
-    delete client; 
     
   } else {
-    // Save the readings to the SD Card in CSV format.
-    String message = readingsToString(&currentReading);
-    debugln(message);
-    writeToFile(SD_MMC, "/readings.txt", message);
+    debug("No Connection Present.");
   }
+
+  delete client; 
 
   debugln("Going to sleep!...");
   delay(50);

@@ -1,6 +1,8 @@
 #include "sensors.h"
 #include "camera_pins.h"
 
+float SEALEVELPRESSURE_HPA = UNDEFINED;
+
 /**
  * Calculate the median of a sorted array.
  */
