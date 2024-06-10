@@ -87,7 +87,7 @@ String getResponse(HTTPClient *HTTP, int httpCode) {
  * Got gist of everything from klucsik at:
  * https://gist.github.com/klucsik/711a4f072d7194842840d725090fd0a7
  */
-void send(HTTPClient *https, Network *network, const String& timestamp, camera_fb_t *fb) {
+void send(HTTPClient* https, Networking* network, const String& timestamp, camera_fb_t *fb) {
   https -> setConnectTimeout(READ_TIMEOUT);
   https -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.IMAGE_JPG);
   https -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
@@ -103,7 +103,7 @@ void send(HTTPClient *https, Network *network, const String& timestamp, camera_f
  * Got gist of everything from klucsik at:
  * https://gist.github.com/klucsik/711a4f072d7194842840d725090fd0a7
  */
-String send(HTTPClient *https, Network *network, const String& timestamp) {
+String send(HTTPClient* https, Networking* network, const String& timestamp) {
     https -> setConnectTimeout(READ_TIMEOUT);
     https -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.APP_FORM);
     https -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
@@ -117,7 +117,7 @@ String send(HTTPClient *https, Network *network, const String& timestamp) {
 /**
  * Send statuses of sensors to HOST on specified PORT. 
  */
-void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const String& timestamp) {
+void sendStats(HTTPClient* https, Networking* network, Sensors::Status *stat, const String& timestamp) {
     debugln("\n[STATUS]");
     const String values ="sht="  + String(stat -> SHT) +
                         "&bmp=" + String(stat -> BMP) +
@@ -140,7 +140,7 @@ void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-void sendReadings(HTTPClient *https, Network *network, Reading* readings) {
+void sendReadings(HTTPClient* https, Networking* network, Reading* readings) {
   debugln("\n[READING]");
 
   const String values = "temperature=" + readings -> temperature + 
@@ -162,11 +162,10 @@ void sendReadings(HTTPClient *https, Network *network, Reading* readings) {
   debugln(reply);
 }
 
-
 /**
  * Get the Sea Level Pressure from the server.
 */
-void getQNH(HTTPClient *https, Network *network, const String& timestamp) {
+void getQNH(HTTPClient* https, Networking* network, const String& timestamp) {
   debugln("\n[GETTING SEA LEVEL PRESSURE]");
 
   String url;
@@ -186,7 +185,7 @@ void getQNH(HTTPClient *https, Network *network, const String& timestamp) {
 /**
  * Send image from weather station to server. 
  */
-void sendImage(HTTPClient *https, Network *network, camera_fb_t *fb, const String& timestamp) {
+void sendImage(HTTPClient* https, Networking* network, camera_fb_t *fb, const String& timestamp) {
   debugln("\n[IMAGE]");
   String url;
   url.reserve(strlen(network -> HOST) + strlen(network -> routes.IMAGE) + 1);
@@ -203,7 +202,7 @@ void sendImage(HTTPClient *https, Network *network, camera_fb_t *fb, const Strin
 /**
  * Update the board firmware via the update server.
  */
-void OTAUpdate(Network *network, String firmware_version) {
+void OTAUpdate(Networking* network, const String& firmware_version) {
   debugln("\n[UPDATES]");
 
   String url;

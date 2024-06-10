@@ -5,7 +5,7 @@
 /**
  * My beautiful globals
  */
-Network network;
+Networking network;
 Adafruit_BMP3XX bmp;
 Adafruit_SHT31 sht;
 Adafruit_SSD1306 display;
@@ -55,6 +55,8 @@ void setup() {
   }
 
   sdmmcInit();
+
+  SEALEVELPRESSURE_HPA = UNDEFINED;
 
   /**
    * wire.begin(sda, scl)
@@ -123,17 +125,16 @@ void loop() {
     }
     */
 
-
-    /*
-    Attempting to scope the http client to keep it alive in relation to the wifi client.
+    // Attempting to scope the http client to keep it alive in relation to the wifi client.
     {
+      // Check for firmware update.
       HTTPClient https;
       OTAUpdate(&network, FIRMWARE_VERSION);
 
-      String timestamp = getTime(&network.TIMEINFO, &network.NOW, 10);
+      // Get the QNH from the weather server.
+      getQNH(&https, &network, currentReading.timestamp);
 
-      getQNH(&https, &network, timestamp);
-
+      /*
       sendStats(&https, &network, &sensors.status, timestamp);
       https.end();
       delay(50);
@@ -164,9 +165,10 @@ void loop() {
         if (deinitErr != ESP_OK) debugf("Camera init failed with error 0x%x", deinitErr);
       
       }
+      */  
 
     }
-    */
+
     delete client; 
     
   } else {

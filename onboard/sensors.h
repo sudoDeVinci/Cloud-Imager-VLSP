@@ -1,15 +1,15 @@
-
+#pragma once
 #ifndef SENSORS_H
 #define SENSORS_H
 
+#include "io.h"
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 #include "esp_camera.h"
 #include "Adafruit_Sensor.h"
 #include "Adafruit_SHT31.h"
 #include "Adafruit_BMP3XX.h"
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <Wire.h>
-#include "io.h"
 
 
 /**
@@ -20,14 +20,12 @@
 
 #define MAGNUS_A 17.625
 #define MAGNUS_B 243.04
-#define SEALEVELPRESSURE_HPA 1012.1
 #define CAMERA_CLK 5000000
 #define CAMERA_MODEL_ESP32S3_EYE
 #define UNDEFINED -69420.00
 #define SAMPLES 80
 #define DISPLAY_WIDTH 128
 #define DISPLAY_HEIGHT 64
-
 
 /**
  * Struct to hold sensor details - pointers and statuses.
@@ -59,6 +57,8 @@ struct Reading {
     String altitude = "None";
     String dewpoint = "None";
 };
+
+extern float SEALEVELPRESSURE_HPA;
 
 
 /**

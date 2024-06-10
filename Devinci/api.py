@@ -46,7 +46,7 @@ def QNH() -> Response:
             if delta.seconds > 7200:
                 pres = get_QNH_hpa()
                 if not pres: return jsonify({"qnh":None, "timestamp": datetime.now(),"error": "Couldn't retrieve QNH"}), 500
-                QNH_cache['Vaxjo'] = (pres, datetime.now().strftime("%Y-%m-%d-%H-%M"))
+                QNH_cache['Vaxjo'] = (pres, datetime.now())
         
         return jsonify({"qnh":QNH_cache['Vaxjo'][0], 'timestamp': QNH_cache['Vaxjo'][1].strftime("%Y-%m-%d-%H-%M")}), 200
 
@@ -64,7 +64,7 @@ def update() -> Response:
     """
     ESPMAC = HEADERS.ESP_MAC.value
     ESPVER = HEADERS.ESP_VERSION.value
-    ESPSHA = HEADERS.ESP_SHA256.value
+    ESPSHA = HEADERS.ESP_SHA256.value   
 
     try:
         err = header_check(request.headers, (ESPMAC, ESPVER, ESPSHA))

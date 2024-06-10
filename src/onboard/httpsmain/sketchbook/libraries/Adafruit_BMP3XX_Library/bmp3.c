@@ -602,9 +602,9 @@ static void unpack_temp_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, 
  * @param[out] byte_index : Byte count of fifo buffer.
  * @param[in] fifo_buffer : FIFO buffer from where the sensor time frames
  * are unpacked.
- * @param[out] adafruit_sensor_time : Variable used to store the sensor time.
+ * @param[out] sensor_time : Variable used to store the sensor time.
  */
-static void unpack_time_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, uint32_t *adafruit_sensor_time);
+static void unpack_time_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, uint32_t *sensor_time);
 
 /*!
  * @brief This internal API parses the FIFO buffer and gets the header info.
@@ -1511,7 +1511,7 @@ static uint8_t parse_fifo_data_frame(uint8_t header,
             t_p_frame = BMP3_PRESS;
             break;
         case BMP3_FIFO_TIME_FRAME:
-            unpack_time_frame(byte_index, fifo->data.buffer, &fifo->data.adafruit_sensor_time);
+            unpack_time_frame(byte_index, fifo->data.buffer, &fifo->data.sensor_time);
             break;
         case BMP3_FIFO_CONFIG_CHANGE:
             fifo->data.config_change = 1;
@@ -1566,14 +1566,14 @@ static void unpack_press_frame(uint16_t *byte_index, const uint8_t *fifo_buffer,
  * @brief This internal API unpacks the time frame from the fifo data buffer and
  * fills the byte count and update the sensor time variable.
  */
-static void unpack_time_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, uint32_t *adafruit_sensor_time)
+static void unpack_time_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, uint32_t *sensor_time)
 {
     uint16_t index = *byte_index;
     uint32_t xlsb = fifo_buffer[index];
     uint32_t lsb = ((uint32_t)fifo_buffer[index + 1]) << 8;
     uint32_t msb = ((uint32_t)fifo_buffer[index + 2]) << 16;
 
-    *adafruit_sensor_time = msb | lsb | xlsb;
+    *sensor_time = msb | lsb | xlsb;
     *byte_index = *byte_index + BMP3_LEN_SENSOR_TIME;
 }
 
