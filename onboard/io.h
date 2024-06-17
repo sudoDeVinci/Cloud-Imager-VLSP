@@ -3,9 +3,9 @@
 #define IO_H
 
 #include <Arduino.h>
+#include <vector>
 #include "FS.h"
 #include "SD_MMC.h"
-#include <vector>
 
 #define DEBUG 1
 
@@ -22,9 +22,8 @@
 #define SD_MMC_CMD  38 //Please do not modify it.
 #define SD_MMC_CLK  39 //Please do not modify it. 
 #define SD_MMC_D0   40 //Please do not modify it.
-#define CERT_DIR "//certs"
-#define AP_DIR "//aps"
-#define LOG_DIR "//logs"
+
+#define LOG_FILE "/readings.csv"
 
 /**
  * Initialize the sdcard file system. 
@@ -40,8 +39,26 @@ const char* readString(const String& line);
  * Attempt to append to a given file.
  * Create the file if it doesn't exist.
  */
-void writeToFile(fs::FS& fs, const String& filename, const String& message);
+void writeToCSV(fs::FS& fs, const String& filename, const String& message);
 
-std::vector<String*> readFile(fs::FS &fs, const char * path);
+/**
+ * Read the csv of past readings and return a vector of String arrays.
+ */
+std::vector<String*> readCSV(fs::FS &fs, const char* path);
+
+/**
+ * Read a file from the sdcard. 
+ */
+String readFile(fs::FS &fs, const char * path);
+
+/**
+ * Write an image buffer into a jpg file. 
+ */
+void writejpg(fs::FS &fs, const char* path, const uint8_t* buf, size_t size);
+
+/**
+ * Read an image buffer from a jpg file. 
+ */
+uint8_t* readjpg(fs::FS &fs, const char* path);
 
 #endif

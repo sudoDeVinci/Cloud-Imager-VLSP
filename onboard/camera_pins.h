@@ -1,3 +1,4 @@
+#pragma once
 #if defined(CAMERA_MODEL_ESP32S3_EYE)
 #define PWDN_GPIO_NUM -1
 #define RESET_GPIO_NUM -1

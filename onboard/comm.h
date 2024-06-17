@@ -1,79 +1,16 @@
-
 #ifndef COMM_H
 #define COMM_H
 
-#include <WiFi.h>
 #include "sensors.h"
-#include "io.h"
+#include <WiFi.h>
 #include <time.h>
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
 #include <WiFiClientSecure.h>
+#include <ArduinoJson.h>
 #include <map>
 
-
-/**
- * Ports for various functions.
- */
-enum class Port: uint16_t {
-    DEF = 8080,
-    ALT = 8085,
-};
-
-/**
- * Header fields. 
- */
-enum class HeaderField {
-    CONTENT_TYPE,
-    MAC_ADDRESS,
-    TIMESTAMP
-};
-
-
-
-/**
- * Struct to hold network details in continguous memory.
- * Many details are read from config files. 
- */
-struct Network {
-    const char* SSID;
-    const char* PASS;
-    const char* CERT;
-    const char* HOST;
-    IPAddress GATEWAY;
-    IPAddress DNS;
-    WiFiClientSecure *CLIENT;
-    tm TIMEINFO;
-    time_t NOW;
-
-    /**
-     * MIME types for the different types of packets.
-     */
-    struct MIMEType {
-        const String IMAGE_JPG = "image/jpeg";
-        const String APP_FORM = "application/x-www-form-urlencoded";
-    } mimetypes;
-
-    /**
-     * Routes on the Server. 
-     */
-    struct Route {
-        const char* IMAGE = "/api/images";
-        const char* REGISTER = "/api/register";
-        const char* READING = "/api/reading";
-        const char* STATUS = "/api/status";
-        const char* UPDATE = "/api/update";
-        const char* UPGRADE = "/api/upgrade";
-        const char* TEST = "/api/test";
-        const char* QNH = "/api/QNH";
-    } routes;
-
-    struct Header {
-        const String CONTENT_TYPE = "Content-Type";
-        const String MAC_ADDRESS = "MAC-Address";
-        const String TIMESTAMP = "timestamp"; 
-    } headers;
-};
+#define ARDUINOJSON_ENABLE_ARDUINO_STRING 1
 
 /**
  * Timeout in milliseconds for connecting to / reading from server.
@@ -87,47 +24,135 @@ struct Network {
 #define CLRF "\r\n"
 
 /**
+ * Struct to hold network details in contiguous memory.
+ * Many details are read from config files. 
+ */
+struct NetworkInfo {
+  const char* SSID;
+  const char* PASS;
+  const char* CERT = R"(
+-----BEGIN CERTIFICATE-----
+MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
+TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
+cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
+WhcNMzUwNjA0MTEwNDM4WjBPMQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJu
+ZXQgU2VjdXJpdHkgUmVzZWFyY2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBY
+MTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAK3oJHP0FDfzm54rVygc
+h77ct984kIxuPOZXoHj3dcKi/vVqbvYATyjb3miGbESTtrFj/RQSa78f0uoxmyF+
+0TM8ukj13Xnfs7j/EvEhmkvBioZxaUpmZmyPfjxwv60pIgbz5MDmgK7iS4+3mX6U
+A5/TR5d8mUgjU+g4rk8Kb4Mu0UlXjIB0ttov0DiNewNwIRt18jA8+o+u3dpjq+sW
+T8KOEUt+zwvo/7V3LvSye0rgTBIlDHCNAymg4VMk7BPZ7hm/ELNKjD+Jo2FR3qyH
+B5T0Y3HsLuJvW5iB4YlcNHlsdu87kGJ55tukmi8mxdAQ4Q7e2RCOFvu396j3x+UC
+B5iPNgiV5+I3lg02dZ77DnKxHZu8A/lJBdiB3QW0KtZB6awBdpUKD9jf1b0SHzUv
+KBds0pjBqAlkd25HN7rOrFleaJ1/ctaJxQZBKT5ZPt0m9STJEadao0xAH0ahmbWn
+OlFuhjuefXKnEgV4We0+UXgVCwOPjdAvBbI+e0ocS3MFEvzG6uBQE3xDk3SzynTn
+jh8BCNAw1FtxNrQHusEwMFxIt4I7mKZ9YIqioymCzLq9gwQbooMDQaHWBfEbwrbw
+qHyGO0aoSCqI3Haadr8faqU9GY/rOPNk3sgrDQoo//fb4hVC1CLQJ13hef4Y53CI
+rU7m2Ys6xt0nUW7/vGT1M0NPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNV
+HRMBAf8EBTADAQH/MB0GA1UdDgQWBBR5tFnme7bl5AFzgAiIyBpY9umbbjANBgkq
+hkiG9w0BAQsFAAOCAgEAVR9YqbyyqFDQDLHYGmkgJykIrGF1XIpu+ILlaS/V9lZL
+ubhzEFnTIZd+50xx+7LSYK05qAvqFyFWhfFQDlnrzuBZ6brJFe+GnY+EgPbk6ZGQ
+3BebYhtF8GaV0nxvwuo77x/Py9auJ/GpsMiu/X1+mvoiBOv/2X/qkSsisRcOj/KK
+NFtY2PwByVS5uCbMiogziUwthDyC3+6WVwW6LLv3xLfHTjuCvjHIInNzktHCgKQ5
+ORAzI4JMPJ+GslWYHb4phowim57iaztXOoJwTdwJx4nLCgdNbOhdjsnvzqvHu7Ur
+TkXWStAmzOVyyghqpZXjFaH3pO3JLF+l+/+sKAIuvtd7u+Nxe5AW0wdeRlN8NwdC
+jNPElpzVmbUq4JUagEiuTDkHzsxHpFKVK7q4+63SM1N95R1NbdWhscdCb+ZAJzVc
+oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
+4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA
+mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
+emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
+-----END CERTIFICATE-----
+)";
+  const char* HOST = "https://devinci.cloud";
+  IPAddress GATEWAY;
+  IPAddress DNS;
+  WiFiClientSecure *CLIENT;
+  tm TIMEINFO;
+  time_t NOW;
+
+  /**
+    * MIME types for the different types of packets.
+    */
+  struct MIMEType {
+    const String IMAGE_JPG = "image/jpeg";
+    const String APP_FORM = "application/x-www-form-urlencoded";
+  } mimetypes;
+
+  /**
+    * Routes on the Server. 
+    */
+  struct Route {
+    const char* INDEX = "/";
+    const char* IMAGE = "/api/images";
+    const char* REGISTER = "/api/register";
+    const char* READING = "/api/reading";
+    const char* STATUS = "/api/status";
+    const char* UPDATE = "/api/update";
+    const char* UPGRADE = "/api/upgrade";
+    const char* TEST = "/api/test";
+    const char* QNH = "/api/QNH";
+  } routes;
+
+  struct Header {
+    const String CONTENT_TYPE = "Content-Type";
+    const String MAC_ADDRESS = "MAC-Address";
+    const String TIMESTAMP = "timestamp"; 
+  } headers;
+};
+
+/**
  * Set the internal clock via NTP server.
  */
 void setClock();
+
 /**
   * Get the current time and format the timestamp as MySQL DATETIME.
-  * timeinfo is an empty struct whic is filled by calling getLocalTime().
+  * timeinfo is an empty struct which is filled by calling getLocalTime().
   * Big thanks to Andreas Spiess:
   * https://github.com/SensorsIot/NTP-time-for-ESP8266-and-ESP32/blob/master/NTP_Example/NTP_Example.ino
   *
   *  If tm_year is not equal to 0xFF, it is assumed that valid time information has been received.
   */
-String getTime(tm *timeinfo, time_t *now, int timer);
+String getTime(tm* timeinfo, time_t* now, int timer);
 
 /**
  * Connect to wifi Network and apply SSL certificate.
  */
-int wifiSetup(const char* SSID, const char* PASS, Sensors::Status *stat);
-
-/**
- * Update the board firmware via the update server.
- */
-void OTAUpdate(Network *network, String firmware_version);
+int wifiSetup(NetworkInfo* network, Sensors::Status *stat);
 
 /**
  * Get the Sea Level Pressure from the server.
 */
-void getQNH(HTTPClient *https, Network *network, const String& timestamp);
+String getQNH(NetworkInfo* network);
+
+/**
+ * Parse the QNH from the server response.
+ */
+float parseQNH(const String& jsonText);
+
+/**
+ * Check if the website is reachable before trying to communicate further.
+ */
+bool websiteReachable(HTTPClient* https, NetworkInfo* network, const String& timestamp);
 
 /**
  * Send statuses of sensors to HOST on specified PORT. 
  */
-void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const String& timestamp);
+void sendStats(HTTPClient* https, NetworkInfo* network, Sensors::Status *stat, const String& timestamp);
 
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-void sendReadings(HTTPClient *https, Network *network, Reading* readings);
+void sendReadings(HTTPClient* https, NetworkInfo* network, Reading* readings);
 
 /**
  * Send image from weather station to server. 
  */
-void sendImage(HTTPClient *https, Network *network, camera_fb_t *fb, const String& timestamp);
+void sendImage(HTTPClient* https, NetworkInfo* network, uint8_t* buf, size_t len, const String& timestamp);
 
-#endif
+/**
+ * Update the board firmware via the update server.
+ */
+void OTAUpdate(NetworkInfo* network, const String& version);
+
+#endif // COMM_H

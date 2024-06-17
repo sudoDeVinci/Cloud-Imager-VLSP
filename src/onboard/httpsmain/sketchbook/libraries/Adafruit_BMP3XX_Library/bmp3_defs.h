@@ -720,7 +720,7 @@ struct bmp3_fifo_data
     uint8_t config_err;
 
     /*! Sensor time */
-    uint32_t adafruit_sensor_time;
+    uint32_t sensor_time;
 
     /*! FIFO input configuration change */
     uint8_t config_change;

@@ -1,59 +1,126 @@
 {
-    'cavok': False, 
-    'ceiling': 4600, 
-    'ceiling_color': '#28a745', 
-    'clouds': [
+    "status": true,
+    "credits": 5970,
+    "airport": {
+        "id": "ESMX",
+        "iata": "VXO",
+        "name": "V\u00e4xj\u00f6 Kronoberg Airport",
+        "name_translated": "V\u00e4xj\u00f6 Kronoberg Airport",
+        "city_name": "V\u00e4xj\u00f6",
+        "admin1": "Kronoberg",
+        "admin2": "V\u00e4xj\u00f6 Kommun",
+        "country_id": "SE",
+        "country_name": "Sweden",
+        "lat": 56.9291,
+        "lng": 14.728,
+        "metar": true,
+        "taf": true,
+        "timezone": 7200,
+        "fir": "ESAA",
+        "elevation": 610,
+        "type": 14,
+        "last_notam": 1644067047
+    },
+    "metar": {
+        "cavok": false,
+        "ceiling": null,
+        "ceiling_color": "#28a745",
+        "clouds": [
+            {
+                "id": 0,
+                "height": 1600,
+                "report": "Few clouds",
+                "amount": "FEW"
+            },
+            {
+                "id": 1,
+                "height": 2300,
+                "report": "Scattered clouds",
+                "amount": "SCT"
+            }
+        ],
+        "code": "VFR",
+        "code_color": "#28a745",
+        "colour_state": null,
+        "dewpoint": 9,
+        "dewpoint_exact": null,
+        "humidity": 77,
+        "is_day": true,
+        "observed": 1718011200,
+        "qnh": 999,
+        "raw": "METAR ESMX 100920Z 23017G27KT 200V260 9999 FEW016 SCT023 13\/09 Q0999",
+        "recent_weather_report": null,
+        "remarks": null,
+        "runway_condition": [],
+        "runway_visibility": [],
+        "snoclo": false,
+        "station_id": "ESMX",
+        "sunrise": 1717985297,
+        "sunset": 1718049181,
+        "temperature": 13,
+        "temperature_exact": null,
+        "trends": [],
+        "vertical_visibility": null,
+        "visibility": 10000,
+        "visibility_sign": "P",
+        "visibility_color": "#28a745",
+        "visibility_min": null,
+        "visibility_min_direction": null,
+        "warnings": [],
+        "weather": "Scattered clouds",
+        "weather_image": "scattered",
+        "weather_report": null,
+        "wind_color": "#ffc107",
+        "wind_dir": 230,
+        "wind_dir_max": 260,
+        "wind_dir_min": 200,
+        "wind_gust": 27,
+        "wind_speed": 17,
+        "ws_all": null,
+        "ws_runways": null,
+        "id": 503135106
+    },
+    "runways": [
         {
-            'id': 0, 
-            'height': 4600, 
-            'report': 'Broken clouds', 
-            'amount': 'BKN'
+            "id_l": "1",
+            "id_h": "19",
+            "hdg_l": 13,
+            "hdg_h": 193,
+            "in_use": 193,
+            "xwnd": 10.2,
+            "hwnd": 13.6
+        }
+    ],
+    "stations": [
+        {
+            "id": "ESMX",
+            "name": "V\u00e4xj\u00f6 Kronoberg Airport",
+            "taf": true
         },
         {
-            'id': 1, 
-            'height': 5500, 
-            'report': 'Overcast clouds', 
-            'amount': 'OVC'
+            "id": "ESMV",
+            "name": "Hagshult Air Base",
+            "taf": false
+        },
+        {
+            "id": "ESDF",
+            "name": "Ronneby Airport",
+            "taf": true
+        },
+        {
+            "id": "ESMQ",
+            "name": "Kalmar Airport",
+            "taf": true
+        },
+        {
+            "id": "ESGJ",
+            "name": "J\u00f6nk\u00f6ping Airport",
+            "taf": true
+        },
+        {
+            "id": "ESMK",
+            "name": "Kristianstad Airport",
+            "taf": true
         }
-    ], 
-    'code': 'MVFR', 
-    'code_color': '#0080f0', 
-    'colour_state': None, 
-    'dewpoint': 10, 
-    'dewpoint_exact': None, 
-    'humidity': 100, 
-    'is_day': True, 
-    'observed': 1717870800, 
-    'qnh': 1003, 
-    'raw': 'METAR ESMX 081820Z AUTO 36008KT 7000 RA BKN046 /// OVC055/// 10/10 Q1003', 
-    'recent_weather_report': None, 
-    'remarks': None, 
-    'runway_condition': [], 
-    'runway_visibility': [], 
-    'snoclo': False, 
-    'station_id': 'ESMX', 
-    'sunrise': 1717812566, 
-    'sunset': 1717876264, 
-    'temperature': 10, 
-    'temperature_exact': None, 
-    'trends': [], 
-    'vertical_visibility': None, 
-    'visibility': 7000, 
-    'visibility_sign': None, 
-    'visibility_color': '#0080f0', 
-    'visibility_min': None, 
-    'visibility_min_direction': None, 
-    'warnings': [], 
-    'weather': 'Rain', 
-    'weather_image': 'rain', 
-    'weather_report': 'Rain', 
-    'wind_color': '#28a745', 
-    'wind_dir': 360, 
-    'wind_dir_max': None, 
-    'wind_dir_min': None, 
-    'wind_gust': None, 
-    'wind_speed': 8, 
-    'ws_all': None, 
-    'ws_runways': None, 
-    'id': 502774362
+    ]
 }

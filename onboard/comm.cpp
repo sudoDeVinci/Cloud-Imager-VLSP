@@ -38,31 +38,58 @@ String getTime(tm *timeinfo, time_t *now, int timer) {
     time(now);
     localtime_r(now, timeinfo);
     debug(".");
-    delay(150);
+    delay(random(150, 550));
   } while (((millis() - start) <= (1000 * timer)) && (timeinfo -> tm_year <= 1970));
-  debugln();
+  debugln("Done");
   if (timeinfo -> tm_year == 1970) return "None";
 
   char timestamp[30];
   strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", localtime(now));
-  debugln("Got time!");
   return String(timestamp);
 }
+
 
 /**
  * Connect to wifi Network and apply SSL certificate.
  */
-int wifiSetup(const char* SSID, const char* PASS, Sensors::Status *stat) {
+int wifiSetup(NetworkInfo* network, Sensors::Status *stat) {
   WiFi.mode(WIFI_STA);
-  WiFi.begin(SSID, PASS);
   WiFi.setSleep(false);
-  debugln("Connecting to WiFi Network " + String(SSID));
-  int connect_count = 0; 
-  // Wait for the WiFi connection to be established with a timeout of 10 attempts.
-  while (WiFi.status() != WL_CONNECTED && connect_count < 10) {
-    delay(random(150, 550));
-    debug(".");
-    connect_count+=1;
+
+  // Read the networkinfo file and get the lisgt of network ssids and passwords.
+  String nwinfo = readFile(SD_MMC, "/networkInfo.json");
+  JsonDocument jsoninfo;
+  deserializeJson(jsoninfo, nwinfo);
+  JsonArray networks = jsoninfo["networks"];
+
+  // Scan surrounding networks.
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  int n = WiFi.scanNetworks();
+  debugln("Scan done");
+
+  for (int i = 0; i < n; i++) {
+    String ssid = WiFi.SSID(i);
+    for (JsonVariant networkJson: networks) {
+      String networkSSID = networkJson["SSID"];
+      String networkPassword = networkJson["PASS"];
+      if (ssid == networkSSID) {
+        debugln("Connecting to WiFi Network " + ssid);
+        WiFi.begin(ssid.c_str(), networkPassword.c_str());
+
+        network -> SSID = networkSSID.c_str();
+        network -> PASS = networkPassword.c_str();
+
+        int connect_count = 0; 
+
+        // Wait for the WiFi connection to be established with a timeout of 10 attempts.
+        while (WiFi.status() != WL_CONNECTED && connect_count < 10) {
+          delay(random(150, 550));
+          debug(".");
+          connect_count+=1;
+        }
+      }
+    }
   }
 
   if (WiFi.status() != WL_CONNECTED) {
@@ -87,13 +114,13 @@ String getResponse(HTTPClient *HTTP, int httpCode) {
  * Got gist of everything from klucsik at:
  * https://gist.github.com/klucsik/711a4f072d7194842840d725090fd0a7
  */
-void send(HTTPClient *https, Network *network, const String& timestamp, camera_fb_t *fb) {
+void send(HTTPClient* https, NetworkInfo* network, const String& timestamp, uint8_t* buf, size_t len) {
   https -> setConnectTimeout(READ_TIMEOUT);
   https -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.IMAGE_JPG);
   https -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
   https -> addHeader(network -> headers.TIMESTAMP, timestamp);
 
-  int httpCode = https -> POST(fb -> buf, fb -> len);
+  int httpCode = https -> POST(buf, len);
 
   debugln(getResponse(https, httpCode));  
 }
@@ -103,7 +130,7 @@ void send(HTTPClient *https, Network *network, const String& timestamp, camera_f
  * Got gist of everything from klucsik at:
  * https://gist.github.com/klucsik/711a4f072d7194842840d725090fd0a7
  */
-String send(HTTPClient *https, Network *network, const String& timestamp) {
+String send(HTTPClient* https, NetworkInfo* network, const String& timestamp) {
     https -> setConnectTimeout(READ_TIMEOUT);
     https -> addHeader(network -> headers.CONTENT_TYPE, network -> mimetypes.APP_FORM);
     https -> addHeader(network -> headers.MAC_ADDRESS, WiFi.macAddress());
@@ -111,13 +138,38 @@ String send(HTTPClient *https, Network *network, const String& timestamp) {
 
     int httpCode = https -> GET();
 
-    return getResponse(https, httpCode);  
+    return getResponse(https, httpCode);
+}
+
+/**
+ * Check if the website is reachable before trying to communicate further.
+ */
+bool websiteReachable(HTTPClient* https, NetworkInfo* network, const String& timestamp) {
+  String url;
+  url.reserve(strlen(network -> HOST) + strlen(network -> routes.INDEX));
+  url.concat(network -> HOST);
+  url.concat(network -> routes.INDEX);
+  https -> begin(url, network -> CERT);
+
+  int httpCode = https -> GET();
+
+  // Check if the response code is 200 (OK)
+  if (httpCode == 200) {
+    https -> end();
+    debugln("Website reachable");
+    return true;
+  } else {
+    debug("Website unreachable: ");
+    debug(https -> errorToString(httpCode));
+    https -> end();
+    return false;
+  }
 }
 
 /**
  * Send statuses of sensors to HOST on specified PORT. 
  */
-void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const String& timestamp) {
+void sendStats(HTTPClient* https, NetworkInfo* network, Sensors::Status *stat, const String& timestamp) {
     debugln("\n[STATUS]");
     const String values ="sht="  + String(stat -> SHT) +
                         "&bmp=" + String(stat -> BMP) +
@@ -135,12 +187,13 @@ void sendStats(HTTPClient *https, Network *network, Sensors::Status *stat, const
 
     String reply = send(https, network, timestamp);
     debugln(reply);
+    https -> end();
 }
 
 /**
  * Send readings from weather sensors to HOST on specified PORT. 
  */
-void sendReadings(HTTPClient *https, Network *network, Reading* readings) {
+void sendReadings(HTTPClient* https, NetworkInfo* network, Reading* readings) {
   debugln("\n[READING]");
 
   const String values = "temperature=" + readings -> temperature + 
@@ -160,33 +213,74 @@ void sendReadings(HTTPClient *https, Network *network, Reading* readings) {
   
   String reply = send(https, network, readings -> timestamp);
   debugln(reply);
+
+  https -> end();
 }
 
+/**
+ * Parse the QNH from the server response.
+ */
+float parseQNH(const String& jsonText) {
+  const char* json = jsonText.c_str();
+  JsonDocument doc;
+
+  // Deserialize the JSON document
+  DeserializationError error = deserializeJson(doc, json);
+
+  // Test if parsing succeeds.
+  if (error) {
+    debug("Failed to parse QNH json response error :-> ");
+    debug(error.f_str());
+    debugln();
+    return UNDEFINED;
+  }
+
+  float qnh = doc["metar"]["qnh"];
+  return qnh;
+}
 
 /**
  * Get the Sea Level Pressure from the server.
 */
-void getQNH(HTTPClient *https, Network *network, const String& timestamp) {
+String getQNH(NetworkInfo* network) {
   debugln("\n[GETTING SEA LEVEL PRESSURE]");
 
+  HTTPClient https;
+  const String HOST = "https://api.metar-taf.com";
+  const String ROUTE = "/metar";
+  const String key = "VOeVgaTHCcmuX4vuOS47tRLPEkOfPWTT";
+  const String version = "2.3";
+  const String locale = "en-US";
+  const String airport = "ESMX";
+
+
+  const String values = "api_key=" + key + 
+                        "&v=" + version + 
+                        "&locale=" + locale + 
+                        "&id=" + airport + 
+                        "&station_id=" + airport + 
+                        "&test=0";
+
   String url;
-  url.reserve(strlen(network -> HOST) + strlen(network -> routes.QNH) + 1);
-  url.concat(network -> HOST);
-  url.concat(network -> routes.QNH);
+  url.reserve(HOST.length() + ROUTE.length() + values.length());
+  url.concat(HOST);
+  url.concat(ROUTE);
+  url.concat("?" + values);
 
-  https -> begin(url, network -> CERT);
+  https.begin(url);
 
-  debugln(url);
+  int httpCode = https.GET();
+
+  String reply = getResponse(&https, httpCode);
   
-  String reply = send(https, network, timestamp);
-  debugln(reply);
+  return reply;
 }
 
 
 /**
  * Send image from weather station to server. 
  */
-void sendImage(HTTPClient *https, Network *network, camera_fb_t *fb, const String& timestamp) {
+void sendImage(HTTPClient* https, NetworkInfo* network, uint8_t* buf, size_t len, const String& timestamp) {
   debugln("\n[IMAGE]");
   String url;
   url.reserve(strlen(network -> HOST) + strlen(network -> routes.IMAGE) + 1);
@@ -197,13 +291,15 @@ void sendImage(HTTPClient *https, Network *network, camera_fb_t *fb, const Strin
 
   debugln(url);
 
-  send(https, network, timestamp, fb);
+  send(https, network, timestamp, buf, len);
+
+  https -> end();
 }
 
 /**
  * Update the board firmware via the update server.
  */
-void OTAUpdate(Network *network, String firmware_version) {
+void OTAUpdate(NetworkInfo* network, const String& firmware_version) {
   debugln("\n[UPDATES]");
 
   String url;

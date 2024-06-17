@@ -49,20 +49,38 @@ void sdmmcInit(void){
   debugf("Used space: %lluMB\r\n", SD_MMC.usedBytes() / (1024 * 1024));
 }
 
+void writeToLog(fs::FS& fs, const String& path, const String& message) {
+  char* headers = "Timestamp,Temperature,Humidity,Pressure,Dewpoint";
+  const char* filePath = path.c_str();
+  
+  if (!fs.exists(filePath)) {
+    File file;
+    debugf("Creating file: %s\n", filePath);
+    file = fs.open(filePath, FILE_WRITE);
+    if (!file) {
+      debugln("Couldn't create file");
+      return;
+    }
+
+    if (file.println(headers)) debugln("Headers written");
+    else debugln("Headers not written");
+    file.close();
+  }
+
+  writeToCSV(fs, path, message);
+}
+
 /**
  * Attempt to append to a given file.
  * Create the file if it doesn't exist.
  */
-void writeToFile(fs::FS& fs, const String& path, const String& message) {
+void writeToCSV(fs::FS& fs, const String& path, const String& message) {
   File file;
 
   file = fs.open(path.c_str(), FILE_APPEND, true);
   if (!file) {
-    file = fs.open(path.c_str(), FILE_WRITE, true);
-    if (!file) {
-      debugln("Couldn't open file for writing");
-      return;
-    }
+    debugln("Couldn't open file for writing");
+    return;
   }
 
   if (file.println(message.c_str())) debugln("Message appended");
@@ -102,16 +120,22 @@ void writeToFile(fs::FS& fs, const String& path, const String& message) {
   return output;
 }
 
-std::vector<String*> readFile(fs::FS &fs, const char * path){
+/**
+ * Read the csv of past readings and return a vector of String arrays.
+ */
+std::vector<String*> readCSV(fs::FS &fs, const char * path) {
   std::vector<String*> output;
 
-  Serial.printf("\nReading file: %s\r\n", path);
+  debugf("\nReading file: %s\r\n", path);
 
   File file = fs.open(path);
   if(!file || file.isDirectory()){
-    debugln("- failed to open file for reading");
+    debugf("- failed to open %s for reading\r\n", path);
     return output;
   }
+
+  // Skip the first line (headers).
+  if (file.available()) file.readStringUntil('\n');
 
   while(file.available()){
     String line = file.readStringUntil('\n');
@@ -122,4 +146,61 @@ std::vector<String*> readFile(fs::FS &fs, const char * path){
   return output;
 }
 
+String readFile(fs::FS &fs, const char * path) {
+  debugf("\nReading file: %s\r\n", path);
 
+  String output;
+
+  File file = fs.open(path);
+  if(!file || file.isDirectory()){
+    debugf("- failed to open %s for reading\r\n", path);
+    return output;
+  }
+
+  while(file.available()){
+    char ch = file.read();
+    output.concat(ch);
+  }
+
+  debugln();
+  file.close();
+  return output;
+}
+
+/**
+ * Write an image buffer into a jpg file. 
+ */
+
+void writejpg(fs::FS &fs, const char * path, const uint8_t* buf, size_t size) {
+  File file = fs.open(path, FILE_WRITE);
+  if(!file){
+    debugf("- failed to open %s for writing\r\n", path);
+    return;
+  }
+  file.write(buf, size);
+  debugf("Saved file to path: %s\r\n", path);
+}
+
+/**
+ * Read an image buffer from a jpg file. 
+ */
+uint8_t* readjpg(fs::FS &fs, const char* path) {
+  uint8_t* output;
+
+  debugf("\nReading file: %s\r\n", path);
+
+  File file = fs.open(path);
+  if(!file || file.isDirectory()){
+    debugf("- failed to open %s for reading\r\n", path);
+    return output;
+  }
+
+  const size_t fileSize = file.size();
+
+  while(file.available()){
+    file.read(output, fileSize);
+  }
+  debugln();
+  file.close();
+  return output;
+}
