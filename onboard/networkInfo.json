@@ -1,0 +1,14 @@
+{
+    "timezone": "CET-1-CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00",
+    "NTP" : "pool.ntp.org",
+    "networks": [
+        {
+            "SSID": "Asimov-2.4GHZ",
+            "PASS": "Asimov42"
+        },
+        {
+            "SSID": "VLSP-Innovation",
+            "PASS": "9a5mPA8bU64!"
+        }
+    ]
+}

@@ -38,31 +38,58 @@ String getTime(tm *timeinfo, time_t *now, int timer) {
     time(now);
     localtime_r(now, timeinfo);
     debug(".");
-    delay(150);
+    delay(random(150, 550));
   } while (((millis() - start) <= (1000 * timer)) && (timeinfo -> tm_year <= 1970));
-  debugln();
+  debugln("Done");
   if (timeinfo -> tm_year == 1970) return "None";
 
   char timestamp[30];
   strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", localtime(now));
-  debugln("Got time!");
   return String(timestamp);
 }
+
 
 /**
  * Connect to wifi Network and apply SSL certificate.
  */
-int wifiSetup(const char* SSID, const char* PASS, Sensors::Status *stat) {
+int wifiSetup(NetworkInfo* network, Sensors::Status *stat) {
   WiFi.mode(WIFI_STA);
-  WiFi.begin(SSID, PASS);
   WiFi.setSleep(false);
-  debugln("Connecting to WiFi Network " + String(SSID));
-  int connect_count = 0; 
-  // Wait for the WiFi connection to be established with a timeout of 10 attempts.
-  while (WiFi.status() != WL_CONNECTED && connect_count < 10) {
-    delay(random(150, 550));
-    debug(".");
-    connect_count+=1;
+
+  // Read the networkinfo file and get the lisgt of network ssids and passwords.
+  String nwinfo = readFile(SD_MMC, "/networkInfo.json");
+  JsonDocument jsoninfo;
+  deserializeJson(jsoninfo, nwinfo);
+  JsonArray networks = jsoninfo["networks"];
+
+  // Scan surrounding networks.
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  int n = WiFi.scanNetworks();
+  debugln("Scan done");
+
+  for (int i = 0; i < n; i++) {
+    String ssid = WiFi.SSID(i);
+    for (JsonVariant networkJson: networks) {
+      String networkSSID = networkJson["SSID"];
+      String networkPassword = networkJson["PASS"];
+      if (ssid == networkSSID) {
+        debugln("Connecting to WiFi Network " + ssid);
+        WiFi.begin(ssid.c_str(), networkPassword.c_str());
+
+        network -> SSID = networkSSID.c_str();
+        network -> PASS = networkPassword.c_str();
+
+        int connect_count = 0; 
+
+        // Wait for the WiFi connection to be established with a timeout of 10 attempts.
+        while (WiFi.status() != WL_CONNECTED && connect_count < 10) {
+          delay(random(150, 550));
+          debug(".");
+          connect_count+=1;
+        }
+      }
+    }
   }
 
   if (WiFi.status() != WL_CONNECTED) {
@@ -124,16 +151,15 @@ bool websiteReachable(HTTPClient* https, NetworkInfo* network, const String& tim
   url.concat(network -> routes.INDEX);
   https -> begin(url, network -> CERT);
 
-  debugln(url);
-
   int httpCode = https -> GET();
 
   // Check if the response code is 200 (OK)
   if (httpCode == 200) {
     https -> end();
+    debugln("Website reachable");
     return true;
   } else {
-    debug("HTTP GET failed, error: ");
+    debug("Website unreachable: ");
     debug(https -> errorToString(httpCode));
     https -> end();
     return false;
@@ -196,7 +222,7 @@ void sendReadings(HTTPClient* https, NetworkInfo* network, Reading* readings) {
  */
 float parseQNH(const String& jsonText) {
   const char* json = jsonText.c_str();
-  DynamicJsonDocument doc(jsonText.length());
+  JsonDocument doc;
 
   // Deserialize the JSON document
   DeserializationError error = deserializeJson(doc, json);

@@ -130,7 +130,7 @@ std::vector<String*> readCSV(fs::FS &fs, const char * path) {
 
   File file = fs.open(path);
   if(!file || file.isDirectory()){
-    debugln("- failed to open file for reading");
+    debugf("- failed to open %s for reading\r\n", path);
     return output;
   }
 
@@ -146,6 +146,27 @@ std::vector<String*> readCSV(fs::FS &fs, const char * path) {
   return output;
 }
 
+String readFile(fs::FS &fs, const char * path) {
+  debugf("\nReading file: %s\r\n", path);
+
+  String output;
+
+  File file = fs.open(path);
+  if(!file || file.isDirectory()){
+    debugf("- failed to open %s for reading\r\n", path);
+    return output;
+  }
+
+  while(file.available()){
+    char ch = file.read();
+    output.concat(ch);
+  }
+
+  debugln();
+  file.close();
+  return output;
+}
+
 /**
  * Write an image buffer into a jpg file. 
  */
@@ -153,7 +174,7 @@ std::vector<String*> readCSV(fs::FS &fs, const char * path) {
 void writejpg(fs::FS &fs, const char * path, const uint8_t* buf, size_t size) {
   File file = fs.open(path, FILE_WRITE);
   if(!file){
-    debugln("Failed to open file for writing");
+    debugf("- failed to open %s for writing\r\n", path);
     return;
   }
   file.write(buf, size);
@@ -170,7 +191,7 @@ uint8_t* readjpg(fs::FS &fs, const char* path) {
 
   File file = fs.open(path);
   if(!file || file.isDirectory()){
-    debugln("- failed to open file for reading");
+    debugf("- failed to open %s for reading\r\n", path);
     return output;
   }
 

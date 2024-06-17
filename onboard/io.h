@@ -47,6 +47,11 @@ void writeToCSV(fs::FS& fs, const String& filename, const String& message);
 std::vector<String*> readCSV(fs::FS &fs, const char* path);
 
 /**
+ * Read a file from the sdcard. 
+ */
+String readFile(fs::FS &fs, const char * path);
+
+/**
  * Write an image buffer into a jpg file. 
  */
 void writejpg(fs::FS &fs, const char* path, const uint8_t* buf, size_t size);

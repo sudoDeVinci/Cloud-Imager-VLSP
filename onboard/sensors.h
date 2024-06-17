@@ -81,7 +81,9 @@ void bmpSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_BMP3XX *bmp);
  */
 void cameraSetup(Sensors::Status *stat);
 
-
+/**
+ * Reset the OLED display.
+ */
 void resetDisplay(Adafruit_SSD1306 *display);
  
 /**

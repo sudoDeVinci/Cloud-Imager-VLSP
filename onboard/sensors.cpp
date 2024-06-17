@@ -83,7 +83,7 @@ void bmpSetup(TwoWire *wire, Sensors::Status *stat, Adafruit_BMP3XX *bmp) {
   
   if (!bmp -> begin_I2C(0x77, wire)) {
     stat -> BMP = false;
-    debugln("Could not find a valid BMP3 sensor, check wiring!");
+    debugln("Couldn't find BMP390");
   } else {
     stat -> BMP = true;
     debugln("BMP found!");
