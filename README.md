@@ -262,6 +262,9 @@ Wire Sheathing (m) | 0.5 | 10.00 |
 POWER sockets 10 set pre-soldered
 **TOTAL** | **1573.74**
 
+This cost of 1,573.74kr (USD $145,14 as of time of writing) is both lower than the cost-focused sky-imager models mentioned previously, such as [10] which cost US$2,500 per unit, as well as [11], [12] respectively with costs close to US$300. These however, do not make use of centralised servers to further analyse gathered data, and neither of these make use of environmental readings. Comparing then to more similar previously mentioned systems such as [28] at a cost of $650 USD, we are once again much more cost-effective for the density of information gained via the system.
+
+
 <br>
 
 # 2.0 Sensor Accuracy
@@ -350,7 +353,7 @@ This is borne out in our results as you will see below, as camera models differ 
 
 ## 3.2. Channel Distribution Similarity
 
-To quantify the similarity between the distributions for the cloud and sky portions within the dataset, we used the Jaccard index [25](Jaccard 1901). This is a widely applicable method of quantifying the similarity between to sets. It is normally defined as the intersection size divided by the union size. 
+We use the Jaccard similarity index between two given distributions to determine their overlap. As stated, we observe the distributions of colour channels in the RGB, HSV and YCbCr colour spaces. We build the distributions per colour-channel for a given space and calculate the similarity index between them. As the index is a measure of similarity between 0 to 1.0, distributions which have a similarity of 0.5 or less are considered viable in distinguishing the two groups apart. We then can analyse the top N  channels with scores below 0.5.
 The Jaccard index was calculated for our DSLR group on the three (3) colour spaces, as well as the OV5640. The top channels under 0.5 similarity for each is taken. The results are as follows:
 
 <br>
@@ -360,22 +363,28 @@ Camera | Jaccard Dictionary
 DSLR| ![Jaccard](Devinci/static/images/dslr/jaccard.png) 
 OV5640 | ![Jaccard](Devinci/static/images/ov5640/jaccard.png)
 
-From here we can see that both the scores and their rankings within the sorted dictionaries are different. Channels such as Green and YCbCr Brightness are not present in the results for the DSLR whilst appearing for the OV5640 group.
+ It becomes apparent here both that the same set of channels can be seen as viable across our camera data, and that the order of their similarity is relative to the camera, as expressed before. Both the scores and their rankings within the sorted dictionaries are different. Channels such as Green and YCbCr Brightness are not present in the results for the DSLR whilst appearing for the OV5640 group.
+
 
 <br>
 
 ## 3.3. ROC Curve
 
-### 3.3.1. BootStrapping
-* TODO
-
-<br>
-
 To now further refine the choice of colour channels, we construct ROC curves of the possible upper and lower bounds used for masking in a given channel, to quantify its ability to classify the pixels as either "cloud" or "sky". 
 
 <br>
 
-ROC curves illustrate the performance of a binary classifier model at varying threshold values. As such, they are not used in testing two simultaneous variables, but just one. To remedy this, we fix each lower bound at a given value, then test all feasible upper bounds, and visualize this as an independent curve. This means that for each channel, we get multiple curves on the same plot, each showing the performance of simple masking given the fixed lower bound and a number of possible upper bounds. An example is this is below - The Saturation Channel in the HSV Colourspace for the DSLR groups:
+ROC curves illustrate the performance of a binary classifier model at varying threshold values. As such, they are not used in testing two simultaneous variables as is the case with our upper and lower boundaries, but just one [25]. To remedy this, we fix each lower bound at a given value, then test all feasible upper bounds, and visualise this as an independent curve. This means that for each channel, we get multiple curves on the same plot, each showing the performance of simple masking given the fixed lower bound and a number of possible upper bounds. This is done in a number of steps:
+
+The pool of images is randomly divided into a number of strata via bootstrapping, each containing 30 images (arbitrarily chosen). 
+The full set of boundary permutations is generated.
+Within each strata, each curve is generated and stored.
+Across each strata now, the respective curve for each strata is averaged to be used.
+
+In calculating things such as the True Positives, False Positives, etc, for the respective confusion matrices of each boundary, it is important to note that the “True” label of a pixel is taken as the label assigned by a human. The boundary attained in the end then is one which most closely aligns with the human labelling the pixels.
+While usually, if a number of ROC curves are averaged, their spread should also be taken into account [26], for our calculation of discrete boundaries, it was determined that for our purposes we may neglect this. 
+
+ An example is this is below - The Saturation Channel in the HSV Colourspace for the DSLR groups:
 
 Camera | Saturation ROC Curve | Chrome Blue ROC Curve
 :-----------------------------------:|:------------------------------------:|:------------------------------------:|
@@ -383,13 +392,10 @@ DSLR | ![ROC](Devinci/static/Graphs/dslr/roc/HSV-Saturation.png) | ![ROC](Devinc
 OV5640 | ![ROC](Devinci/static/Graphs/ov5640/roc/HSV-Saturation.png)| ![ROC](Devinci/static/Graphs/ov5640/roc/YCbCr-Chroma%20Blue.png) | 
 
 
-### 3.3.2. Best Curve Determination 
-The difficulty comes now in determining the best lower bound via these curves. Normally, an easy measure would be to determine this via the AUC(Area Under the Curve). However, as the lower bound increases, the number of corresponding upper bounds lessons, meaning this determination becomes more complicated as smaller lower-bound values may have an "advantage" in that they have more datapoints, making for a larger curve. As most valid masking ranges seem to cover most of the distribution at a time however, this seems to not affect the result greatly.
+### 3.3.1. Best Curve Determination 
+The challenge now lies in determining the optimal lower bound using these curves. The simplest approach is to use the Area Under the Curve (AUC) as outlined in Section 3.3.1. However, as the lower bound increases, the number of corresponding upper bounds decreases, complicating this determination. Smaller lower-bound values might have an "advantage" due to having more data points, resulting in a larger curve. Nonetheless, since most valid masking ranges cover most of the distribution, this issue does not significantly impact the results.
+As said, we select the curve with the highest AUC. If a channel does not contain a curve with at least an AUC of 0.5, it is discarded. To then select the maximal point on the graph, this can be done in many ways. The criterion for selecting this point many times comes down to business priorities rather than mathematically. In our case however, we have opted to obtain this by selecting the point which maximises the equation TPR−FPR (True Positive Rate minus False Positive Rate).
 
-<br>
-
-As said, we select the curve with the highest AUC. If a channel does not contain a curve with at least an AUC of 0.5, it is discarded. 
-To then select the maximal point on the graph, this can be done in many ways. The criterion for selecting this point many times comes down to business priorities rather than mathematically. In our case however, we have opted to obtain this by selecting the point which maximizes the equation TPR−FPR (True Positive Rate minus False Positive Rate).
 
 <br>
 
@@ -401,14 +407,26 @@ DSLR | ![ROC](Devinci/static/Graphs/dslr/roc/optimal.png)
 OV5640 | ![ROC](Devinci/static/Graphs/ov5640/roc/optimal.png)
 
 
+Both the Saturation and Chroma Blue channels give fairly accurate results within both groups in identifying cloud cover, with a sharp drop-off in accuracy for the next channel in order. It is for this reason that these are selected as the channels used in determining cloud-cover.
+While it would be feasible to layer each of these in a manner consistent with their respective accuracy, for our purposes, we simply use a  bitwise AND operation on the masks created from the two most accurate channels, Saturation and Chroma Blue.
+One might assume that the accuracy of compounded image masks would be multiplicative, meaning that combining two (2) masks such as the DSLR group masks within table 6.6.0 with accuracies of 0.96050 and 0.95970 would result in a mask with an accuracy of ~0.92180, however in reality, we achieve an accuracy generally higher than product of its parts. To evaluate this, we create composite masks using the boundary values, combined via a bitwise AND. 
+In the case of the DSLR group, the accuracy achieved is 0.95327. Similarly within the OV5640 group, the expected accuracy would be ~0.73110, whereas the observed accuracy is 0.84825.
+
+<br>
+
+In addition to identifying cloud and sky pixels, erosion and dilation of the composite mask are performed to remove noise. This process also removes semi-transparent, wispy areas around denser cloud cover, preventing them from being detected as cloud cover. Combined, these steps achieve real-time cloud separation from a scene with surprising accuracy given the simplicity of the method. This method is intended to identify the contours of cloud forms, as demonstrated in [37]. Visual inspection supports this, as shown in the below figures, where cloud cover detection is illustrated using bounding boxes labelled “cloud.” Red denotes the outer contours of a cloud, while green denotes the inner contours. The “cleaned” image state refers to the image after erosion and dilation
+
+Camera | Contours
+:-----------------------------------:|:------------------------------------:|
+DSLR | ![ROC](Devinci/static/dslr_contours.png)
+OV5640 | ![ROC](Devinci/static/ov5640_contours.png)
+
 # 4.0. LCL (Lifted Condensate Level) Accuracy
 
-The Lifted Condensate Level can be be used in estimating the cloud-base height when only sufficient environmental readings are available.
-We estimate this according to the method outlined in Romps. D (2017), using the code made available from that publication within our application stack.
-To visualize the difference in cloud-base versus LCL measurement, we retroactively fetch METAR data for a Set of Airports, and visualize the fractional delta and simple 1-to-1 
-comparison in their results. 
-We previously compared this fractional delta to the pressure, relative humidity, and temperature, to investigate their relationships, however, the relative humidity alone seemed
-somewhat directly correlated. 
+The Lifted Condensation Level can be used in estimating the cloud-base height when only sufficient environmental readings are available. We estimate this according to the method outlined in [9], using the code made available from that publication within our application stack. To visualise the difference in cloud-base versus LCL measurement, we retroactively fetch METAR data for a Set of Airports, and visualise both a fractional delta and simple 1-to-1 comparison in their results. These are available in the below for the Växjö and Heartsfield-Jackson (Atlanta) airports respectively. We previously compared this fractional delta to the pressure, relative humidity, and temperature, to investigate their relationships, however, the relative humidity alone seemed somewhat directly correlated. Through web-scraping Ogimet, a weather information service providing historical weather conditions [40], we have made available METAR data from 01/01/2010 to 30/12/2023 for both the Växjö and Heartsfield-Jackson (Atlanta) airports. The Växjö airport was investigated due to proximity, and the Hartsfield-Jackson airport was chosen due to its abundance of sensors, flat landscape, and lack of large water-bodies nearby. It was suspected by all involved at the Science Park that large water bodies could affect rates of evaporation depending on the time of year, thereby affecting the actual values of the cloud base directly over the airport.
+As seen in the bottom scatterplot in bboth figures, while there is an initial linear relation between the calculated and actual height values, this breaks down at or near the 10,000 ft and 5,000 ft markers in each respectively. Many a\\ssumptions made about the LCL on our part have been displayed in these figures to be factual.
+One of these is the breakdown in the relationship between LCL and actual cloud height at higher relative humidity. As seen in the top scatter plot within figure 6.8.0, while from about 30% humidity onwards for the Växjö airport, differences in derived versus actual height are as large as 80%, the absolute number of these large disparities grows seemingly exponentially with relative humidity. It is for these reasons that we conclude derived LCL cannot be substituted with reasonable accuracy for the Cloud Base Height.
+
 
 <br>
 
